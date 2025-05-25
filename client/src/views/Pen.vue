@@ -31,8 +31,18 @@
   const previewContainer = ref(null);
   const navListVisible = ref(false);
 
+  const cdns = ref([
+    'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4'
+  ])
+  const links = ref([])
 
+  watch(cdns, (newCDNs) => {
+  workStore.updateCDNs(newCDNs)
+}, { deep: true })
 
+watch(links, (newLinks) => {
+  workStore.updateLinks(newLinks)
+}, { deep: true })
 
   const startConsoleDragging = () => {
     isConsoleDragging.value = true
@@ -411,7 +421,7 @@
           </div>
         </button>
         <div v-if="settingOptionVisible" class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-200" @click="toggleSetting"></div>
-        <penSetting v-if="settingOptionVisible"  @close="toggleSetting" class="z-50" />
+        <penSetting v-if="settingOptionVisible" v-model:cdns="cdns" v-model:links="links" @close="toggleSetting" class="z-50" />
 
         <div class="relative md:flex hidden">
           <button type="button" @click.prevent="toggleLayout" class="text-[aliceblue] rounded px-4 py-2 bg-[#444857] editorSmallButton-hover-bgc  hover:cursor-pointer">
