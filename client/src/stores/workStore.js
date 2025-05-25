@@ -97,11 +97,12 @@ export const useWorkStore = defineStore('work', () => {
       <!DOCTYPE html>
       <html lang="en">
       <head>
-        <style>${currentWork.value[0].css}</style>
         ${linkTags}
+        <style>${currentWork.value[0].css}</style>
       </head>
       <body>
         ${currentWork.value[0].html}
+        ${cdnTags}
         <script>
           const originalLog = console.log;
           const originalError = console.error;
@@ -146,7 +147,6 @@ export const useWorkStore = defineStore('work', () => {
             clearTimeout(timeout); // 如果程式碼正常結束，清除超時計時器
           }
         <\/script>
-        ${cdnTags}
       </body>
       </html>
     `
