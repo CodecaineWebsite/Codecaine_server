@@ -77,7 +77,8 @@ async function login() {
 		authStore.setToken(token);
 		console.log("登入成功，JWT:", token);
 		alert("登入成功！"); //alert最後可以再調整美觀的樣式
-		await addUsers();
+		await testAuth();
+		// await addUsers();
 	} catch (e) {
 		if (
 			e.code === "auth/invalid-credential" ||
@@ -108,6 +109,19 @@ async function addUsers() {
 		console.log("成功新增：", res.data);
 	} catch (err) {
 		console.error("新增失敗：", err.response?.data || err.message);
+	}
+}
+
+async function testAuth() {
+	try {
+		const res = await axios.get("http://localhost:3000/me", {
+			headers: {
+				Authorization: `Bearer ${authStore.idToken}`,
+			},
+		});
+		console.log("身份驗證成功：", res.data);
+	} catch (err) {
+		console.error("身份驗證失敗：", err.response?.data || err.message);
 	}
 }
 </script>
