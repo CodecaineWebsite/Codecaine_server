@@ -1,6 +1,6 @@
 // src/routes/profile.js
 import express from "express";
-import { authenticate } from "../middlewares/authJwt.js";
+import { verifyFirebase } from "../middlewares/varifyFirebase.js";
 import { addUsers } from "../controllers/addUser.js";
 //工具包 先放在這裡 同樣可以在這裡寫CRUD 沒問題在把code拆到controllers 帶上middelwares .etc
 //完成開發可移除 簡潔code畫面
@@ -12,7 +12,7 @@ import db from "../config/db.js";
 const router = express.Router();
 
 // 測試用路由
-router.get("/test", authenticate, (req, res) => {
+router.get("/test", verifyFirebase, (req, res) => {
   res.json({
     message: "驗證成功",
     uid: req.user.uid,
@@ -21,6 +21,6 @@ router.get("/test", authenticate, (req, res) => {
 });
 
 // 新增使用者到資料庫
-router.post("/addusers", authenticate, addUsers);
+router.post("/addusers", verifyFirebase, addUsers);
 
 export default router;
