@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --font-archivo: "Archivo Black","sans-serif";
+}
+
 .editor-bgc{
   background-color: #1C1C1C;
 }
@@ -7,10 +11,14 @@
   color: #b2b8c5;
 }
 
+.editorSettingCard-linear-bgc {
+  @apply bg-gradient-to-l from-[#252730] to-[#424655];
+}
+
 .editorSmallButton-hover-bgc:hover {
   background-color: #5a5f73;
 }
 
-@theme {
-  --font-archivo: "Archivo Black","sans-serif";
+.editor-resizer-border-color {
+  border-color: #2D2D2D;
 }
