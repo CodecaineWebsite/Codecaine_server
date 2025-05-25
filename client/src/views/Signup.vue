@@ -69,7 +69,7 @@
                 required
                 class="w-full border border-gray-300 rounded px-3 py-2 text-black bg-gray-200 hover:bg-white transition"
               />
-			  <!-- 密碼驗證提示之後要改 -->
+              <!-- 密碼驗證提示之後要改 -->
               <ul class="text-xs text-gray-600 mt-2 list-disc pl-5">
                 <li>Include an <strong>UPPER</strong> and lowercase letter</li>
                 <li>Include a number</li>
@@ -93,13 +93,12 @@
   </div>
 </template>
 
-
 <script setup>
+import axios from "axios";
 import { ref } from "vue";
 import { auth } from "../config/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "vue-router";
-import axios from "axios";
 const router = useRouter();
 
 const showEmailForm = ref(false);
@@ -113,22 +112,33 @@ async function register() {
   success.value = "";
 
   try {
+    // 一、Firebase 註冊，取得使用者 firebase token
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email.value,
       password.value
     );
-
-    // V: 註冊時在後端資料庫新增使用者資料
     const token = await userCredential.user.getIdToken();
-    await axios.get("http://localhost:3000/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
 
+    // 二、嘗試呼叫後端 /me 寫入資料庫
+    try {
+      await axios.get("http://localhost:3000/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (dbErr) {
+      alert(
+        "註冊成功，但資料同步到後端失敗。請用剛剛的帳號登入一次，系統會自動修復。"
+      );
+      router.push("/login");
+    }
+
+    // 所有步驟都成功，導向登入
     success.value = "註冊成功！";
     alert(success.value); //alert最後可以再調整美觀的樣式
     router.push("/login");
+    return
   } catch (e) {
+    // Firebase 註冊錯誤
     let msg = "";
     switch (e.code) {
       case "auth/email-already-in-use":
@@ -147,8 +157,7 @@ async function register() {
   }
 }
 
-
-// 顯示與動畫 
+// 顯示與動畫
 function beforeEnter(el) {
   el.style.height = "0";
   el.style.opacity = "0";
