@@ -1,3 +1,5 @@
+// 目前整合firebase暫時廢棄，但請不要刪除
+
 import { Router } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

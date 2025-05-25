@@ -1,3 +1,5 @@
+// 目前整合firebase暫時廢棄，但請不要刪除
+
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
 import { usersTable } from "../models/schema.js";
