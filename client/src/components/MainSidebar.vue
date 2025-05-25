@@ -169,11 +169,12 @@ function toggleSidebar() {
 async function callApi() {
   if (!authStore.idToken) {
     error.value = "請先登入取得 token";
+    console.log(error.value) // 這邊威廷看起來是想寫 console.log 或 console.error
     return;
   }
 
   try {
-    const res = await axios.get("http://localhost:3000/api/test", {
+    const res = await axios.get("http://localhost:3000/api/auth/me", {  // 原為 http://localhost:3000/api/test 改為 http://localhost:3000/api/auth/me 以供繼續測試
       headers: {
         Authorization: `Bearer ${authStore.idToken}`,
       },

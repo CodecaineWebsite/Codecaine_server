@@ -122,7 +122,7 @@ async function register() {
 
     // 二、嘗試呼叫後端 /me 寫入資料庫
     try {
-      await axios.get("http://localhost:3000/me", {
+      await axios.get("http://localhost:3000/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (dbErr) {
