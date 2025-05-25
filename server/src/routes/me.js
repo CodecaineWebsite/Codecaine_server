@@ -1,7 +1,7 @@
 // 測試用路由
 // routes/me.js
 import express from "express";
-import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import { verifyFirebase } from "../middlewares/varifyFirebase.js";
 
 const router = express.Router();
 

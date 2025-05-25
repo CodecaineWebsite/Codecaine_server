@@ -24,8 +24,8 @@
 // V: 測試
 // src/middlewares/verifyFirebase.js
 import admin from "../config/firebase.js";
-import { db } from "../db/index.js"; // 你自己的 Drizzle 初始化
-import { usersTable } from "../db/schema.js";
+import  db  from "../config/db.js"; // 你自己的 Drizzle 初始化
+import { usersTable } from "../models/schema.js";
 import { eq } from "drizzle-orm";
 
 export async function verifyFirebase(req, res, next) {
