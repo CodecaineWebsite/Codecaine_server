@@ -2,7 +2,7 @@ import { Router } from "express";
 import db from "../config/db.js";
 import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
 import { eq } from "drizzle-orm";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth } from "../middlewares/auth.js";
 
 const router = Router();
 
