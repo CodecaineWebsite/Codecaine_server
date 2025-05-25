@@ -22,7 +22,6 @@
 
 //////////////////////////////////////////
 // V: 測試
-// src/middlewares/verifyFirebase.js
 import admin from "../config/firebase.js";
 import  db  from "../config/db.js"; // 你自己的 Drizzle 初始化
 import { usersTable } from "../models/schema.js";

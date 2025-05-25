@@ -1,4 +1,4 @@
-// 目前整合firebase暫時廢棄，但請不要刪除
+// 目前登入方式整合firebase所以暫時作廢，但保留原始碼以備用
 
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";

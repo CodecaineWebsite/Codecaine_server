@@ -41,7 +41,7 @@ app.use("/api/favorites", favoritesRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
 
-app.use("/me", meRoutes); //測試firebase用路由
+// app.use("/me", meRoutes); //測試firebase用路由
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "First API Test From Vivi" });
