@@ -74,64 +74,75 @@ export const useWorkStore = defineStore('work', () => {
   }
 
   // 更新作品Preview function
-  // const updatedPreview = ref('');
-  const iframeMessage = ref('');
   const updatePreviewSrc = () => {
     console.log()
     return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <style>${currentWork.value[0].css}</style>
-      </head>
-      <body>
-        ${currentWork.value[0].html}
-        <script>
-          const originalLog = console.log;
-          const originalError = console.error;
-          const originalWarn = console.warn;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <script defer>
+        // Console 覆寫
+        const originalConsole = {
+          log: console.log,
+          error: console.error,
+          warn: console.warn,
+          info: console.info
+        };
 
-          // 覆寫 console 方法，將輸出傳回父頁面
-          ['log', 'error', 'warn'].forEach(method => {
-            console[method] = (...args) => {
-              window.parent.postMessage({
-                type: 'log',
-                message: args.map(arg =>
-                  typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-                ).join(' '),
-                level: method
-              }, '*');
-              originalLog(...args);
-            };
-          });
-
-          // 設置執行超時機制
-          const timeout = setTimeout(() => {
+        ['log', 'error', 'warn', 'info'].forEach(method => {
+          console[method] = (...args) => {
             window.parent.postMessage({
               type: 'log',
-              message: '執行超時，程式碼停止。',
-              level: 'error'
+              message: args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+              ).join(' '),
+              level: method
             }, '*');
-            throw new Error('程式碼執行超時');
-          }, 5000); // 設定5秒為超時時間（可以根據需要調整）
+            originalConsole[method](...args);
+          };
+        });
 
-          try {
-            const userCode = ${JSON.stringify(currentWork.value[0].javascript)};
-            const customConsole = console;
-            const func = new Function('console', userCode);
-            func(customConsole);
-          } catch (err) {
-            window.parent.postMessage({
-              type: 'log',
-              message: err.stack || err.message || String(err),
-              level: 'error'
-            }, '*');
-          } finally {
-            clearTimeout(timeout); // 如果程式碼正常結束，清除超時計時器
+        // 創建一個帶有正確文件名的 script 元素
+        const script = document.createElement('script');
+        script.textContent = '\\n//# sourceURL=user-code.js\\n' + ${JSON.stringify(currentWork.value[0].javascript)};
+        
+        // 錯誤處理
+        window.onerror = function(message, source, lineno, colno, error) {
+          let displayLine = lineno;
+          // 如果來源是我們的用戶代碼文件
+          if (source && source.includes('user-code.js')) {
+            displayLine = lineno - 2; // 減去 sourceURL 註釋行數
           }
-        <\/script>
-      </body>
-      </html>
+          
+          window.parent.postMessage({
+            type: 'log',
+            message: '第 ' + displayLine + ' 行錯誤: ' + message,
+            level: 'error'
+          }, '*');
+          return true;
+        };
+
+        window.addEventListener('unhandledrejection', function(event) {
+          window.parent.postMessage({
+            type: 'log',
+            message: '未處理的 Promise 錯誤: ' + event.reason,
+            level: 'error'
+          }, '*');
+        });
+
+        // 執行用戶代碼
+        try {
+          document.head.appendChild(script);
+        } catch (err) {
+          console.error(err.message);
+        }
+      <\/script>
+      <style>${currentWork.value[0].css}</style>
+    </head>
+    <body>
+      ${currentWork.value[0].html}
+    </body>
+    </html>
     `
   }
 
@@ -146,7 +157,6 @@ export const useWorkStore = defineStore('work', () => {
 })
   
   
-
   // todo:
   // fetch取得作品function 未來的works資料取得
   // 儲存作品function
