@@ -1,6 +1,6 @@
 {
-  "id": "5e781349-8394-4bc4-bc0f-f98c8738e6c8",
-  "prevId": "156b4d95-2285-4f0f-a57e-91b5d1648127",
+  "id": "374546a0-1c14-4820-919c-bda993435624",
+  "prevId": "45808609-7312-4dd0-b393-833ea2d99a1e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -238,7 +238,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "pen_tags_tag_id_tags_id_fk": {
@@ -324,7 +324,7 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "is_private": {
           "name": "is_private",
