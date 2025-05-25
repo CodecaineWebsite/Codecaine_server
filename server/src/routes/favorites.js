@@ -1,8 +1,8 @@
 import { Router } from "express";
 import db from "../config/db.js";
 import { favoritesTable, pensTable } from "../models/schema.js";
-import { eq, and,  inArray } from "drizzle-orm";
-import { requireAuth } from "../middleware/auth.js";
+import { eq, and, inArray } from "drizzle-orm";
+import { requireAuth } from "../middlewares/auth.js";
 
 const router = Router();
 
@@ -15,7 +15,10 @@ router.post("/", async (req, res) => {
   const { user_id, pen_id } = req.body;
 
   try {
-    await db.insert(favoritesTable).values({ user_id, pen_id }).onConflictDoNothing();
+    await db
+      .insert(favoritesTable)
+      .values({ user_id, pen_id })
+      .onConflictDoNothing();
     res.status(201).json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "收藏失敗", details: err.message });
@@ -30,9 +33,14 @@ router.post("/", async (req, res) => {
 router.delete("/", async (req, res) => {
   const { user_id, pen_id } = req.body;
 
-  await db.delete(favoritesTable).where(
-    and(eq(favoritesTable.user_id, user_id), eq(favoritesTable.pen_id, pen_id))
-  );
+  await db
+    .delete(favoritesTable)
+    .where(
+      and(
+        eq(favoritesTable.user_id, user_id),
+        eq(favoritesTable.pen_id, pen_id)
+      )
+    );
 
   res.status(204).end();
 });
@@ -46,12 +54,12 @@ router.get("/:user_id", async (req, res) => {
 
   const result = await db
     .select({
-      pen_id: favoritesTable.pen_id
+      pen_id: favoritesTable.pen_id,
     })
     .from(favoritesTable)
     .where(eq(favoritesTable.user_id, user_id));
 
-  const penIds = result.map(r => r.pen_id);
+  const penIds = result.map((r) => r.pen_id);
 
   const pens = await db
     .select()

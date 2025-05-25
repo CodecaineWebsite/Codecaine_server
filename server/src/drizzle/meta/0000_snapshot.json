@@ -1,5 +1,5 @@
 {
-  "id": "debfa174-88ce-4442-8e8f-a328043cdad0",
+  "id": "5c1c30a4-d30c-435e-986e-395bbd87852c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -22,7 +22,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -42,10 +42,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "comments_pen_id_posts_id_fk": {
-          "name": "comments_pen_id_posts_id_fk",
+        "comments_pen_id_pens_id_fk": {
+          "name": "comments_pen_id_pens_id_fk",
           "tableFrom": "comments",
-          "tableTo": "posts",
+          "tableTo": "pens",
           "columnsFrom": [
             "pen_id"
           ],
@@ -81,7 +81,7 @@
       "columns": {
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -114,10 +114,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "favorites_pen_id_posts_id_fk": {
-          "name": "favorites_pen_id_posts_id_fk",
+        "favorites_pen_id_pens_id_fk": {
+          "name": "favorites_pen_id_pens_id_fk",
           "tableFrom": "favorites",
-          "tableTo": "posts",
+          "tableTo": "pens",
           "columnsFrom": [
             "pen_id"
           ],
@@ -148,13 +148,13 @@
       "columns": {
         "follower_id": {
           "name": "follower_id",
-          "type": "integer",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
         "following_id": {
           "name": "following_id",
-          "type": "integer",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -228,17 +228,17 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "pen_tags_pen_id_posts_id_fk": {
-          "name": "pen_tags_pen_id_posts_id_fk",
+        "pen_tags_pen_id_pens_id_fk": {
+          "name": "pen_tags_pen_id_pens_id_fk",
           "tableFrom": "pen_tags",
-          "tableTo": "posts",
+          "tableTo": "pens",
           "columnsFrom": [
             "pen_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "pen_tags_tag_id_tags_id_fk": {
@@ -269,8 +269,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.posts": {
-      "name": "posts",
+    "public.pens": {
+      "name": "pens",
       "schema": "",
       "columns": {
         "id": {
@@ -280,7 +280,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "posts_id_seq",
+            "name": "pens_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -292,7 +292,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -324,7 +324,7 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "is_private": {
           "name": "is_private",
@@ -343,9 +343,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "posts_user_id_users_id_fk": {
-          "name": "posts_user_id_users_id_fk",
-          "tableFrom": "posts",
+        "pens_user_id_users_id_fk": {
+          "name": "pens_user_id_users_id_fk",
+          "tableFrom": "pens",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
@@ -402,20 +402,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "varchar(1000)",
           "primaryKey": true,
-          "notNull": true,
-          "identity": {
-            "type": "always",
-            "name": "users_id_seq",
-            "schema": "public",
-            "increment": "1",
-            "startWith": "1",
-            "minValue": "1",
-            "maxValue": "2147483647",
-            "cache": "1",
-            "cycle": false
-          }
+          "notNull": true
         },
         "email": {
           "name": "email",
@@ -451,6 +440,12 @@
         "display_name": {
           "name": "display_name",
           "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
         },
