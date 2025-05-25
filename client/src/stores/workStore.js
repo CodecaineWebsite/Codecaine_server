@@ -13,6 +13,8 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
+      cdns: [], 
+      links: [], 
     }
   ])
   const currentId = ref('123123123123');
@@ -28,7 +30,9 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
-      user_id: "0098837589"
+      user_id: "0098837589",
+      cdns: [], 
+      links: [], 
     },
     {
       id: "12312398i06o83",
@@ -41,9 +45,18 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
-      user_id: "0098837589"
+      user_id: "0098837589",
+      cdns: [], 
+      links: [], 
     }
   ])
+
+  const updateCDNs = (newCDNs) => {
+  currentWork.value[0].cdns = newCDNs
+}
+  const updateLinks = (newLinks) => {
+  currentWork.value[0].links = newLinks
+}
 
   // 回傳特定(指定id)作品
   const currentWork = computed(() => {
@@ -77,12 +90,15 @@ export const useWorkStore = defineStore('work', () => {
   // const updatedPreview = ref('');
   const iframeMessage = ref('');
   const updatePreviewSrc = () => {
+     const cdnTags = (currentWork.value[0].cdns || []).map(url => `<script src="${url}"><\/script>`).join('\n')
+     const linkTags = (currentWork.value[0].links || []).map(url => `<link rel="stylesheet" href="${url}"><\/link>`).join('\n')
     console.log()
     return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <style>${currentWork.value[0].css}</style>
+        ${linkTags}
       </head>
       <body>
         ${currentWork.value[0].html}
@@ -130,6 +146,7 @@ export const useWorkStore = defineStore('work', () => {
             clearTimeout(timeout); // 如果程式碼正常結束，清除超時計時器
           }
         <\/script>
+        ${cdnTags}
       </body>
       </html>
     `
@@ -141,7 +158,9 @@ export const useWorkStore = defineStore('work', () => {
     handleCurrentIdChange,
     updateCurrentCode,
     toggleAutoPreview,
-    updatePreviewSrc
+    updatePreviewSrc,
+    updateCDNs,
+    updateLinks
   }
 })
   
