@@ -3,7 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
 import { usersTable } from "../models/schema.js";
-import { verifyFirebase } from "../middlewares/varifyFirebase.js";
+import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import { verifyDB } from "../middlewares/verifyDB.js";
 import { eq } from "drizzle-orm";
 
 const router = Router();
@@ -33,9 +34,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_default_secret"; // 請記得
   }
 }
  */
-router.get("/me", verifyFirebase, async (req, res) => {
+router.get("/me", verifyFirebase, verifyDB, async (req, res) => {
 	try {
-		// Firebase 驗證後，middleware 已經保證 userId 存在資料庫
 		const userId = req.userId;
 
 		// 取得使用者資料
@@ -57,7 +57,7 @@ router.get("/me", verifyFirebase, async (req, res) => {
  * GET /api/auth/profile
  * 使用 Firebase 驗證 ， 回傳目前使用者的資料（從資料庫）
  */
-router.get("/profile", verifyFirebase, async (req, res) => {
+router.get("/profile", verifyFirebase, verifyDB, async (req, res) => {
 	try {
 		const firebaseUid = req.userId;
 
