@@ -171,9 +171,7 @@ async function signInWithGoogle() {
     const token = await user.getIdToken();
     authStore.setToken(token); // 儲存 token 到 store
     // 呼叫後端，送出 Firebase Token 做登入或註冊
-    await axios.get("http://localhost:3000/api/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await api.get("/auth/me");
 
     alert("Google 登入成功！");
     router.push("/trending"); // 登入成功後導向你想的頁面
