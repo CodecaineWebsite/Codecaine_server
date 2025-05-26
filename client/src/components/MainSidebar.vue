@@ -166,18 +166,17 @@ function toggleSidebar() {
 }
 //測試用
 
+import api from "../stores/api";
 async function callApi() {
   if (!authStore.idToken) {
     error.value = "請先登入取得 token";
-    console.log(error.value) // 這邊威廷看起來是想寫 console.log 或 console.error
+    console.log(error.value); // 這邊威廷看起來是想寫 console.log 或 console.error
     return;
   }
 
   try {
-    const res = await axios.get("http://localhost:3000/api/auth/me", {  // 原為 http://localhost:3000/api/test 改為 http://localhost:3000/api/auth/me 以供繼續測試
-      headers: {
-        Authorization: `Bearer ${authStore.idToken}`,
-      },
+    const res = await api.get("/auth/me", {
+      // 原為 http://localhost:3000/api/test 改為 http://localhost:3000/api/auth/me 以供繼續測試
     });
 
     console.log("後端回應：", res.data);
@@ -189,11 +188,11 @@ async function callApi() {
 
 const handleLogout = async () => {
   try {
-    await signOut(auth);    //  清除 Firebase 的登入狀態，避免下次開頁面自動觸發 onIdTokenChanged() 以為登入中
+    await signOut(auth); //  清除 Firebase 的登入狀態，避免下次開頁面自動觸發 onIdTokenChanged() 以為登入中
     authStore.clearToken(); //  清除 Pinia / localStorage 中的 token
     router.push("/");
   } catch {
-	console.error("登出失敗：", e);
+    console.error("登出失敗：", e);
   }
 };
 </script>
