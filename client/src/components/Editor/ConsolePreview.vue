@@ -28,7 +28,7 @@
       <li
         v-for="(log, index) in logs"
         :key="index"
-        class="border-b last:border-b-0 py-1 px-3 editor-resizer-border-color text-[#b5cea8] m-0" 
+        class="border-b last:border-b-0 py-1.5 px-3 editor-resizer-border-color text-[#b5cea8] m-0" 
         :class="{
           'bg-red-500/20 text-white': log.level === 'error',
           'bg-yellow-200/15 text-lime-300': log.level === 'warn',
