@@ -75,76 +75,90 @@ export const useWorkStore = defineStore('work', () => {
 
   // 更新作品Preview function
   const updatePreviewSrc = () => {
-    console.log()
+    const jsCode = currentWork.value[0].javascript + '\n//# sourceURL=user-code.js';
+    const cssCode = currentWork.value[0].css;
+    const htmlCode = currentWork.value[0].html;
+  
     return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
+      <meta charset="UTF-8" />
+      <style>${cssCode}</style>
       <script defer>
-        // Console 覆寫
+        // Override console methods to send logs to parent
         const originalConsole = {
           log: console.log,
           error: console.error,
           warn: console.warn,
           info: console.info
         };
-
+  
         ['log', 'error', 'warn', 'info'].forEach(method => {
           console[method] = (...args) => {
             window.parent.postMessage({
               type: 'log',
               message: args.map(arg =>
-                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
               ).join(' '),
               level: method
             }, '*');
             originalConsole[method](...args);
           };
         });
-
-        // 創建一個帶有正確文件名的 script 元素
-        const script = document.createElement('script');
-        script.textContent = '\\n//# sourceURL=user-code.js\\n' + ${JSON.stringify(currentWork.value[0].javascript)};
-        
-        // 錯誤處理
+  
+        // Global error handler
         window.onerror = function(message, source, lineno, colno, error) {
-          let displayLine = lineno;
-          // 如果來源是我們的用戶代碼文件
-          if (source && source.includes('user-code.js')) {
-            displayLine = lineno - 2; // 減去 sourceURL 註釋行數
-          }
-          
+          const errorMsg = error
+            ? \`\${error.name}: \${error.message}\`
+            : message;
           window.parent.postMessage({
             type: 'log',
-            message: '第 ' + displayLine + ' 行錯誤: ' + message,
+            message: \`\${errorMsg}\\nSource: \${source}\\nLine: \${lineno}, Column: \${colno}\`,
             level: 'error'
           }, '*');
           return true;
         };
-
+  
+        // Handle unhandled promise rejections
         window.addEventListener('unhandledrejection', function(event) {
           window.parent.postMessage({
             type: 'log',
-            message: '未處理的 Promise 錯誤: ' + event.reason,
+            message: 'Unhandled Promise rejection: ' + (event.reason?.stack || event.reason),
             level: 'error'
           }, '*');
         });
-
-        // 執行用戶代碼
-        try {
-          document.head.appendChild(script);
-        } catch (err) {
-          console.error(err.message);
-        }
+  
+        // Inject user code via Blob script
+        const code = ${JSON.stringify(jsCode)};
+        const blob = new Blob([code], { type: 'application/javascript' });
+        const blobUrl = URL.createObjectURL(blob);
+  
+        const script = document.createElement('script');
+        script.src = blobUrl;
+  
+        script.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+        };
+  
+        script.onerror = () => {
+          window.parent.postMessage({
+            type: 'log',
+            message: 'Script loading error',
+            level: 'error'
+          }, '*');
+        };
+  
+        document.head.appendChild(script);
       <\/script>
-      <style>${currentWork.value[0].css}</style>
     </head>
     <body>
-      ${currentWork.value[0].html}
+      ${htmlCode}
     </body>
     </html>
-    `
-  }
+    `;
+  };
+
 
   return { 
     currentWork,
