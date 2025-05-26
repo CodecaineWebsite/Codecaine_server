@@ -5,7 +5,8 @@
       <form class="mb-4">
         <input type="hidden" name="authenticity_token" value="..." />
         <button
-          type="submit"
+          type="button"
+          @click="signInWithGoogle"
           class="w-full flex items-center justify-center gap-2 bg-gray-700 text-white font-bold py-3 rounded-md cursor-pointer hover:bg-black transition duration-200"
         >
           <img
@@ -99,6 +100,13 @@ import { ref } from "vue";
 import { auth } from "../config/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "vue-router";
+//google登入的部分
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useAuthStore } from "../stores/useAuthStore";
+import api from "../stores/api"; // 假設有一個 api.js 檔案處理 API 請求
+
+const authStore = useAuthStore();
+const provider = new GoogleAuthProvider();
 const router = useRouter();
 
 const showEmailForm = ref(false);
@@ -122,9 +130,7 @@ async function register() {
 
     // 二、嘗試呼叫後端 /me 寫入資料庫
     try {
-      await axios.get("http://localhost:3000/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.get("/auth/me");
     } catch (dbErr) {
       alert(
         "註冊成功，但資料同步到後端失敗。請用剛剛的帳號登入一次，系統會自動修復。"
@@ -136,7 +142,7 @@ async function register() {
     success.value = "註冊成功！";
     alert(success.value); //alert最後可以再調整美觀的樣式
     router.push("/login");
-    return
+    return;
   } catch (e) {
     // Firebase 註冊錯誤
     let msg = "";
@@ -154,6 +160,26 @@ async function register() {
         msg = "註冊失敗：" + e.message;
     }
     alert(msg);
+  }
+}
+
+// Google 登入函式
+async function signInWithGoogle() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const token = await user.getIdToken();
+    authStore.setToken(token); // 儲存 token 到 store
+    // 呼叫後端，送出 Firebase Token 做登入或註冊
+    await axios.get("http://localhost:3000/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    alert("Google 登入成功！");
+    router.push("/trending"); // 登入成功後導向你想的頁面
+  } catch (error) {
+    console.error("Google 登入錯誤:", error);
+    alert("Google 登入失敗");
   }
 }
 
