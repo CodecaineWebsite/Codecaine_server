@@ -127,7 +127,7 @@ async function register() {
       });
     } catch (dbErr) {
       alert(
-        "註冊成功，但資料同步到後端失敗。請用剛剛的帳號登入一次，系統會自動修復。"
+        "系統發生錯誤，請稍後再試"
       );
       router.push("/login");
     }
