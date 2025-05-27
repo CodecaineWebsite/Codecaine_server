@@ -37,9 +37,9 @@ export async function verifyFirebase(req, res, next) {
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);
 
-    // 加入 request，後續 API 可取得
+    // 將 firebase user 資訊加入 request
     req.userId = decoded.uid;
-    req.firebaseUser = decoded;
+    req.user = decoded;
     next();
   } catch (err) {
     console.error("驗證失敗:", err);

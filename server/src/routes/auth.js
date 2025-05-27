@@ -36,7 +36,7 @@ const router = Router();
  */
 router.get("/me", verifyFirebase, verifyDB, async (req, res) => {
 	try {
-		const userId = req.userId;
+		const userId = req.user.uid;
 
 		// 取得使用者資料
 		const user = (await db.select().from(usersTable).where(eq(usersTable.id, userId)))[0];

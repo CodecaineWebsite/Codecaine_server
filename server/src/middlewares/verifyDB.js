@@ -8,20 +8,20 @@ export async function verifyDB(req, res, next) {
     const result = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.id, req.userId));
+      .where(eq(usersTable.id, req.user.uid));
     const user = result[0];
 
     // 如果沒有，就創建一筆（首次登入）
     if (!user) {
       await db.insert(usersTable).values({
         id: req.userId,
-        email: req.firebaseUser.email,
+        email: req.user.email,
         username:
-          req.firebaseUser.name ||
-          req.firebaseUser.email?.split("@")[0] ||
+          req.user.name ||
+          req.user.email?.split("@")[0] ||
           "FirebaseUser",
         password_hash: "firebase", // 填預設值，因為用不到
-        display_name: req.firebaseUser.name || null,
+        display_name: req.user.name || null,
         // profile_image: req.firebaseUser.picture || null,  // TODO
         bio: "", // 預設值
       });

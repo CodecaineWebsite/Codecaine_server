@@ -77,7 +77,7 @@ async function login() {
     authStore.setToken(token);
     console.log("登入成功，JWT:", token);
     alert("登入成功！"); // alert最後可以再調整美觀的樣式
-    await syncUser(); // 原為 addUsers()
+    await syncUser();
   } catch (e) {
     if (
       e.code === "auth/invalid-credential" ||
