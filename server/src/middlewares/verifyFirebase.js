@@ -40,7 +40,6 @@ export async function verifyFirebase(req, res, next) {
     // 加入 request，後續 API 可取得
     req.userId = decoded.uid;
     req.firebaseUser = decoded;
-    console.log(req.firebaseUser)
     next();
   } catch (err) {
     console.error("驗證失敗:", err);

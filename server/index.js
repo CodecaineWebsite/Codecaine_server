@@ -13,7 +13,6 @@ import tagsRouter from "./src/routes/tags.js";
 import favoritesRouter from "./src/routes/favorites.js";
 import commentsRouter from "./src/routes/comments.js";
 import followsRouter from "./src/routes/follows.js";
-import meRoutes from "./src/routes/me.js"; //測試firebase用路由
 
 const { Pool } = pg;
 dotenv.config();
@@ -40,8 +39,6 @@ app.use("/api/tags", tagsRouter);
 app.use("/api/favorites", favoritesRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
-
-// app.use("/me", meRoutes); //測試firebase用路由
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "First API Test From Vivi" });
