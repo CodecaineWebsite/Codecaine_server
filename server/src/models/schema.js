@@ -6,13 +6,13 @@ import {
   timestamp,
   boolean,
   primaryKey,
-  serial
+  serial,
 } from "drizzle-orm/pg-core";
 
 // 使用者資料表
 const usersTable = pgTable("users", {
   // id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  id: varchar("id", { length: 128 }).primaryKey(),            
+  id: varchar("id", { length: 128 }).primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   username: varchar("username", { length: 50 }).notNull(),
   password_hash: text("password_hash").notNull(),
@@ -99,7 +99,7 @@ const penTagsTable = pgTable(
   "pen_tags",
   {
     pen_id: integer("pen_id")
-      .references(() => pensTable.id, { onDelete: "cascade" }) 
+      .references(() => pensTable.id, { onDelete: "cascade" })
       .notNull(),
     tag_id: integer("tag_id")
       .references(() => tagsTable.id)
@@ -110,7 +110,6 @@ const penTagsTable = pgTable(
   })
 );
 
-
 export {
   usersTable,
   pensTable,
@@ -118,5 +117,5 @@ export {
   commentsTable,
   followsTable,
   tagsTable,
-  penTagsTable
+  penTagsTable,
 };
