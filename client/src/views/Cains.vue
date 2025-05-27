@@ -1,12 +1,21 @@
 <template>
-  <h1>Cains</h1>
-  <div>
-    <button @click="showcase">Showcase</button>
-    <button @click="publicProfile">Public</button>
-    <button @click="loved">Loved</button>
-    <button @click="privateProfile">Private</button>
-  </div>
-  <RouterView />
+	<div>
+		<div class="text-gray-400 flex gap-4 bg-gray-800 p-4">
+			<button class="cursor-pointer hover:text-white" @click="showcase">
+				Showcase
+			</button>
+			<button class="cursor-pointer hover:text-white" @click="publicProfile">
+				Public
+			</button>
+			<button class="cursor-pointer hover:text-white" @click="loved">
+				Loved
+			</button>
+			<button class="cursor-pointer hover:text-white" @click="privateProfile">
+				Private
+			</button>
+		</div>
+		<RouterView />
+	</div>
 </template>
 
 <script setup>
@@ -15,26 +24,17 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const showcase = () => {
-  router.push("/profile/cains/showcase");
+	router.push("/profile/cains/showcase");
 };
 const publicProfile = () => {
-  router.push("/profile/cains/public");
+	router.push("/profile/cains/public");
 };
 const loved = () => {
-  router.push("/profile/cains/loved");
+	router.push("/profile/cains/loved");
 };
 const privateProfile = () => {
-  router.push("/profile/cains/private");
+	router.push("/profile/cains/private");
 };
 </script>
 
-<style scoped>
-button {
-  background-color: #05df72;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  margin: 5px;
-  cursor: pointer;
-}
-</style>
+<style scoped></style>
