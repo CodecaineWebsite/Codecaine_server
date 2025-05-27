@@ -112,33 +112,16 @@ async function register() {
   success.value = "";
 
   try {
-    // 一、Firebase 註冊，取得使用者 firebase token
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email.value,
       password.value
     );
-    const token = await userCredential.user.getIdToken();
-
-    // 二、嘗試呼叫後端 /me 寫入資料庫
-    try {
-      await axios.get("http://localhost:3000/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch (dbErr) {
-      alert(
-        "註冊成功，但資料同步到後端失敗。請用剛剛的帳號登入一次，系統會自動修復。"
-      );
-      router.push("/login");
-    }
-
-    // 所有步驟都成功，導向登入
     success.value = "註冊成功！";
     alert(success.value); //alert最後可以再調整美觀的樣式
     router.push("/login");
     return
   } catch (e) {
-    // Firebase 註冊錯誤
     let msg = "";
     switch (e.code) {
       case "auth/email-already-in-use":
