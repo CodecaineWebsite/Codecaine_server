@@ -13,6 +13,8 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
+      cdns: [], 
+      links: [], 
     }
   ])
   const currentId = ref('123123123123');
@@ -28,7 +30,9 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
-      user_id: "0098837589"
+      user_id: "0098837589",
+      cdns: [], 
+      links: [], 
     },
     {
       id: "12312398i06o83",
@@ -41,9 +45,18 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
-      user_id: "0098837589"
+      user_id: "0098837589",
+      cdns: [], 
+      links: [], 
     }
   ])
+
+  const updateCDNs = (newCDNs) => {
+  currentWork.value[0].cdns = newCDNs
+}
+  const updateLinks = (newLinks) => {
+  currentWork.value[0].links = newLinks
+}
 
   // 回傳特定(指定id)作品
   const currentWork = computed(() => {
@@ -78,14 +91,21 @@ export const useWorkStore = defineStore('work', () => {
     const jsCode = currentWork.value[0].javascript + '\n//# sourceURL=user-code.js';
     const cssCode = currentWork.value[0].css;
     const htmlCode = currentWork.value[0].html;
+    const cdnTags = (currentWork.value[0].cdns || []).map(url => `<script src="${url}"><\/script>`).join('\n')
+    const linkTags = (currentWork.value[0].links || []).map(url => `<link rel="stylesheet" href="${url}"><\/link>`).join('\n')
   
     return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8" />
+      ${linkTags}
       <style>${cssCode}</style>
-      <script defer>
+    </head>
+    <body>
+      ${htmlCode}
+      ${cdnTags}
+      <script>
         // Override console methods to send logs to parent
         const originalConsole = {
           log: console.log,
@@ -151,9 +171,6 @@ export const useWorkStore = defineStore('work', () => {
   
         document.head.appendChild(script);
       <\/script>
-    </head>
-    <body>
-      ${htmlCode}
     </body>
     </html>
     `;
@@ -166,7 +183,9 @@ export const useWorkStore = defineStore('work', () => {
     handleCurrentIdChange,
     updateCurrentCode,
     toggleAutoPreview,
-    updatePreviewSrc
+    updatePreviewSrc,
+    updateCDNs,
+    updateLinks
   }
 })
   
