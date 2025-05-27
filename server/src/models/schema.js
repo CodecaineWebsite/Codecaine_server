@@ -1,5 +1,3 @@
-// 測試用schema
-
 import {
   integer,
   pgTable,
@@ -8,13 +6,13 @@ import {
   timestamp,
   boolean,
   primaryKey,
-  serial
+  serial,
 } from "drizzle-orm/pg-core";
 
 // 使用者資料表
 const usersTable = pgTable("users", {
   // id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  id: varchar("id", { length: 1000 }).primaryKey(),  // 欄位名稱依然是叫id
+  id: varchar("id", { length: 128 }).primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   username: varchar("username", { length: 50 }).notNull(),
   password_hash: text("password_hash").notNull(),
@@ -32,7 +30,7 @@ const usersTable = pgTable("users", {
 // 作品資料表 (我們需要為pens取個新名字, 像是 compounds 或 doses 之類的(????))
 const pensTable = pgTable("pens", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  user_id: integer("user_id").references(() => usersTable.id),
+  user_id: varchar("user_id", { length: 128 }).references(() => usersTable.id),
   html_code: text("html_code"),
   css_code: text("css_code"),
   js_code: text("js_code"),
@@ -47,7 +45,7 @@ const pensTable = pgTable("pens", {
 const favoritesTable = pgTable(
   "favorites",
   {
-    user_id: integer("user_id")
+    user_id: varchar("user_id", { length: 128 })
       .references(() => usersTable.id)
       .notNull(),
     pen_id: integer("pen_id")
@@ -66,7 +64,7 @@ const commentsTable = pgTable("comments", {
   pen_id: integer("pen_id")
     .references(() => pensTable.id)
     .notNull(),
-  user_id: integer("user_id")
+  user_id: varchar("user_id", { length: 128 })
     .references(() => usersTable.id)
     .notNull(),
   content: text("content").notNull(),
@@ -77,10 +75,10 @@ const commentsTable = pgTable("comments", {
 const followsTable = pgTable(
   "follows",
   {
-    follower_id: integer("follower_id")
+    follower_id: varchar("follower_id", { length: 128 })
       .references(() => usersTable.id)
       .notNull(), // 誰在追蹤
-    following_id: integer("following_id")
+    following_id: varchar("following_id", { length: 128 })
       .references(() => usersTable.id)
       .notNull(), // 被追蹤的人
     created_at: timestamp("created_at").defaultNow(),
@@ -101,7 +99,7 @@ const penTagsTable = pgTable(
   "pen_tags",
   {
     pen_id: integer("pen_id")
-      .references(() => pensTable.id, { onDelete: "cascade" }) 
+      .references(() => pensTable.id, { onDelete: "cascade" })
       .notNull(),
     tag_id: integer("tag_id")
       .references(() => tagsTable.id)
@@ -112,7 +110,6 @@ const penTagsTable = pgTable(
   })
 );
 
-
 export {
   usersTable,
   pensTable,
@@ -120,5 +117,5 @@ export {
   commentsTable,
   followsTable,
   tagsTable,
-  penTagsTable
+  penTagsTable,
 };

@@ -1,3 +1,5 @@
+// 目前登入方式整合firebase所以暫時作廢，但保留原始碼以備用
+
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
 import { usersTable } from "../models/schema.js";

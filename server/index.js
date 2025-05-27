@@ -40,11 +40,6 @@ app.use("/api/favorites", favoritesRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
 
-
-app.get("/api/test", (req, res) => {
-  res.json({ message: "First API Test From Vivi" });
-});
-
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
