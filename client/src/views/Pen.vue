@@ -36,12 +36,17 @@
   const isEditing = ref(false);
   const settingOptionVisible = ref(false);
   const isConsoleShow = ref(false);
+  const consoleRef = ref(null)
 
   provide('title', title)
 
   const handleConsoleClose = () => {
     isConsoleShow.value = false;
   };
+
+  const handleConsoleClear = () => {
+    consoleRef.value.consoleClear();
+  }
 
   const toggleConsole = ()=> {
     isConsoleShow.value = !isConsoleShow.value
@@ -532,7 +537,7 @@
               </h2>
             </div>
             <div class="flex gap-1">
-              <EditorSmallButton class="editorSmallButton-hover-bgc">Clear</EditorSmallButton>
+              <EditorSmallButton class="editorSmallButton-hover-bgc" @buttonClick="handleConsoleClear">Clear</EditorSmallButton>
               <EditorSmallButton class="editorSmallButton-hover-bgc" @buttonClick="handleConsoleClose">
                 <img :src="Close" alt="close button" class="w-[10px] h-[10px]">
               </EditorSmallButton>
@@ -542,7 +547,7 @@
             class="h-16 editor-bgc flex flex-col justify-between"
             :style="{ height: `${consoleHeight}px` }"
           >
-            <ConsolePreview/>
+            <ConsolePreview ref="consoleRef"/>
           </div>
         </div>
         
