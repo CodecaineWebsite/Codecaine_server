@@ -8,7 +8,7 @@ import { verifyDB } from "../middlewares/verifyDB.js";
 import { eq } from "drizzle-orm";
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your_default_secret"; // 請記得在 .env 設定
+
 
 /**
  * GET /api/auth/me
@@ -53,24 +53,6 @@ router.get("/me", verifyFirebase, verifyDB, async (req, res) => {
 	}
 });
 
-/**
- * GET /api/auth/profile
- * 使用 Firebase 驗證 ， 回傳目前使用者的資料（從資料庫）
- */
-router.get("/profile", verifyFirebase, verifyDB, async (req, res) => {
-	try {
-		const firebaseUid = req.userId;
-
-		const user = (await db.select().from(usersTable).where(eq(usersTable.id, firebaseUid)))[0];
-		if (!user) return res.status(404).json({ error: "找不到使用者" });
-
-		const { password_hash, ...safeUser } = user;
-		res.json(safeUser);
-	} catch (err) {
-		console.error("取得使用者資料失敗:", err);
-		res.status(500).json({ error: "伺服器錯誤" });
-	}
-});
 
 
 
@@ -83,7 +65,7 @@ router.get("/profile", verifyFirebase, verifyDB, async (req, res) => {
 
 
 
-
+// const JWT_SECRET = process.env.JWT_SECRET;
 /**
  * POST /api/auth/register
  * 註冊新使用者
