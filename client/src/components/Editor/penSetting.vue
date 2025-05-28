@@ -3,7 +3,7 @@ import { inject, ref, watch } from 'vue';
 import Arrow from '../../assets/arrow.svg';
 
 const title = inject('title')
-const emit = defineEmits(['close', 'update:cdns', 'update:links'])
+const emit = defineEmits(['close', 'update:cdns', 'update:links', 'update:autoSave', 'update:autoUpdatingPreview'])
 const tabs = [
   { label: 'HTML', key: 'html' },
   { label: 'CSS', key: 'css' },
@@ -26,11 +26,25 @@ const props = defineProps({
   links: {
     type: Array,
     default: () => []  
-  }
+  },
+  autoSave: {
+    type: Boolean,
+    default: true
+  },
+  autoUpdatingPreview: {
+    type: Boolean,
+    default: true
+  },
+
 });
 const cdns = ref([...props.cdns])
 const links = ref([...props.links])
-
+const toggleAutoSave = () => {
+  emit('update:autoSave', !props.autoSave)
+}
+const toggleAutoUpdatingPreview = () => {
+  emit('update:autoUpdatingPreview', !props.autoUpdatingPreview)
+}
 
 // watch(() => props.cdns, (newVal) => {
 //   cdns.value = [...newVal]
@@ -287,6 +301,38 @@ const removeLink = (index) => {
               <div class="relative">
                 <input type="text" class="w-full border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-500 placeholder-gray-500" />
               </div>
+            </div>
+          </div>
+          <div v-show="activeTab === 'behavior'" class="md:w-3/4 w-full flex flex-col gap-4">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+              <div class="flex flex-col">
+              <label for="autoSave">Auto Save</label>
+              <span class="text-xs align-text-bottom mb-4 mt-1">If active, Pens will autosave every 30 seconds after being saved once.</span>
+              </div>
+              <label class="py-2 hover:cursor-pointer">
+                <div class="relative inline-block w-13 h-7 ">
+                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoSave">
+                  <span
+                    class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
+                    ></span>
+                </div>
+              </label>
+              <span class="ml-2">{{ props.autoSave ? 'on' : 'off' }}</span>              
+            </div>
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+              <div class="flex flex-col">
+              <label for="autoUpdatingPreview">Auto-Updating Preview</label>
+              <span class="text-xs align-text-bottom mb-4 mt-1">If enabled, the preview panel updates automatically as you code. If disabled, use the "Run" button to update.</span>
+              </div>
+              <label class="py-2 hover:cursor-pointer">
+                <div class="relative inline-block w-13 h-7 ">
+                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoUpdatingPreview">
+                  <span
+                    class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
+                    ></span>
+                </div>
+              </label>
+              <span class="ml-2">{{ props.autoUpdatingPreview ? 'on' : 'off' }}</span>              
             </div>
           </div>
         </div>
