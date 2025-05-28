@@ -61,7 +61,7 @@ router.get("/:category", async (req, res) => {
       .offset(offset);
 
     res.json({
-      data: results,
+      results,
       total,
       totalPages,
       currentPage: page,
