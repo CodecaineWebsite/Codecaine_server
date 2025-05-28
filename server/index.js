@@ -18,7 +18,7 @@ const { Pool } = pg;
 dotenv.config();
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+	connectionString: process.env.DATABASE_URL,
 });
 const db = drizzle(pool);
 
@@ -26,9 +26,9 @@ const PORT = 3000;
 
 const app = express();
 app.use(
-  cors({
-    origin: "http://localhost:5173",
-  })
+	cors({
+		origin: "http://localhost:5173",
+	})
 );
 app.use(express.json());
 
@@ -39,12 +39,7 @@ app.use("/api/tags", tagsRouter);
 app.use("/api/favorites", favoritesRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
-app.use("/api/profile", profileRouter);
-
-app.get("/api/test", (req, res) => {
-  res.json({ message: "First API Test From Vivi" });
-});
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+	console.log(`Server running at http://localhost:${PORT}`);
 });
