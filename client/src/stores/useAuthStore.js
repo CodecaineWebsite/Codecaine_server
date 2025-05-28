@@ -15,16 +15,6 @@ export const useAuthStore = defineStore("auth", () => {
 		idToken.value = "";
 		localStorage.removeItem("idToken");
 	}
-	// 🔁 自動監聽並更新 token  測試中
-	onIdTokenChanged(auth, async (firebaseUser) => {
-		if (firebaseUser) {
-			user.value = firebaseUser;
-			const token = await firebaseUser.getIdToken(true); // 取得新 token
-			setToken(token);
-		} else {
-			clearToken();
-		}
-	});
 
 	return { idToken, user, setToken, clearToken };
 });
