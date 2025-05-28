@@ -12,7 +12,6 @@ import tagsRouter from "./src/routes/tags.js";
 import favoritesRouter from "./src/routes/favorites.js";
 import commentsRouter from "./src/routes/comments.js";
 import followsRouter from "./src/routes/follows.js";
-import profileRouter from "./src/routes/profile.js";
 
 const { Pool } = pg;
 dotenv.config();
