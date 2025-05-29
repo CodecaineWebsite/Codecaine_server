@@ -1,8 +1,8 @@
 <template>
 	<div>
 		<header
-			class="relative top-0 left-0 h-full transition-all duration-300 sidebar text-amber-50"
-			:class="{ 'w-[160px]': isSidebarOpen, 'w-0': !isSidebarOpen }"
+			class="relative top-0 left-0 h-full transition-all duration-400 sidebar text-amber-50 z-50 ease-in-out w-[160px]"
+			:class="isSidebarOpen ? 'translate-x-0' : ' -translate-x-[100%] '"
 		>
 			<div class="absolute top-4 -right-4 z-10 h-full">
 				<button
@@ -19,10 +19,7 @@
 				></div>
 			</div>
 
-			<div
-				class="h-full overflow-y-auto overflow-x-hidden"
-				:class="{ hidden: !isSidebarOpen }"
-			>
+			<div class="h-full overflow-y-auto overflow-x-hidden">
 				<div>
 					<div class="img { w-full h-12 px-3 relative justify-center }">
 						<h1
@@ -35,7 +32,7 @@
 					<div class="flex flex-col py-3 px-4 text-lg text-white">
 						<h2
 							class="cursor-pointer text-[9px] pb-3 relative create"
-							@click="Yourwork"
+							@click="goYourwork"
 						>
 							CREATE
 						</h2>
