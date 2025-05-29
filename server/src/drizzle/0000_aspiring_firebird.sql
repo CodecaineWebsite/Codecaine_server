@@ -1,34 +1,21 @@
 CREATE TABLE "comments" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"pen_id" integer NOT NULL,
-<<<<<<<< HEAD:server/src/drizzle/0000_superb_husk.sql
-	"user_id" varchar NOT NULL,
-========
 	"user_id" varchar(1000) NOT NULL,
->>>>>>>> 779b2f139804033797ee6dbfe1145a5855ee2c45:server/src/drizzle/0000_aspiring_firebird.sql
 	"content" text NOT NULL,
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE "favorites" (
-<<<<<<<< HEAD:server/src/drizzle/0000_superb_husk.sql
-	"user_id" varchar NOT NULL,
-========
 	"user_id" varchar(1000) NOT NULL,
->>>>>>>> 779b2f139804033797ee6dbfe1145a5855ee2c45:server/src/drizzle/0000_aspiring_firebird.sql
 	"pen_id" integer NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	CONSTRAINT "favorites_user_id_pen_id_pk" PRIMARY KEY("user_id","pen_id")
 );
 --> statement-breakpoint
 CREATE TABLE "follows" (
-<<<<<<<< HEAD:server/src/drizzle/0000_superb_husk.sql
-	"follower_id" varchar NOT NULL,
-	"following_id" varchar NOT NULL,
-========
 	"follower_id" varchar(1000) NOT NULL,
 	"following_id" varchar(1000) NOT NULL,
->>>>>>>> 779b2f139804033797ee6dbfe1145a5855ee2c45:server/src/drizzle/0000_aspiring_firebird.sql
 	"created_at" timestamp DEFAULT now(),
 	CONSTRAINT "follows_follower_id_following_id_pk" PRIMARY KEY("follower_id","following_id")
 );
@@ -41,11 +28,7 @@ CREATE TABLE "pen_tags" (
 --> statement-breakpoint
 CREATE TABLE "pens" (
 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "pens_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
-<<<<<<<< HEAD:server/src/drizzle/0000_superb_husk.sql
-	"user_id" varchar,
-========
 	"user_id" varchar(1000),
->>>>>>>> 779b2f139804033797ee6dbfe1145a5855ee2c45:server/src/drizzle/0000_aspiring_firebird.sql
 	"html_code" text,
 	"css_code" text,
 	"js_code" text,
