@@ -1,23 +1,8 @@
 <script setup>
-  import { ref, watch } from 'vue';
+  import { ref, watch, onMounted } from 'vue';
   import { useWorkStore } from '@/stores/workStore';
   const workStore = useWorkStore();
-  const { updatePreviewSrc }= workStore;
-  
-  const props = defineProps({
-    html:{
-      type: String
-    },
-    css:{
-      type: String
-    },
-    javascript:{
-      type: String
-    },
-    isAutoPreview: {
-      type: Boolean,
-    }
-  })
+  const { currentWork, updatePreviewSrc }= workStore;
 
   // debounce
   function debounce(func, wait = 1000) {
@@ -40,17 +25,17 @@
     previewFrame.value.srcdoc = updatePreviewSrc()
   }, 1000)
 
-  watch(
-    [() => props.html, () => props.css, () => props.javascript],
-    () => {
-      if (props.isAutoPreview) updateIframe()
-    }
-  )
+  onMounted(() => {
+   updateIframe()
+  });
 
   // 監聽是否啟用自動預覽
-  watch(() => props.isAutoPreview, (val) => {
-    if (val) updateIframe()
-  }, { immediate: true })
+  watch(
+    () => [currentWork.html, currentWork.css, currentWork.javascript],
+    () => {
+      if (currentWork.isAutoPreview) updateIframe()
+    }
+  )
 
 </script>
 <template>
