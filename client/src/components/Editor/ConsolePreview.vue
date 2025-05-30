@@ -3,10 +3,6 @@
   // 控制台輸出的狀態
   const logs = ref([])
 
-  const consoleClear = () => {
-    logs.value = []
-  }
-
   const handleMessage = (e) => {
     if (e.data?.type === 'log') {
       logs.value.push({
@@ -16,21 +12,35 @@
     }
   }
 
+  const consoleClear = () => {
+    logs.value = []
+  }
   defineExpose({ consoleClear });
   // 監聽 message 事件
   onMounted(() => {
     window.addEventListener('message', handleMessage)
   })
-
   onUnmounted(() => {
     window.removeEventListener('message', handleMessage)
   })
 
+  const consoleContainer = ref(null)
+  watch(
+    () => logs.value.length,
+    async () => {
+      await nextTick(); // 等待 DOM 更新
+      const el = consoleContainer.value;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
+    }
+  );
+
 </script>
 
 <template>
-  <div class="output overflow-y-auto font-size-15 flex-1">
-    <ul class="space-y-1">
+  <div class="output overflow-y-auto font-size-15 flex-1" ref="consoleContainer">
+    <ul class="space-y-1" >
       <li
         v-for="(log, index) in logs"
         :key="index"
