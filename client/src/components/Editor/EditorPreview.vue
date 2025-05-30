@@ -54,6 +54,6 @@
 
 </script>
 <template>
-  <iframe ref="previewFrame" sandbox="allow-scripts" class="preview h-full w-full"></iframe>
+  <iframe ref="previewFrame" sandbox="allow-scripts" class="h-full w-full"></iframe>
 </template>
 

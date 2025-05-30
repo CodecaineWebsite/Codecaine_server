@@ -1,5 +1,12 @@
 <template>
+<<<<<<< HEAD
 	<div class="layout" :style="{ gridTemplateColumns: layoutColumns }">
+=======
+	<div
+		class="layout transition-all duration-400 ease-in-out"
+		:style="{ gridTemplateColumns: layoutColumns }"
+	>
+>>>>>>> aa9bbf57edf88d780bc737f35a6cf067405f1251
 		<MainSidebar class="sidebar" @toggle="toggleSidebar" />
 		<SubHeader class="header" />
 		<RouterView v-slot="{ Component }">

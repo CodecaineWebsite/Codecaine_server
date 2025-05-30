@@ -16,6 +16,7 @@
   import EditorSmallButton from '../components/Editor/EditorSmallButton.vue';
   import Editor from '@/components/Editor/Editor.vue';
   import EditorPreview from '@/components/Editor/EditorPreview.vue';
+  import ConsolePreview from '../components/Editor/ConsolePreview.vue'
 
   import { storeToRefs } from 'pinia'
   import { useWorkStore } from '@/stores/workStore';
@@ -94,12 +95,17 @@ watch(links, (newLinks) => {
   const isEditing = ref(false);
   const settingOptionVisible = ref(false);
   const isConsoleShow = ref(false);
+  const consoleRef = ref(null)
 
   provide('title', title)
 
   const handleConsoleClose = () => {
     isConsoleShow.value = false;
   };
+
+  const handleConsoleClear = () => {
+    consoleRef.value.consoleClear();
+  }
 
   const toggleConsole = ()=> {
     isConsoleShow.value = !isConsoleShow.value
@@ -284,26 +290,30 @@ watch(links, (newLinks) => {
     }
   })
 
+  function onPointerMove(e) {
+    if (isDraggingConsole.value) {
+      handleConsoleDrag(e)
+    } else if (isDraggingEditor.value) {
+      handleEditorDrag(e)
+    } else if (isDraggingColumn.value) {
+      handleColumnDrag(e)
+    }
+  }
+
+  function onPointerUp() {
+    stopConsoleDrag()
+    stopEditorDrag()
+    stopColumnDrag()
+  }
+
   onMounted(() => {
-    window.addEventListener('pointermove', handleConsoleDrag)
-    window.addEventListener('pointerup', stopConsoleDrag)
-
-    window.addEventListener('pointermove', handleEditorDrag)
-    window.addEventListener('pointerup', stopEditorDrag)
-
-    window.addEventListener('pointermove', handleColumnDrag)
-    window.addEventListener('pointerup', stopColumnDrag)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
   })
 
   onUnmounted(() => {
-    window.removeEventListener('pointermove', handleConsoleDrag)
-    window.removeEventListener('pointerup', stopConsoleDrag)
-
-    window.removeEventListener('pointermove', handleEditorDrag)
-    window.removeEventListener('pointerup', stopEditorDrag)
-
-    window.removeEventListener('pointermove', handleColumnDrag)
-    window.removeEventListener('pointerup', stopColumnDrag)
+    window.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('pointerup', onPointerUp)
   })
 
   const updateCode = (language, newCode) => {
@@ -478,12 +488,12 @@ watch(links, (newLinks) => {
         ref="editorWrapperRef"
         class="flex overflow-hidden"
         :style="selectedLayout.id === 'center'
-          ? { height: `${editorWrapperSize}px` }
-          : { width: `${editorWrapperSize}px` }"
+          ? { height: editorWrapperSize + 'px' }
+          : { width: editorWrapperSize + 'px' }"
         :class="selectedLayout.id === 'center' ? 'flex-row' : 'flex-col'"
       >
         <div
-          class="resizer editor-resizer-border-color editor-bgc"
+          class="resizer editor-resizer-border-color editor-bgc "
           :class="selectedLayout.id === 'center' ? 'w-4 border-x' : 'h-4 border-y'"
         ></div>
         <div :style="{ flexBasis: sizes[0] + '%', minWidth: '0px' }" class="relative">
@@ -565,10 +575,10 @@ watch(links, (newLinks) => {
         @pointerdown="startEditorDrag"
       ></div>
       <!-- preview -->
-      <div class="flex-1 overflow-hidden flex flex-col bg-white" ref="previewContainer">
-        <div class="overflow-auto flex-none">
+      <div class="flex-1 overflow-hidden flex flex-col justify-between bg-white" ref="previewContainer">
+        <div class="overflow-auto flex-none shrink min-w-0 min-h-0 w-full h-full">
           <!-- Preview iframe -->
-          <EditorPreview :html="html" :css="css" :javascript="javascript" :isAutoPreview="isAutoPreview" class="shrink min-w-0 min-h-0"/>
+          <EditorPreview :html="html" :css="css" :javascript="javascript" :isAutoPreview="isAutoPreview"/>
         </div>
         <div v-show="isConsoleShow">
           <div
@@ -581,17 +591,17 @@ watch(links, (newLinks) => {
               </h2>
             </div>
             <div class="flex gap-1">
-              <EditorSmallButton class="editorSmallButton-hover-bgc">Clear</EditorSmallButton>
+              <EditorSmallButton class="editorSmallButton-hover-bgc" @buttonClick="handleConsoleClear">Clear</EditorSmallButton>
               <EditorSmallButton class="editorSmallButton-hover-bgc" @buttonClick="handleConsoleClose">
                 <img :src="Close" alt="close button" class="w-2.5 h-2.5">
               </EditorSmallButton>
             </div>
           </div>
           <div
-            class="h-16 editor-bgc"
+            class="h-16 editor-bgc flex flex-col justify-between"
             :style="{ height: `${consoleHeight}px` }"
           >
-          
+            <ConsolePreview ref="consoleRef"/>
           </div>
         </div>
         

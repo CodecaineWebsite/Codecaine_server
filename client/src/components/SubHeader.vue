@@ -117,6 +117,7 @@
               </li>
 
               <hr class="border-gray-700 my-1 mx-4" />
+              <hr class="border-gray-700 my-1 mx-4" />
 
               <li class="flex items-center px-4 py-2 hover:bg-gray-700">
                 <i class="fas fa-pen mr-2 w-4 text-gray-400"></i>
@@ -153,7 +154,8 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/useAuthStore";
-import { auth } from "@/config/firebase";
+import { signOut } from "firebase/auth";
+import { auth } from "../config/firebase";
 const authStore = useAuthStore();
 const route = useRoute();
 
@@ -167,7 +169,8 @@ const signUp = () => {
 const login = () => {
   router.push("/login");
 };
-const handleLogout = () => {
+const handleLogout = async () => {
+  await signOut(auth);
   authStore.clearToken();
   router.push("/");
 };
