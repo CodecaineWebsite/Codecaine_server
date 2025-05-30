@@ -118,7 +118,7 @@ router.put(
         console.warn("刪除舊頭像失敗:", err);
       }
 
-      const { password_hash, ...safeUser } = result[0];
+      const { password_hash, ...safeUser } = updatedUser[0];
       res.json({ message: "更新成功", user: safeUser });
     } catch (err) {
       console.error("更新使用者失敗：", err);
