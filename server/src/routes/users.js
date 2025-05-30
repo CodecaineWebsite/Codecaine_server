@@ -4,6 +4,7 @@ import { usersTable, pensTable, followsTable } from "../models/schema.js";
 import { eq } from "drizzle-orm";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
 import { uploadImageToS3 } from "../utils/uploadToS3.js";
+import { deleteFromS3 } from "../utils/deleteFromS3.js";
 import { upload } from "../config/s3.js";
 
 const router = Router();
@@ -111,12 +112,7 @@ router.put(
 
       try {
         if (user.profile_image_key && user.profile_image_key !== fileKey) {
-          await s3.send(
-            new DeleteObjectCommand({
-              Bucket: BUCKET_NAME,
-              Key: user.profile_image_key,
-            })
-          );
+          await deleteFromS3(user.profile_image_key, BUCKET_NAME);
         }
       } catch (err) {
         console.warn("刪除舊頭像失敗:", err);
