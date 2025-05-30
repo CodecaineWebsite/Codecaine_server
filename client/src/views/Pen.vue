@@ -21,10 +21,20 @@
   import { storeToRefs } from 'pinia'
   import { useWorkStore } from '@/stores/workStore';
 
+  import { useRoute } from 'vue-router'
+
+  const route = useRoute();
   const workStore = useWorkStore()
-  const { updateCurrentCode }= workStore;
-  const { currentWork } = storeToRefs(workStore);
-  const { html, css, javascript, isAutoPreview } = toRefs(currentWork.value[0])
+  const { updateCurrentCode, handleCurrentIdChange }= workStore;
+  const { currentWork } = storeToRefs(workStore)
+
+  handleCurrentIdChange(route.params.id)
+
+  const htmlCode = ref(currentWork.value.html);
+  const cssCode = ref(currentWork.value.css);
+  const javascriptCode = ref(currentWork.value.javascript);
+  const isAutoPreview = ref(currentWork.value.isAutoPreview);
+
 	
 	const isLoggedIn = ref(false);
   const isConsoleDragging = ref(false);
@@ -38,12 +48,12 @@
   const links = ref([])
 
   watch(cdns, (newCDNs) => {
-  workStore.updateCDNs(newCDNs)
-}, { deep: true })
+    workStore.updateCDNs(newCDNs)
+  }, { deep: true })
 
-watch(links, (newLinks) => {
-  workStore.updateLinks(newLinks)
-}, { deep: true })
+  watch(links, (newLinks) => {
+    workStore.updateLinks(newLinks)
+  }, { deep: true })
 
   const startConsoleDragging = () => {
     isConsoleDragging.value = true
@@ -513,7 +523,7 @@ watch(links, (newLinks) => {
               </EditorSmallButton>
             </div>
           </div>
-          <Editor :language="'html'" :code="html" @update:code="newCode => updateCode('html', newCode)"/>
+          <Editor :language="'html'" :code="htmlCode" @update:code="newCode => updateCode('html', newCode)"/>
         </div>
 
         <div
@@ -525,7 +535,7 @@ watch(links, (newLinks) => {
         <div :style="{ flexBasis: sizes[1] + '%', minWidth: '0px' }" class="relative">
           <div class="flex justify-between items-center min-w-3xs overflow-hidden editor-bgc">
             <h2 class="py-2 px-3 font-bold bg-[#1C1E22] text-[#ABAEBD] border-t-3 editor-resizer-border-color flex items-center gap-2">
-              <img :src="CSSIcon" alt="HTML" class="w-[15px] h-[15px]">
+              <img :src="CSSIcon" alt="CSS" class="w-[15px] h-[15px]">
               <div>
                 CSS
               </div>
@@ -539,7 +549,7 @@ watch(links, (newLinks) => {
               </EditorSmallButton>
             </div>
           </div>
-          <Editor :language="'css'" :code="css" @update:code="newCode => updateCode('css', newCode)"/>
+          <Editor :language="'css'" :code="cssCode" @update:code="newCode => updateCode('css', newCode)"/>
         </div>
 
         <div
@@ -551,7 +561,7 @@ watch(links, (newLinks) => {
         <div :style="{ flexBasis: sizes[2] + '%', minWidth: '0px' }" class="relative">
           <div class="flex justify-between items-center min-w-3xs overflow-hidden editor-bgc">
             <h2 class="py-2 px-3 font-bold bg-[#1C1E22] text-[#ABAEBD] border-t-3 editor-resizer-border-color flex items-center gap-2">
-              <img :src="JSIcon" alt="HTML" class="w-[15px] h-[15px]">
+              <img :src="JSIcon" alt="JavaScript" class="w-[15px] h-[15px]">
               <div>
                 JS
               </div>
@@ -565,7 +575,7 @@ watch(links, (newLinks) => {
               </EditorSmallButton>
             </div>
           </div>
-          <Editor :language="'javascript'" :code="javascript" @update:code="newCode => updateCode('javascript', newCode)"/>
+          <Editor :language="'javascript'" :code="javascriptCode" @update:code="newCode => updateCode('javascript', newCode)"/>
         </div>
 
       </div>
@@ -578,7 +588,7 @@ watch(links, (newLinks) => {
       <div class="flex-1 overflow-hidden flex flex-col justify-between bg-white" ref="previewContainer">
         <div class="overflow-auto flex-none shrink min-w-0 min-h-0 w-full h-full">
           <!-- Preview iframe -->
-          <EditorPreview :html="html" :css="css" :javascript="javascript" :isAutoPreview="isAutoPreview"/>
+          <EditorPreview :html="htmlCode" :css="cssCode" :javascript="javascriptCode" :isAutoPreview="isAutoPreview"/>
         </div>
         <div v-show="isConsoleShow">
           <div
