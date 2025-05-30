@@ -15,7 +15,6 @@ const usersTable = pgTable("users", {
   id: varchar("id", { length: 128 }).primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   username: varchar("username", { length: 50 }).notNull(),
-  password_hash: text("password_hash").notNull(),
   is_pro: boolean("is_pro").default(false),
   profile_image_url: text("profile_image_url"), // 存網址
   profile_image_key: varchar("profile_image_key",{length:255}),
