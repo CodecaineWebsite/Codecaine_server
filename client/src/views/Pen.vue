@@ -101,7 +101,8 @@
   const saveOptionVisible = ref(false);
   const layoutOptionVisible = ref(false);
   const bookmarkVisible = ref(false);
-  const title = ref("TITLE");
+  const title = ref(currentWork.value.title);
+  const userName = ref(currentWork.value.user_name);
   const isEditing = ref(false);
   const settingOptionVisible = ref(false);
   const isConsoleShow = ref(false);
@@ -344,13 +345,13 @@
               class="bg-transparent border-b border-white text-white outline-none" />
           </template>
           <template v-else>
-            <span class="text-white font-black">{{ title }}</span>
+            <span class="text-white font-black">{{ title.length? title : "Untitled" }}</span>
           </template>
           <button type="button" class="ml-1" @click="toggleEdit">
             <img :src="Edit" alt="" class="w-[13px] h-[13px] hover:cursor-pointer" />
           </button>
           <div>
-            <a href="#" class="text-sm text-white">Author</a>
+            <a href="#" class="text-sm text-gray-400">{{ userName ? userName : "Captain Anonymous" }}</a>
           </div>
         </div>
       </div>
