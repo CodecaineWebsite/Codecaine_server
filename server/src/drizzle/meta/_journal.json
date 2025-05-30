@@ -8,6 +8,20 @@
       "when": 1748164193438,
       "tag": "0000_aspiring_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1748593514844,
+      "tag": "0001_amazing_the_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748594960815,
+      "tag": "0002_real_orphan",
+      "breakpoints": true
     }
   ]
 }
