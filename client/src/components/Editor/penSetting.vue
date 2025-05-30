@@ -305,7 +305,7 @@ const removeLink = (index) => {
               </div>
               <label class="py-2 hover:cursor-pointer">
                 <div class="relative inline-block w-13 h-7 ">
-                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoSave" v-model="currentWork.isAutoSave"/>
+                  <input type="checkbox" class="opacity-0 w-0 h-0 peer" @click="toggleAutoSave" v-model="currentWork.isAutoSave"/>
                   <span
                     class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
                     ></span>
@@ -320,7 +320,7 @@ const removeLink = (index) => {
               </div>
               <label class="py-2 hover:cursor-pointer">
                 <div class="relative inline-block w-13 h-7 ">
-                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoPreview" v-model="currentWork.isAutoPreview"/>
+                  <input type="checkbox" class="opacity-0 w-0 h-0 peer" @click="toggleAutoPreview" v-model="currentWork.isAutoPreview"/>
                   <span
                     class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
                     ></span>
