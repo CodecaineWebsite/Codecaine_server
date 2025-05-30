@@ -2,6 +2,13 @@ import { Router } from "express";
 import db from "../config/db.js";
 import { usersTable, pensTable, followsTable } from "../models/schema.js";
 import { eq } from "drizzle-orm";
+import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import {
+  deleteFile,
+  uploadFile,
+  getFiles,
+} from "../controllers/useController.js";
+import { upload } from "../config/s3.js";
 
 const router = Router();
 
@@ -86,5 +93,21 @@ router.get("/:id/followers", async (req, res) => {
     .where(eq(followsTable.following_id, id));
   res.json(followers.map((f) => f.user_id));
 });
+
+// 頭像上傳測試API
+
+// 上傳檔案
+router.post(
+  "/upload",
+  verifyFirebase,
+  upload.single("profile_image"),
+  uploadFile
+);
+
+// 拿全部檔案
+router.get("/files", getFiles);
+
+// 刪除某一個檔案
+router.delete("/files/:key", deleteFile);
 
 export default router;
