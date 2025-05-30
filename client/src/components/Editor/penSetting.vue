@@ -1,9 +1,11 @@
 <script setup>
 import { inject, ref, watch } from 'vue';
 import Arrow from '../../assets/arrow.svg';
+import { useWorkStore } from '@/stores/workStore';
+import { storeToRefs } from 'pinia'
 
 const title = inject('title')
-const emit = defineEmits(['close', 'update:cdns', 'update:links', 'update:autoSave', 'update:autoUpdatingPreview'])
+const emit = defineEmits(['close', 'update:cdns', 'update:links'])
 const tabs = [
   { label: 'HTML', key: 'html' },
   { label: 'CSS', key: 'css' },
@@ -15,6 +17,10 @@ const tabs = [
   { label: 'Template', key: 'template' },
   { label: 'Screenshot', key: 'screenshot' },
 ]
+const workStore = useWorkStore()
+const { currentWork } = storeToRefs(workStore)
+const { toggleAutoSave, toggleAutoPreview } = workStore;
+console.log(currentWork.value.isAutoSave);
 const activeTab = ref('html')
 const cdnInput = ref('')
 const linkInput = ref('')
@@ -27,24 +33,12 @@ const props = defineProps({
     type: Array,
     default: () => []  
   },
-  autoSave: {
-    type: Boolean,
-    default: true
-  },
-  autoUpdatingPreview: {
-    type: Boolean,
-    default: true
-  },
+
 
 });
 const cdns = ref([...props.cdns])
 const links = ref([...props.links])
-const toggleAutoSave = () => {
-  emit('update:autoSave', !props.autoSave)
-}
-const toggleAutoUpdatingPreview = () => {
-  emit('update:autoUpdatingPreview', !props.autoUpdatingPreview)
-}
+
 
 // watch(() => props.cdns, (newVal) => {
 //   cdns.value = [...newVal]
@@ -311,13 +305,13 @@ const removeLink = (index) => {
               </div>
               <label class="py-2 hover:cursor-pointer">
                 <div class="relative inline-block w-13 h-7 ">
-                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoSave">
+                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoSave" v-model="currentWork.isAutoSave">
                   <span
                     class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
                     ></span>
                 </div>
               </label>
-              <span class="ml-2">{{ props.autoSave ? 'on' : 'off' }}</span>              
+              <span class="ml-2">{{ currentWork.isAutoSave ? 'on' : 'off' }}</span>              
             </div>
             <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="flex flex-col">
@@ -326,13 +320,13 @@ const removeLink = (index) => {
               </div>
               <label class="py-2 hover:cursor-pointer">
                 <div class="relative inline-block w-13 h-7 ">
-                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoUpdatingPreview">
+                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoPreview" v-model="currentWork.isAutoPreview">
                   <span
                     class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
                     ></span>
                 </div>
               </label>
-              <span class="ml-2">{{ props.autoUpdatingPreview ? 'on' : 'off' }}</span>              
+              <span class="ml-2">{{ currentWork.isAutoPreview ? 'on' : 'off' }}</span>              
             </div>
           </div>
         </div>

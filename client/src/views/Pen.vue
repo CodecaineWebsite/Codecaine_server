@@ -8,7 +8,7 @@
   import ArrowWhite from '../assets/arrow-white.svg';
   import Settings from '../assets/settings.svg';
   import Layout from '../assets/layout.svg';
-  import penSetting from '../components/Editor/penSetting.vue';
+  import PenSetting from '../components/Editor/PenSetting.vue';
   import Close from '../assets/close.svg';
   import HTMLIcon from '../assets/html.svg';
   import CSSIcon from '../assets/css.svg';
@@ -21,16 +21,15 @@
   import { useWorkStore } from '@/stores/workStore';
 
   const workStore = useWorkStore()
-  const { updateCurrentCode }= workStore;
-  const { currentWork } = storeToRefs(workStore);
-  const { html, css, javascript, isAutoPreview } = toRefs(currentWork.value[0])
+  const { updateCurrentCode, toggleAutoSave, toggleAutoPreview  }= workStore; //放function
+  const { currentWork } = storeToRefs(workStore); //放資料
+  const { html, css, javascript, isAutoPreview } = toRefs(currentWork.value)
 	
-	const isLoggedIn = ref(false);
+	const isLoggedIn = ref(true);
   const isConsoleDragging = ref(false);
   const consoleHeight = ref(200);  // 預設高度 px
   const previewContainer = ref(null);
   const navListVisible = ref(false);
-  const autoSaveEnabled = ref(false)
 
 
   const cdns = ref([
@@ -42,9 +41,9 @@
   workStore.updateCDNs(newCDNs)
 }, { deep: true })
 
-watch(links, (newLinks) => {
-  workStore.updateLinks(newLinks)
-}, { deep: true })
+  watch(links, (newLinks) => {
+    workStore.updateLinks(newLinks)
+  }, { deep: true })
 
   const startConsoleDragging = () => {
     isConsoleDragging.value = true
@@ -360,39 +359,52 @@ watch(links, (newLinks) => {
             </button>
             <div v-if="saveOptionVisible" class="fixed inset-0 transition-opacity duration-200" @click="toggleSave"></div>
             <ul 
-              v-if="saveOptionVisible" class="absolute z-50 flex flex-col rounded-sm top-12 right-0 bg-[#2C303A] text-white w-65 justify-around border-4 border-gray-800 px-5"
+              v-if="saveOptionVisible" class="absolute z-50 flex flex-col rounded-sm top-12 right-0 bg-[#2C303A] text-white w-80 justify-around border-4 border-gray-800 px-5"
             >
               <label class="flex py-2  justify-between border-b border-gray-600 hover:cursor-pointer">
                 <span>Private</span>
-                <div class="relative inline-block w-13 h-7 ">
-                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer">
-                  <span
-                    class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"></span>
+                <div>
+                  <div class="relative inline-block w-13 h-7 ">
+                    <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer">
+                    <span
+                      class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"></span>
+                  </div>
+                  <span class="ml-2">off</span>  
                 </div>
               </label>
               <label class="flex py-2 justify-between border-b border-gray-600 hover:cursor-pointer">
                 <span>Template</span>
-                <div class="relative inline-block w-13 h-7 ">
-                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer">
-                  <span
+                <div>
+                  <div class="relative inline-block w-13 h-7 ">
+                    <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer">
+                    <span
                     class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"></span>
+                  </div>
+                  <span class="ml-2">off</span>   
                 </div>
               </label>
-              <label class="flex py-2 justify-between border-b border-gray-600 hover:cursor-pointer">
+              <label class="flex py-2 justify-between border-b border-gray-600 hover:cursor-pointer" >
                 <span>Auto Save</span>
-                <div class="relative inline-block w-13 h-7 ">
-                  <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer">
-                  <span
+                <div>
+                  <div class="relative inline-block w-13 h-7 ">
+                    <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer" @click="toggleAutoSave" v-model="currentWork.isAutoSave" >
+                    <span
                     class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"></span>
+                  </div>
+                  <span class="ml-2">{{ currentWork.isAutoSave ? 'on' : 'off' }}</span>              
                 </div>
+                
               </label>
               <label class="flex py-2 justify-between hover:cursor-pointer">
                 <span>Format Code on Save</span>
+                <div>
                 <div class="relative inline-block w-13 h-7 ">
                   <input type="checkbox" name="" id="" class="opacity-0 w-0 h-0 peer">
                   <span
                     class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
                     ></span>
+                </div>
+                <span class="ml-2">off</span>  
                 </div>
               </label>
             </ul>
@@ -423,7 +435,7 @@ watch(links, (newLinks) => {
           </div>
         </button>
         <div v-if="settingOptionVisible" class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-200" @click="toggleSetting"></div>
-        <penSetting :autoSave="autoSaveEnabled" @update:autoSave="autoSaveEnabled = $event" :autoUpdatingPreview="autoUpdatingPreview" v-if="settingOptionVisible" v-model:cdns="cdns" v-model:links="links" @close="toggleSetting" class="z-50" />
+        <penSetting v-if="settingOptionVisible" v-model:cdns="cdns" v-model:links="links" @close="toggleSetting" class="z-50" />
 
         <div class="relative md:flex hidden">
           <button type="button" @click.prevent="toggleLayout" class="text-[aliceblue] rounded px-4 py-2 bg-[#444857] editorSmallButton-hover-bgc  hover:cursor-pointer">
