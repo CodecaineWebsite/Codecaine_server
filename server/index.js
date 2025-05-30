@@ -17,7 +17,7 @@ const { Pool } = pg;
 dotenv.config();
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+	connectionString: process.env.DATABASE_URL,
 });
 const db = drizzle(pool);
 
@@ -25,9 +25,9 @@ const PORT = 3000;
 
 const app = express();
 app.use(
-  cors({
-    origin: "http://localhost:5173",
-  })
+	cors({
+		origin: "http://localhost:5173",
+	})
 );
 app.use(express.json());
 
@@ -40,5 +40,5 @@ app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+	console.log(`Server running at http://localhost:${PORT}`);
 });
