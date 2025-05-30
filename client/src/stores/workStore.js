@@ -13,6 +13,8 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
+      cdns: [], 
+      links: [], 
     }
   ])
   const currentId = ref('123123123123');
@@ -28,7 +30,9 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
-      user_id: "0098837589"
+      user_id: "0098837589",
+      cdns: [], 
+      links: [], 
     },
     {
       id: "12312398i06o83",
@@ -41,9 +45,18 @@ export const useWorkStore = defineStore('work', () => {
       viewMode: "center",
       createAt: new Date(),
       lastSavedTime: null,
-      user_id: "0098837589"
+      user_id: "0098837589",
+      cdns: [], 
+      links: [], 
     }
   ])
+
+  const updateCDNs = (newCDNs) => {
+  currentWork.value[0].cdns = newCDNs
+}
+  const updateLinks = (newLinks) => {
+  currentWork.value[0].links = newLinks
+}
 
   // 回傳特定(指定id)作品
   const currentWork = computed(() => {
@@ -74,66 +87,95 @@ export const useWorkStore = defineStore('work', () => {
   }
 
   // 更新作品Preview function
-  // const updatedPreview = ref('');
-  const iframeMessage = ref('');
   const updatePreviewSrc = () => {
-    console.log()
+    const jsCode = currentWork.value[0].javascript + '\n//# sourceURL=user-code.js';
+    const cssCode = currentWork.value[0].css;
+    const htmlCode = currentWork.value[0].html;
+    const cdnTags = (currentWork.value[0].cdns || []).map(url => `<script src="${url}"><\/script>`).join('\n')
+    const linkTags = (currentWork.value[0].links || []).map(url => `<link rel="stylesheet" href="${url}"><\/link>`).join('\n')
+  
     return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <style>${currentWork.value[0].css}</style>
-      </head>
-      <body>
-        ${currentWork.value[0].html}
-        <script>
-          const originalLog = console.log;
-          const originalError = console.error;
-          const originalWarn = console.warn;
-
-          // 覆寫 console 方法，將輸出傳回父頁面
-          ['log', 'error', 'warn'].forEach(method => {
-            console[method] = (...args) => {
-              window.parent.postMessage({
-                type: 'log',
-                message: args.map(arg =>
-                  typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-                ).join(' '),
-                level: method
-              }, '*');
-              originalLog(...args);
-            };
-          });
-
-          // 設置執行超時機制
-          const timeout = setTimeout(() => {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      ${linkTags}
+      <style>${cssCode}</style>
+    </head>
+    <body>
+      ${htmlCode}
+      ${cdnTags}
+      <script>
+        // Override console methods to send logs to parent
+        const originalConsole = {
+          log: console.log,
+          error: console.error,
+          warn: console.warn,
+          info: console.info
+        };
+  
+        ['log', 'error', 'warn', 'info'].forEach(method => {
+          console[method] = (...args) => {
             window.parent.postMessage({
               type: 'log',
-              message: '執行超時，程式碼停止。',
-              level: 'error'
+              message: args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+              ).join(' '),
+              level: method
             }, '*');
-            throw new Error('程式碼執行超時');
-          }, 5000); // 設定5秒為超時時間（可以根據需要調整）
+            originalConsole[method](...args);
+          };
+        });
+  
+        // Global error handler
+        window.onerror = function(message, source, lineno, colno, error) {
+          const errorMsg = error
+            ? \`\${error.name}: \${error.message}\`
+            : message;
+          window.parent.postMessage({
+            type: 'log',
+            message: \`\${errorMsg}\\nSource: \${source}\\nLine: \${lineno}, Column: \${colno}\`,
+            level: 'error'
+          }, '*');
+          return true;
+        };
+  
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+          window.parent.postMessage({
+            type: 'log',
+            message: 'Unhandled Promise rejection: ' + (event.reason?.stack || event.reason),
+            level: 'error'
+          }, '*');
+        });
+  
+        // Inject user code via Blob script
+        const code = ${JSON.stringify(jsCode)};
+        const blob = new Blob([code], { type: 'application/javascript' });
+        const blobUrl = URL.createObjectURL(blob);
+  
+        const script = document.createElement('script');
+        script.src = blobUrl;
+  
+        script.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+        };
+  
+        script.onerror = () => {
+          window.parent.postMessage({
+            type: 'log',
+            message: 'Script loading error',
+            level: 'error'
+          }, '*');
+        };
+  
+        document.head.appendChild(script);
+      <\/script>
+    </body>
+    </html>
+    `;
+  };
 
-          try {
-            const userCode = ${JSON.stringify(currentWork.value[0].javascript)};
-            const customConsole = console;
-            const func = new Function('console', userCode);
-            func(customConsole);
-          } catch (err) {
-            window.parent.postMessage({
-              type: 'log',
-              message: err.stack || err.message || String(err),
-              level: 'error'
-            }, '*');
-          } finally {
-            clearTimeout(timeout); // 如果程式碼正常結束，清除超時計時器
-          }
-        <\/script>
-      </body>
-      </html>
-    `
-  }
 
   return { 
     currentWork,
@@ -141,12 +183,13 @@ export const useWorkStore = defineStore('work', () => {
     handleCurrentIdChange,
     updateCurrentCode,
     toggleAutoPreview,
-    updatePreviewSrc
+    updatePreviewSrc,
+    updateCDNs,
+    updateLinks
   }
 })
   
   
-
   // todo:
   // fetch取得作品function 未來的works資料取得
   // 儲存作品function
