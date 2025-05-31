@@ -17,7 +17,7 @@
             v-if="activeTab === 'Collections'"
             class="bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600 rounded-md flex items-center space-x-2"
           >
-            <NewCollectionIcon
+            <CollectionIcon
               class="fill-current w-3 h-3"
               :class="{ 'text-white': activeTab === 'Collections', 'text-gray-400': activeTab !== 'Collections' }"
             />
@@ -27,7 +27,7 @@
             v-else-if="activeTab === 'Pens' || activeTab === 'Deleted'"
             class="bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600 rounded-md flex items-center space-x-2"
           >
-            <NewPenIcon 
+            <PensIcon 
               class="fill-current w-4 h-4"
               :class="{ 'text-white': activeTab === 'Pens' || activeTab === 'Deleted', 'text-gray-400': activeTab !== 'Pens' && activeTab !== 'Deleted' }"
             />
@@ -201,14 +201,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-import NewPenIcon from '@/components/icons/NewPenIcon.vue'
+import PensIcon from '@/components/icons/PensIcon.vue'
 import FiltersIcon from '@/components/icons/FiltersIcon.vue'
 import TagsIcon from '@/components/icons/TagsIcon.vue'
 import GridIcon from '@/components/icons/GridIcon.vue'
 import ListIcon from '@/components/icons/ListIcon.vue'
 import DescIcon from '@/components/icons/DescIcon.vue'
 import AscIcon from '@/components/icons/AscIcon.vue'
-import NewCollectionIcon from '@/components/icons/NewCollectionIcon.vue'
+import CollectionIcon from '@/components/icons/CollectionIcon.vue'
 
 // Tabs
 const tabs = ['Pens', 'Collections', 'Deleted']
