@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-[#111] flex items-center justify-center p-8">
+  <div class="min-h-screen bg-card-background flex items-center justify-center p-8">
     <div
-      class="group w-90 bg-[#1e1f26] text-white rounded-lg shadow-md
+      class="group w-90 bg-card-text text-white rounded-lg shadow-md
              transition-all duration-300 ease-in-out transform scale-95 translate-y-1
              hover:scale-100 hover:translate-y-0 hover:shadow-2xl relative"
     >
@@ -63,7 +63,7 @@
               </button>
               <div
                 v-if="menuOpen"
-                class="absolute right-0 mt-2 w-48 bg-[#2b2c36] text-sm rounded shadow-lg z-50 overflow-hidden border border-gray-700"
+                class="absolute right-0 mt-2 w-48 bg-card-menu text-sm rounded shadow-lg z-50 overflow-hidden border border-gray-700"
               >
                 <a href="#" class="block px-4 py-2 hover-bg-card-hover flex items-center gap-2">
                   <FolderIcon />
@@ -86,7 +86,7 @@
         <div class="flex gap-2 mt-3">
           <button
             @click="liked = !liked"
-            class="flex items-center gap-1 bg-card-muted text-white px-3 py-0.5 rounded-lg font-medium text-sm transition select-none"
+            class="flex items-center gap-1 bg-card-secondary text-white px-3 py-0.5 rounded-lg font-medium text-sm transition select-none"
           >
             <span :class="liked ? 'text-pink-400' : 'text-white'">
               <HeartFilledIcon v-if="liked" />
@@ -97,7 +97,7 @@
 
           <button
             @click="goToDetailPage"
-            class="flex items-center gap-1 bg-card-dark hover-bg-card-hover text-white px-3 py-0.5 rounded-lg font-medium text-sm"
+            class="flex items-center gap-1 bg-card-button-primary hover-bg-card-hover text-white px-3 py-0.5 rounded-lg font-medium text-sm"
           >
             <ChatBubbleIcon />
             <span>{{ comments }}</span>
@@ -105,7 +105,7 @@
 
           <button
             @click="goToAnalyticsPage"
-            class="flex items-center gap-1 bg-card-dark hover-bg-card-hover text-white px-3 py-0.5 rounded-lg font-medium text-sm"
+            class="flex items-center gap-1 bg-card-button-primary hover-bg-card-hover text-white px-3 py-0.5 rounded-lg font-medium text-sm"
           >
             <EyeIcon />
             <span>{{ views }}</span>
