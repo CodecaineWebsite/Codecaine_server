@@ -1,23 +1,21 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useWorkStore = defineStore('work', () => {
-  const workTemplate = ref([
-    {
-      title: "",
-      html: "",
-      css: "",
-      javascript: "",
-      isAutoSave: true,
-      isAutoPreview: true,
-      viewMode: "center",
-      createAt: new Date(),
-      lastSavedTime: null,
-      cdns: [], 
-      links: [], 
-    }
-  ])
-  const currentId = ref('123123123123');
+  const workTemplate = {
+    title: "",
+    html: "",
+    css: "",
+    javascript: "",
+    isAutoSave: true,
+    isAutoPreview: true,
+    viewMode: "center",
+    createAt: new Date(),
+    lastSavedTime: null,
+    cdns: [], 
+    links: [], 
+  }
+  const currentId = ref('');
   const works = ref([
     {
       id: "123123123123",
@@ -31,6 +29,7 @@ export const useWorkStore = defineStore('work', () => {
       createAt: new Date(),
       lastSavedTime: null,
       user_id: "0098837589",
+      user_name: "sssss",
       cdns: [], 
       links: [], 
     },
@@ -46,53 +45,52 @@ export const useWorkStore = defineStore('work', () => {
       createAt: new Date(),
       lastSavedTime: null,
       user_id: "0098837589",
+      user_name: "sssss",
       cdns: [], 
       links: [], 
     }
   ])
 
   const updateCDNs = (newCDNs) => {
-  currentWork.value[0].cdns = newCDNs
-}
-  const updateLinks = (newLinks) => {
-  currentWork.value[0].links = newLinks
-}
+    currentWork.value.cdns = newCDNs
+  }
+    const updateLinks = (newLinks) => {
+    currentWork.value.links = newLinks
+  }
 
   // 回傳特定(指定id)作品
-  const currentWork = computed(() => {
-    if(currentId.value.length) {
-      return works.value.filter((work) => {
-        return work.id === currentId.value
-      })
-    } else {
-      return workTemplate.value
-    }
-  })
-
+  const currentWork = ref(null)
 
   // 改變currentId function
   const handleCurrentIdChange = (id) => {
-    currentId.value = id
+    if(id) {
+      currentId.value = id
+      currentWork.value = works.value.find(work => work.id === id)
+    } else {
+      currentId.value = ""
+      currentWork.value = workTemplate
+    }
+    
   }
   
-  // 更新CurrentCode
+  // 更新CurrentCode 
+  // todo: 改v-model綁定
   const updateCurrentCode = (language, newCode) => {
-    currentWork.value[0][language] = newCode
+    currentWork.value[language] = newCode
   }
 
   // 開關自動更新狀態
   const toggleAutoPreview = () => {
-    console.log(currentWork.value[0].isAutoPreview);
-    currentWork.value[0].isAutoPreview = !currentWork.value[0].isAutoPreview
+    currentWork.value.isAutoPreview = !currentWork.value.isAutoPreview
   }
 
   // 更新作品Preview function
   const updatePreviewSrc = () => {
-    const jsCode = currentWork.value[0].javascript + '\n//# sourceURL=user-code.js';
-    const cssCode = currentWork.value[0].css;
-    const htmlCode = currentWork.value[0].html;
-    const cdnTags = (currentWork.value[0].cdns || []).map(url => `<script src="${url}"><\/script>`).join('\n')
-    const linkTags = (currentWork.value[0].links || []).map(url => `<link rel="stylesheet" href="${url}"><\/link>`).join('\n')
+    const jsCode = currentWork.value.javascript + '\n//# sourceURL=user-code.js';
+    const cssCode = currentWork.value.css;
+    const htmlCode = currentWork.value.html;
+    const cdnTags = (currentWork.value.cdns || []).map(url => `<script src="${url}"><\/script>`).join('\n')
+    const linkTags = (currentWork.value.links || []).map(url => `<link rel="stylesheet" href="${url}"><\/link>`).join('\n')
   
     return `
     <!DOCTYPE html>
