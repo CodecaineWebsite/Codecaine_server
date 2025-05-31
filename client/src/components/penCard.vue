@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#111] flex items-center justify-center p-8">
     <div
-      class="group w-[360px] bg-[#1e1f26] text-white rounded-lg shadow-md
+      class="group w-90 bg-[#1e1f26] text-white rounded-lg shadow-md
              transition-all duration-300 ease-in-out transform scale-95 translate-y-1
              hover:scale-100 hover:translate-y-0 hover:shadow-2xl relative"
     >
