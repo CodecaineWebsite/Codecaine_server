@@ -37,18 +37,6 @@ onMounted(() => {
   searchKeyword.value = q;
 });
 
-
-const onSearchSubmit = () => {
-  console.log(inputKeyword.value);
-  currentPage.value = 1;
-  searchKeyword.value = inputKeyword.value.toLowerCase();
-
-  router.push({
-    path: `/search/${route.params.category || "pens"}`,
-    query: { q: inputKeyword.value },
-  });
-};
-
 // API 請求
 watchEffect(async () => {
   const category = route.params.category || "pens";
@@ -90,6 +78,16 @@ watchEffect(async () => {
 
 });
 
+const onSearchSubmit = () => {
+  console.log(inputKeyword.value);
+  currentPage.value = 1;
+  searchKeyword.value = inputKeyword.value.toLowerCase();
+
+  router.push({
+    path: `/search/${route.params.category || "pens"}`,
+    query: { q: inputKeyword.value },
+  });
+};
 // 目前頁面要顯示的卡片
 const currentPageCards = computed(() => searchResults.value);
 
