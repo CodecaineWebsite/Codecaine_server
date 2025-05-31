@@ -22,3 +22,14 @@
 .editor-resizer-border-color {
   border-color: #2D2D2D;
 }
+@layer utilities {
+  .bg-card-dark {
+    @apply bg-[#2d2d38];
+  }
+  .hover-bg-card-hover:hover {
+    @apply bg-[#3a3b47];
+  }
+  .bg-card-muted {
+    @apply bg-[#4b4c5c];
+  }
+}
