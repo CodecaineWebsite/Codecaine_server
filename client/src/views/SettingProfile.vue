@@ -97,6 +97,11 @@
             {{ bio.length }}/100 characters used.
           </div>
         </div>
+        <button
+          class="mt-4 px-4 py-2 bg-[#05DF72] text-black rounded font-bold hover:bg-[#04c862] transition self-end cursor-pointer"
+        >
+          儲存個人資訊
+        </button>
       </div>
     </section>
     <section
@@ -126,6 +131,11 @@
             maxlength="100"
           />
         </div>
+        <button
+          class="mt-4 px-4 py-2 bg-[#05DF72] text-black rounded font-bold hover:bg-[#04c862] transition self-end cursor-pointer"
+        >
+          儲存連結
+        </button>
       </div>
     </section>
   </div>

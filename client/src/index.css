@@ -33,3 +33,7 @@
     @apply bg-[#4b4c5c];
   }
 }
+
+.font-size-15 {
+  font-size: 15px;
+}

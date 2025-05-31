@@ -43,10 +43,12 @@
 </script>
 
 <template>
-  <MonacoEditor
-    v-model:value="code"
-    :language="language"
-    :theme="theme"
-    :options="editorOptions"
-  />
+  <div class="w-full h-[calc(100%-43px)]">
+    <MonacoEditor
+      v-model:value="code"
+      :language="language"
+      :theme="theme"
+      :options="editorOptions"
+    />
+  </div>
 </template>

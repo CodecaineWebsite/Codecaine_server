@@ -16,14 +16,25 @@
   import EditorSmallButton from '../components/Editor/EditorSmallButton.vue';
   import Editor from '@/components/Editor/Editor.vue';
   import EditorPreview from '@/components/Editor/EditorPreview.vue';
+  import ConsolePreview from '../components/Editor/ConsolePreview.vue'
 
   import { storeToRefs } from 'pinia'
   import { useWorkStore } from '@/stores/workStore';
 
+  import { useRoute } from 'vue-router'
+
+  const route = useRoute();
   const workStore = useWorkStore()
-  const { updateCurrentCode }= workStore;
-  const { currentWork } = storeToRefs(workStore);
-  const { html, css, javascript, isAutoPreview } = toRefs(currentWork.value[0])
+  const { updateCurrentCode, handleCurrentIdChange }= workStore;
+  const { currentWork } = storeToRefs(workStore)
+
+  handleCurrentIdChange(route.params.id)
+
+  const htmlCode = ref(currentWork.value.html);
+  const cssCode = ref(currentWork.value.css);
+  const javascriptCode = ref(currentWork.value.javascript);
+  const isAutoPreview = ref(currentWork.value.isAutoPreview);
+
 	
 	const isLoggedIn = ref(false);
   const isConsoleDragging = ref(false);
@@ -37,12 +48,12 @@
   const links = ref([])
 
   watch(cdns, (newCDNs) => {
-  workStore.updateCDNs(newCDNs)
-}, { deep: true })
+    workStore.updateCDNs(newCDNs)
+  }, { deep: true })
 
-watch(links, (newLinks) => {
-  workStore.updateLinks(newLinks)
-}, { deep: true })
+  watch(links, (newLinks) => {
+    workStore.updateLinks(newLinks)
+  }, { deep: true })
 
   const startConsoleDragging = () => {
     isConsoleDragging.value = true
@@ -90,16 +101,22 @@ watch(links, (newLinks) => {
   const saveOptionVisible = ref(false);
   const layoutOptionVisible = ref(false);
   const bookmarkVisible = ref(false);
-  const title = ref("TITLE");
+  const title = ref(currentWork.value.title);
+  const userName = ref(currentWork.value.user_name);
   const isEditing = ref(false);
   const settingOptionVisible = ref(false);
   const isConsoleShow = ref(false);
+  const consoleRef = ref(null)
 
   provide('title', title)
 
   const handleConsoleClose = () => {
     isConsoleShow.value = false;
   };
+
+  const handleConsoleClear = () => {
+    consoleRef.value.consoleClear();
+  }
 
   const toggleConsole = ()=> {
     isConsoleShow.value = !isConsoleShow.value
@@ -284,26 +301,30 @@ watch(links, (newLinks) => {
     }
   })
 
+  function onPointerMove(e) {
+    if (isDraggingConsole.value) {
+      handleConsoleDrag(e)
+    } else if (isDraggingEditor.value) {
+      handleEditorDrag(e)
+    } else if (isDraggingColumn.value) {
+      handleColumnDrag(e)
+    }
+  }
+
+  function onPointerUp() {
+    stopConsoleDrag()
+    stopEditorDrag()
+    stopColumnDrag()
+  }
+
   onMounted(() => {
-    window.addEventListener('pointermove', handleConsoleDrag)
-    window.addEventListener('pointerup', stopConsoleDrag)
-
-    window.addEventListener('pointermove', handleEditorDrag)
-    window.addEventListener('pointerup', stopEditorDrag)
-
-    window.addEventListener('pointermove', handleColumnDrag)
-    window.addEventListener('pointerup', stopColumnDrag)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
   })
 
   onUnmounted(() => {
-    window.removeEventListener('pointermove', handleConsoleDrag)
-    window.removeEventListener('pointerup', stopConsoleDrag)
-
-    window.removeEventListener('pointermove', handleEditorDrag)
-    window.removeEventListener('pointerup', stopEditorDrag)
-
-    window.removeEventListener('pointermove', handleColumnDrag)
-    window.removeEventListener('pointerup', stopColumnDrag)
+    window.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('pointerup', onPointerUp)
   })
 
   const updateCode = (language, newCode) => {
@@ -324,13 +345,13 @@ watch(links, (newLinks) => {
               class="bg-transparent border-b border-white text-white outline-none" />
           </template>
           <template v-else>
-            <span class="text-white font-black">{{ title }}</span>
+            <span class="text-white font-black">{{ title.length? title : "Untitled" }}</span>
           </template>
           <button type="button" class="ml-1" @click="toggleEdit">
             <img :src="Edit" alt="" class="w-[13px] h-[13px] hover:cursor-pointer" />
           </button>
           <div>
-            <a href="#" class="text-sm text-white">Author</a>
+            <a href="#" class="text-sm text-gray-400">{{ userName ? userName : "Captain Anonymous" }}</a>
           </div>
         </div>
       </div>
@@ -478,12 +499,12 @@ watch(links, (newLinks) => {
         ref="editorWrapperRef"
         class="flex overflow-hidden"
         :style="selectedLayout.id === 'center'
-          ? { height: `${editorWrapperSize}px` }
-          : { width: `${editorWrapperSize}px` }"
+          ? { height: editorWrapperSize + 'px' }
+          : { width: editorWrapperSize + 'px' }"
         :class="selectedLayout.id === 'center' ? 'flex-row' : 'flex-col'"
       >
         <div
-          class="resizer editor-resizer-border-color editor-bgc"
+          class="resizer editor-resizer-border-color editor-bgc "
           :class="selectedLayout.id === 'center' ? 'w-4 border-x' : 'h-4 border-y'"
         ></div>
         <div :style="{ flexBasis: sizes[0] + '%', minWidth: '0px' }" class="relative">
@@ -503,7 +524,7 @@ watch(links, (newLinks) => {
               </EditorSmallButton>
             </div>
           </div>
-          <Editor :language="'html'" :code="html" @update:code="newCode => updateCode('html', newCode)"/>
+          <Editor :language="'html'" :code="htmlCode" @update:code="newCode => updateCode('html', newCode)"/>
         </div>
 
         <div
@@ -515,7 +536,7 @@ watch(links, (newLinks) => {
         <div :style="{ flexBasis: sizes[1] + '%', minWidth: '0px' }" class="relative">
           <div class="flex justify-between items-center min-w-3xs overflow-hidden editor-bgc">
             <h2 class="py-2 px-3 font-bold bg-[#1C1E22] text-[#ABAEBD] border-t-3 editor-resizer-border-color flex items-center gap-2">
-              <img :src="CSSIcon" alt="HTML" class="w-[15px] h-[15px]">
+              <img :src="CSSIcon" alt="CSS" class="w-[15px] h-[15px]">
               <div>
                 CSS
               </div>
@@ -529,7 +550,7 @@ watch(links, (newLinks) => {
               </EditorSmallButton>
             </div>
           </div>
-          <Editor :language="'css'" :code="css" @update:code="newCode => updateCode('css', newCode)"/>
+          <Editor :language="'css'" :code="cssCode" @update:code="newCode => updateCode('css', newCode)"/>
         </div>
 
         <div
@@ -541,7 +562,7 @@ watch(links, (newLinks) => {
         <div :style="{ flexBasis: sizes[2] + '%', minWidth: '0px' }" class="relative">
           <div class="flex justify-between items-center min-w-3xs overflow-hidden editor-bgc">
             <h2 class="py-2 px-3 font-bold bg-[#1C1E22] text-[#ABAEBD] border-t-3 editor-resizer-border-color flex items-center gap-2">
-              <img :src="JSIcon" alt="HTML" class="w-[15px] h-[15px]">
+              <img :src="JSIcon" alt="JavaScript" class="w-[15px] h-[15px]">
               <div>
                 JS
               </div>
@@ -555,7 +576,7 @@ watch(links, (newLinks) => {
               </EditorSmallButton>
             </div>
           </div>
-          <Editor :language="'javascript'" :code="javascript" @update:code="newCode => updateCode('javascript', newCode)"/>
+          <Editor :language="'javascript'" :code="javascriptCode" @update:code="newCode => updateCode('javascript', newCode)"/>
         </div>
 
       </div>
@@ -565,10 +586,10 @@ watch(links, (newLinks) => {
         @pointerdown="startEditorDrag"
       ></div>
       <!-- preview -->
-      <div class="flex-1 overflow-hidden flex flex-col bg-white" ref="previewContainer">
-        <div class="overflow-auto flex-none">
+      <div class="flex-1 overflow-hidden flex flex-col justify-between bg-white" ref="previewContainer">
+        <div class="overflow-auto flex-none shrink min-w-0 min-h-0 w-full h-full">
           <!-- Preview iframe -->
-          <EditorPreview :html="html" :css="css" :javascript="javascript" :isAutoPreview="isAutoPreview" class="shrink min-w-0 min-h-0"/>
+          <EditorPreview :html="htmlCode" :css="cssCode" :javascript="javascriptCode" :isAutoPreview="isAutoPreview"/>
         </div>
         <div v-show="isConsoleShow">
           <div
@@ -581,17 +602,17 @@ watch(links, (newLinks) => {
               </h2>
             </div>
             <div class="flex gap-1">
-              <EditorSmallButton class="editorSmallButton-hover-bgc">Clear</EditorSmallButton>
+              <EditorSmallButton class="editorSmallButton-hover-bgc" @buttonClick="handleConsoleClear">Clear</EditorSmallButton>
               <EditorSmallButton class="editorSmallButton-hover-bgc" @buttonClick="handleConsoleClose">
                 <img :src="Close" alt="close button" class="w-2.5 h-2.5">
               </EditorSmallButton>
             </div>
           </div>
           <div
-            class="h-16 editor-bgc"
+            class="h-16 editor-bgc flex flex-col justify-between"
             :style="{ height: `${consoleHeight}px` }"
           >
-          
+            <ConsolePreview ref="consoleRef"/>
           </div>
         </div>
         
