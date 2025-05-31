@@ -58,24 +58,8 @@ export const useWorkStore = defineStore('work', () => {
     currentWork.value.links = newLinks
   }
 
-  // 回傳特定(指定id)作品
-  const currentWork = ref(
-    {
-      id: "123123123123",
-      title: "這是測試檔案1",
-      html: "<h1>456</h1>",
-      css: "h1 {color: blue}",
-      javascript: "console.log(456)",
-      isAutoSave: true,
-      isAutoPreview: true,
-      viewMode: "center",
-      createAt: new Date(),
-      lastSavedTime: null,
-      user_id: "0098837589",
-      user_name: "sssss",
-      cdns: [], 
-      links: [], 
-    })
+
+  const currentWork = ref(null)
 
   // 改變currentId function
   const handleCurrentIdChange = (id) => {
@@ -104,7 +88,6 @@ export const useWorkStore = defineStore('work', () => {
   // 開關自動更新狀態
   const toggleAutoPreview = () => {
     currentWork.value.isAutoPreview = !currentWork.value.isAutoPreview
-    console.log(currentWork.value.isAutoPreview);
 
   }
 
