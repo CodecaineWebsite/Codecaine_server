@@ -55,7 +55,7 @@ function toggleSidebar() {
   overflow-y: auto;
   min-height: calc(
     100vh - 75px
-  ); /* 75px -> .layout 裡寫死grid裡的第一行row的高度 Kaia把 header 上船之後請把這裡改掉*/
+  ); /* 75px -> .layout 裡寫死grid裡的第一行row的高度 Kaia把 header 上傳之後請把這裡改掉*/
 }
 
 .footer {
