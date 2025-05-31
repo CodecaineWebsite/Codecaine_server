@@ -1,4 +1,4 @@
-## ✅ 後端啟動說明（整合 Firebase Auth）
+## 後端啟動說明
 
 ### 1. 安裝相依套件
 
@@ -7,7 +7,6 @@ npm install
 ```
 
 ### 2. 安裝 PostgreSQL 與 pgAdmin，並建立一個測試資料庫
-範例資料庫名稱建議使用 Codecaine。
 
 ### 3. 設定環境變數（.env）
 請在 /server 目錄下建立 .env 檔，內容如下：
@@ -45,6 +44,13 @@ npm run seed:clean
 
 後端使用 firebase-admin 驗證 token，並自動同步使用者資料至資料庫（首次登入）
 
+verifiyFirebase 的 middleware 會解析 Token 中的使用者資料，並把解析出的 uid 與 user 添加進 req
+
+```javascript
+req.userID // 使用者的 firebase uid
+req.user   // 使用者的 firebase user 物件
+```
+
 使用者首次登入/註冊後，前端請呼叫：
 
 ```
@@ -57,6 +63,3 @@ GET /api/auth/me
 2. 若資料庫中尚無此 user，則自動建立
 
 3. 回傳該使用者資料（不含密碼）
-
-## 舊版 JWT 認證（已棄用）
-原本的 /api/auth/register 與 /api/auth/login 皆已移除，驗證機制全面改為 Firebase。
