@@ -21,7 +21,7 @@ Codecaine 是一個 CodePen-inspired 的線上程式碼編輯與分享平台，�
 
 - [陳竑齊](https://github.com/lllBarry)
 
-- [邱毓婷](https://github.com/chinyuting)
+- [邱郁婷](https://github.com/chinyuting)
 
 - [段振東](https://github.com/duanjendong)
 
