@@ -17,14 +17,20 @@
             v-if="activeTab === 'Collections'"
             class="bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600 rounded-md flex items-center space-x-2"
           >
-            <NewCollectionIcon customClass="w-3 h-3 text-white" />
+            <NewCollectionIcon
+              class="fill-current w-3 h-3"
+              :class="{ 'text-white': activeTab === 'Collections', 'text-gray-400': activeTab !== 'Collections' }"
+            />
             <span>New Collection</span> 
           </button>
           <button
             v-else-if="activeTab === 'Pens' || activeTab === 'Deleted'"
             class="bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600 rounded-md flex items-center space-x-2"
           >
-            <NewPenIcon customClass="w-4 h-4 text-white" />
+            <NewPenIcon 
+              class="fill-current w-4 h-4"
+              :class="{ 'text-white': activeTab === 'Pens' || activeTab === 'Deleted', 'text-gray-400': activeTab !== 'Pens' && activeTab !== 'Deleted' }"
+            />
             <span>New Pen</span>
           </button>
         </div>
@@ -55,7 +61,7 @@
                 @click="toggleFilters"
                 class="flex items-center space-x-2 bg-button text-white text-sm px-3 py-1 border border-default bg-button-hover rounded-md"
               >
-                <FiltersIcon customClass="w-4 h-4 text-white" />
+                <FiltersIcon class="fill-current w-4 h-4 text-white" />
                 <span>Filters</span>
               </button>
 
@@ -93,7 +99,7 @@
               v-if="activeTab === 'Pens'"
               class="flex items-center space-x-1 bg-button text-white text-sm px-3 py-1 border border-default bg-button-hover rounded-md"
             >
-              <TagsIcon customClass="w-4 h-4 text-white" />
+              <TagsIcon class="fill-current w-4 h-4 text-white" />
               <span>Tags</span>
             </button>
           </div>
@@ -106,13 +112,19 @@
                 :class="['px-3 py-2', viewMode === 'grid' ? 'bg-grid-active' : 'bg-button bg-list-hover']"
                 @click="viewMode = 'grid'"
               >
-                <GridIcon customClass="w-4 h-4 text-white" />
+                <GridIcon
+                  class="fill-current w-4 h-4"
+                  :class="{ 'text-white': viewMode === 'grid', 'text-gray-400': viewMode !== 'grid' }"
+                />
               </button>
               <button
                 :class="['px-3 py-2 border-l border-default', viewMode === 'list' ? 'bg-grid-active' : 'bg-button bg-list-hover']"
                 @click="viewMode = 'list'"
               >
-                <ListIcon customClass="w-4 h-4 text-white" />
+                <ListIcon
+                  class="fill-current w-4 h-4"
+                  :class="{ 'text-white': viewMode === 'list', 'text-gray-400': viewMode !== 'list' }"
+                />
               </button>
             </div>
 
@@ -132,13 +144,19 @@
                 :class="['px-3 py-2', sortDirection === 'desc' ? 'bg-grid-active' : 'bg-button bg-list-hover']"
                 @click="sortDirection = 'desc'"
               >
-                <DescIcon :customClass="['w-4 h-4', sortDirection === 'desc' ? 'text-white' : 'text-gray-400']" />
+                <DescIcon
+                  class="fill-current w-4 h-4"
+                  :class="{ 'text-white': sortDirection === 'desc', 'text-gray-400': sortDirection !== 'desc' }"
+                />
               </button>
               <button
                 :class="['px-3 py-2 border-l border-default', sortDirection === 'asc' ? 'bg-grid-active' : 'bg-button bg-list-hover']"
                 @click="sortDirection = 'asc'"
               >
-                <AscIcon :customClass="['w-4 h-4', sortDirection === 'asc' ? 'text-white' : 'text-gray-400']" />
+                <AscIcon
+                  class="fill-current w-4 h-4"
+                  :class="{ 'text-white': sortDirection === 'asc', 'text-gray-400': sortDirection !== 'asc' }"
+                />
               </button>
             </div>
           </div>
@@ -180,59 +198,50 @@
   </div>
 </template>
 
+<script setup>
+import { ref, computed } from 'vue'
 
-<script>
-import NewPenIcon from "@/components/icons/NewPenIcon.vue";
-import FiltersIcon from "@/components/icons/FiltersIcon.vue";
-import TagsIcon from "@/components/icons/TagsIcon.vue";
-import GridIcon from "@/components/icons/GridIcon.vue";
-import ListIcon from "@/components/icons/ListIcon.vue";
-import DescIcon from "@/components/icons/DescIcon.vue";
-import AscIcon from "@/components/icons/AscIcon.vue";
-import NewCollectionIcon from "@/components/icons/NewCollectionIcon.vue";
+import NewPenIcon from '@/components/icons/NewPenIcon.vue'
+import FiltersIcon from '@/components/icons/FiltersIcon.vue'
+import TagsIcon from '@/components/icons/TagsIcon.vue'
+import GridIcon from '@/components/icons/GridIcon.vue'
+import ListIcon from '@/components/icons/ListIcon.vue'
+import DescIcon from '@/components/icons/DescIcon.vue'
+import AscIcon from '@/components/icons/AscIcon.vue'
+import NewCollectionIcon from '@/components/icons/NewCollectionIcon.vue'
 
-export default {
-  components: {
-    NewPenIcon,
-    FiltersIcon,
-    TagsIcon,
-    GridIcon,
-    ListIcon,
-    DescIcon,
-    AscIcon,
-    NewCollectionIcon
-  },
-  data() {
-    return {
-      tabs: ['Pens', 'Collections', 'Deleted'],
-      activeTab: 'Pens',
-      showFilters: false,
-      sortOption: 'created',
-      sortDirection: 'desc',
-      viewMode: 'grid',
-      filters: {
-        privacy: 'All',
-        template: 'All',
-        fork: 'All'
-      }
-    };
-  },
-  computed: {
-    emptyStateMessage() {
-      switch (this.activeTab) {
-        case 'Pens': return 'No Pens.';
-        case 'Collections': return 'No Collections.';
-        default: return 'Nothing here.';
-      }
-    }
-  },
-  methods: {
-    createPen() {
-      alert(`Create new item in "${this.activeTab}"`);
-    },
-    toggleFilters() {
-      this.showFilters = !this.showFilters;
-    }
+// Tabs
+const tabs = ['Pens', 'Collections', 'Deleted']
+const activeTab = ref('Pens')
+
+// Filter state
+const showFilters = ref(false)
+const filters = ref({
+  privacy: 'All',
+  template: 'All',
+  fork: 'All'
+})
+
+// View/sort state
+const sortOption = ref('created')
+const sortDirection = ref('desc')
+const viewMode = ref('grid')
+
+// Methods
+function createPen() {
+  alert(`Create new item in "${activeTab.value}"`)
+}
+
+function toggleFilters() {
+  showFilters.value = !showFilters.value
+}
+
+// Computed empty state message
+const emptyStateMessage = computed(() => {
+  switch (activeTab.value) {
+    case 'Pens': return 'No Pens.'
+    case 'Collections': return 'No Collections.'
+    default: return 'Nothing here.'
   }
-};
+})
 </script>

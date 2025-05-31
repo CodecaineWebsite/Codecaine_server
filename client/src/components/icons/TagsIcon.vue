@@ -2,8 +2,6 @@
   <svg
     viewBox="0 0 18 14"
     xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    :class="customClass"
   >
     <path
       fill-rule="evenodd"
@@ -11,15 +9,3 @@
     />
   </svg>
 </template>
-
-<script>
-export default {
-  name: "TagsIcon",
-  props: {
-    customClass: {
-      type: String,
-      default: ''
-    }
-  }
-};
-</script>
