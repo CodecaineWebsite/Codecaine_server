@@ -58,7 +58,7 @@ export const useWorkStore = defineStore('work', () => {
     currentWork.value.links = newLinks
   }
 
-  // 回傳特定(指定id)作品
+
   const currentWork = ref(null)
 
   // 改變currentId function
@@ -79,9 +79,16 @@ export const useWorkStore = defineStore('work', () => {
     currentWork.value[language] = newCode
   }
 
+  // 開關自動存檔狀態
+  const toggleAutoSave = () => {
+    currentWork.value.isAutoSave = !currentWork.value.isAutoSave
+    console.log(currentWork.value.isAutoSave);
+    
+  }
   // 開關自動更新狀態
   const toggleAutoPreview = () => {
     currentWork.value.isAutoPreview = !currentWork.value.isAutoPreview
+
   }
 
   // 更新作品Preview function
@@ -180,6 +187,7 @@ export const useWorkStore = defineStore('work', () => {
     currentId,
     handleCurrentIdChange,
     updateCurrentCode,
+    toggleAutoSave,
     toggleAutoPreview,
     updatePreviewSrc,
     updateCDNs,
