@@ -1,5 +1,5 @@
 <script setup>
-import axios from "axios";
+import api from "../stores/api";
 import { ref, computed, watchEffect, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import YourWorkIcon from "@/components/icons/YourWorkIcon.vue";
@@ -15,7 +15,7 @@ const router = useRouter();
 // 搜尋狀態管理
 const searchResults = ref([]);
 const totalCount = ref(0);
-const isLoading = ref(false);  
+const isLoading = ref(false);
 
 const inputKeyword = ref("");
 // 搜尋參數
@@ -37,12 +37,11 @@ onMounted(() => {
   searchKeyword.value = q;
 });
 
-// API 請求
+// 監聽網址變化發送 API 請求
 watchEffect(async () => {
   const category = route.params.category || "pens";
   const q = route.query.q?.toString() || "";
   const page = currentPage.value;
-
 
   // 若沒輸入關鍵字，則清空結果並跳出
   if (!searchKeyword.value.trim()) {
@@ -56,15 +55,16 @@ watchEffect(async () => {
   isLoading.value = true;
 
   try {
-    const res = await axios.get(`http://localhost:3000/api/search/${category}`, {
+
+    const res = await api.get(`/api/search/${category}`, {
       params: {
         q: searchKeyword.value,
         page,
       },
     });
-    
+
+    // 開發期間 debug 用
     console.log("送出搜尋", { category, q, page });
-    console.log(res.data.data);
 
     searchResults.value = res.data.results || [];
     totalCount.value = res.data.total || 0;
@@ -74,8 +74,12 @@ watchEffect(async () => {
     totalCount.value = 0;
   } finally {
     isLoading.value = false;
-  }
 
+    // 開發期間 debug 用
+    console.log("searchResults:", searchResults.value);
+    console.log("currentPageCards:", currentPageCards.value);
+    console.log("isContent:", isContent.value);
+  }
 });
 
 const onSearchSubmit = () => {
@@ -116,9 +120,7 @@ function prevPage() {
 </script>
 <template>
   <main class="bg-[#131417]">
-    <div
-      class="w-full max-w-[75rem] mx-auto px-8 pt-6 relative text-white"
-    >
+    <div class="w-full max-w-[75rem] mx-auto px-8 pt-6 relative text-white">
       <div class="px-3 pb-6">
         <div class="mb-6">
           <div
@@ -210,9 +212,7 @@ function prevPage() {
                 <div>作者： {{ card.username }}</div>
               </div>
             </div>
-            <nav
-              class="flex justify-center align-center mt-20 mb-12 gap-3"
-            >
+            <nav class="flex justify-center align-center mt-20 mb-12 gap-3">
               <button
                 v-if="currentPage > 1"
                 @click="prevPage"
@@ -262,4 +262,7 @@ function prevPage() {
 
 <!-- TODO: 準備載入中畫面 -->
 <!-- TODO: 測試搜尋結果超過 6 筆的狀況-->
-<!-- TODO: 整理 css -->
+<!-- TODO: tailwind css refactor -->
+<!-- TODO: 把切換 tab 的方式與顯示結果頁面的方式改成 RouterLink 跟 RouterView -->
+<!-- TODO: 研究怎麼把分頁邏輯抽出 -->
+<!-- TODO: 導入作品卡 -->
