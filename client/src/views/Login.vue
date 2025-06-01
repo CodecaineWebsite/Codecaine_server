@@ -76,8 +76,8 @@ async function login() {
 		const token = await user.getIdToken(); // 拿到 JWT
 		authStore.setToken(token);
 		console.log("登入成功，JWT:", token);
-		alert("登入成功！"); //alert最後可以再調整美觀的樣式
-		await addUsers();
+		alert("登入成功！"); // alert最後可以再調整美觀的樣式
+		await syncUser();
 	} catch (e) {
 		if (
 			e.code === "auth/invalid-credential" ||
@@ -93,21 +93,16 @@ async function login() {
 	}
 }
 
-async function addUsers() {
+import api from "../stores/api";
+async function syncUser() {
 	try {
-		const res = await axios.post(
-			"http://localhost:3000/api/addusers",
-			{},
-			{
-				headers: {
-					Authorization: `Bearer ${authStore.idToken}`,
-				},
-			}
+		const res = await api.get(
+			"/auth/me" // 原為 POST http://localhost:3000/api/addusers , 改為 GET http://localhost:3000/api/auth/me
 		);
 
-		console.log("成功新增：", res.data);
+		console.log("身份驗證成功：", res.data);
 	} catch (err) {
-		console.error("新增失敗：", err.response?.data || err.message);
+		console.error("身份驗證失敗：", err.response?.data || err.message);
 	}
 }
 </script>

@@ -1,1 +1,0 @@
-ALTER TABLE "profile" ALTER COLUMN "uid" SET DATA TYPE varchar(1000);

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoginComponent 測試</title>
+  <!-- 引入 Vue 3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <!-- 引入 Vite 的單檔組件編譯（不適用於 production） -->
+  <script type="module">
+    import LoginComponent from '/src/components/Login.vue'
+    const app = Vue.createApp(LoginComponent)
+    app.mount('#app')
+  </script>
+  <style>
+    body { margin: 0; }
+    #app { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>

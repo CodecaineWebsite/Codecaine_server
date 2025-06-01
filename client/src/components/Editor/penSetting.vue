@@ -1,9 +1,11 @@
 <script setup>
-import { inject, ref } from 'vue';
+import { inject, ref, watch } from 'vue';
 import Arrow from '../../assets/arrow.svg';
+import { useWorkStore } from '@/stores/workStore';
+import { storeToRefs } from 'pinia'
 
 const title = inject('title')
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'update:cdns', 'update:links'])
 const tabs = [
   { label: 'HTML', key: 'html' },
   { label: 'CSS', key: 'css' },
@@ -15,7 +17,76 @@ const tabs = [
   { label: 'Template', key: 'template' },
   { label: 'Screenshot', key: 'screenshot' },
 ]
+const workStore = useWorkStore()
+const { currentWork } = storeToRefs(workStore)
+const { toggleAutoSave, toggleAutoPreview } = workStore;
+console.log(currentWork.value.isAutoSave);
 const activeTab = ref('html')
+const cdnInput = ref('')
+const linkInput = ref('')
+const props = defineProps({
+  cdns: {
+    type: Array,
+    default: () => []
+  },
+  links: {
+    type: Array,
+    default: () => []  
+  },
+
+
+});
+const cdns = ref([...props.cdns])
+const links = ref([...props.links])
+
+
+// watch(() => props.cdns, (newVal) => {
+//   cdns.value = [...newVal]
+// })
+// watch(() => props.links, (newVal) => {
+//   links.value = [...newVal]
+// })
+
+watch(cdns, (newValue) => {
+  emit('update:cdns', newValue)
+}, { deep: true, immediate: true })
+watch(links, (newValue) => {
+  emit('update:links', newValue)
+}, { deep: true, immediate: true })
+
+const srcDoc = ref('')
+
+const isValidUrl = (url) => /^https?:\/\/.+/.test(url);
+const addCDN = () => {
+  const url = cdnInput.value.trim();
+  if (!isValidUrl(url)) {
+    alert('請輸入有效的 CDN URL（必須以 http 或 https 開頭）');
+    return;
+  }  if (cdns.value.includes(url)) {
+    alert("這個 CDN 已經加入了！");
+    return;
+  }
+  cdns.value.push(url);
+  cdnInput.value = '';
+}
+const removeCDN = (index) => {
+  cdns.value.splice(index, 1)
+}
+const addLink = () => {
+  const url = linkInput.value.trim();
+  if (!isValidUrl(url)) {
+    alert('請輸入有效的 link URL（必須以 http 或 https 開頭）');
+    return;
+  }  if (links.value.includes(url)) {
+    alert("這個 link 已經加入了！");
+    return;
+  }
+  links.value.push(url);
+  linkInput.value = '';
+}
+const removeLink = (index) => {
+  links.value.splice(index, 1)
+}
 
 </script>
 <template>
@@ -43,7 +114,7 @@ const activeTab = ref('html')
           <div class="md:hidden w-full flex my-3 md:before:content-none before:content-[''] before:relative before:w-full before:h-0.5 before:bg-gray-700 before:mt-2"></div>
 
           <div v-show="activeTab === 'html'" class="md:w-3/4 w-full flex flex-col gap-4">
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="HTML Preprocessor">HTML Preprocessor</label>
               </div>
@@ -62,17 +133,17 @@ const activeTab = ref('html')
                 </div>
               </div>
             </div>
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="Add Class(es) to <html>">Add Class(es) to &lt;html&gt;</label>
               </div>
               <div class="relative">
                 <input
                   class="appearance-none w-full border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-500 placeholder-gray-500"
-                  placeholder="e.g. single post post-1234"></input>
+                  placeholder="e.g. single post post-1234"/>
               </div>
             </div>
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="Add Class(es) to <html>">Stuff for &lt;head&gt;</label>
               </div>
@@ -85,7 +156,7 @@ const activeTab = ref('html')
           </div>
 
           <div v-show="activeTab === 'css'" class="md:w-3/4 w-full flex flex-col gap-4">
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="CSS Preprocessor">CSS Preprocessor</label>
               </div>
@@ -93,10 +164,11 @@ const activeTab = ref('html')
                 <select
                   class="appearance-none w-full border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-500">
                   <option value="" disabled selected>None</option>
-                  <option value="Haml">Haml</option>
-                  <option value="Markdown">Markdown</option>
-                  <option value="Slim">Slim</option>
-                  <option value="Pug">Pug</option>
+                  <option value="Less">Less</option>
+                  <option value="SCSS">SCSS</option>
+                  <option value="Sass">Sass</option>
+                  <option value="Stylus">Stylus</option>
+                  <option value="PostCSS">PostCSS</option>
                 </select>
                 <div class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 flex flex-col justify-around text-gray-500 text-xs leading-tight h-1/2">
                   <img :src="Arrow" class="w-3 rotate-180" alt="">
@@ -104,55 +176,110 @@ const activeTab = ref('html')
                 </div>
               </div>
             </div>
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="CSS Base">CSS Base</label>
               </div>
               <div class="flex flex-col">
                 <label>
-                <input type="radio" name="CSS Base" value="Normalize" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500">
+                <input type="radio" name="CSS Base" value="Normalize" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500"/>
                   Normalize
                 </label>
                 <label>
-                <input type="radio" name="CSS Base" value="Reset" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500">
+                <input type="radio" name="CSS Base" value="Reset" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500"/>
                   Reset
                 </label>
                 <label>
-                <input type="radio" name="CSS Base" value="Neither" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500">
+                <input type="radio" name="CSS Base" value="Neither" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500"/>
                   Neither
                 </label>
               </div>
             </div>
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="Vender Prefixing">Vender Prefixing</label>
               </div>
               <div class="flex flex-col">
                 <label>
-                <input type="radio" name="Vender Prefixing" value="Autoprefixer" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500">
+                <input type="radio" name="Vender Prefixing" value="Autoprefixer" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500"/>
                   Autoprefixer
                 </label>
                 <label>
-                <input type="radio" name="Vender Prefixing" value="Prefixfree" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500">
+                <input type="radio" name="Vender Prefixing" value="Prefixfree" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500"/>
                   Prefixfree
                 </label>
                 <label>
-                <input type="radio" name="Vender Prefixing" value="Neither" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500">
+                <input type="radio" name="Vender Prefixing" value="Neither" class="appearance-none w-3.5 h-3.5 border-1 border-gray-400 rounded-full checked:bg-blue-300 checked:border-gray-500"/>
                   Neither
                 </label>
               </div>
             </div>
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+              <div class="">
+                <label for="Vender Prefixing">Add External Stylesheets/Pens</label>
+              </div>
+              <div class="flex flex-col">
+                <label>
+                <input v-model="linkInput" @keyup.enter="addLink" type="text" placeholder="輸入 Link script URL" class="w-full border px-2 py-1 mb-2"/>
+                </label>
+                <button @click="addLink" class="mb-4 bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">➕ 加入 CDN</button>
+                <ul class="mb-4 list-disc list-inside">
+                  <li v-for="(link, index) in links" :key="link" class="flex items-center justify-between gap-2">
+                    <span class="break-words max-w-[80%]">{{ link }}</span>
+                    <button @click="removeLink(index)" class="text-red-500 hover:text-red-700 text-sm ">刪除</button>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
+
+          <div v-show="activeTab === 'js'" class="md:w-3/4 w-full flex flex-col gap-4">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+              <div class="">
+                <label for="JavaScript Preprocessor">JavaScript Preprocessor</label>
+              </div>
+              <div class="relative">
+                <select
+                  class="appearance-none w-full border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-500">
+                  <option value="" disabled selected>None</option>
+                  <option value="Script">Script</option>
+                </select>
+                <div class="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 flex flex-col justify-around text-gray-500 text-xs leading-tight h-1/2">
+                  <img :src="Arrow" class="w-3 rotate-180" alt="">
+                  <img :src="Arrow" class="w-3" alt="">
+                </div>
+              </div>
+            </div>
+            
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+              <div class="">
+                <label for="Vender Prefixing">Add External Scripts/Pens</label>
+              </div>
+              <div class="flex flex-col">
+                <label>
+                <input v-model="cdnInput" @keyup.enter="addCDN" type="text" placeholder="輸入 CDN script URL" class="w-full border px-2 py-1 mb-2"/>
+                </label>
+                <button @click="addCDN" class="mb-4 bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">➕ 加入 CDN</button>
+                <ul class="mb-4 list-disc list-inside">
+                  <li v-for="(cdn, index) in cdns" :key="cdn" class="flex items-center justify-between gap-2">
+                    <span class="break-words max-w-[80%]">{{ cdn }}</span>
+                    <button @click="removeCDN(index)" class="text-red-500 hover:text-red-700 text-sm ">刪除</button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
           <div v-show="activeTab === 'detail'" class="md:w-3/4 w-full flex flex-col gap-4">
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="CSS Preprocessor">CSS Preprocessor</label>
               </div>
               <div class="relative">
-                <input type="text" v-model="title" class="appearance-none w-full border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-500 placeholder-gray-500" >
+                <input type="text" v-model="title" class="appearance-none w-full border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-500 placeholder-gray-500" />
               </div>
             </div>
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="">
                 <label for="Pen Description">Pen Description</label>
               </div>
@@ -160,7 +287,7 @@ const activeTab = ref('html')
                 <textarea class="w-full h-24 border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-500 placeholder-gray-500" placeholder="Explain what's going on in your Pen here. This text is searchable, so it can also help others find your work. Remember to credit others where credit is due. Markdown supported." />
               </div>
             </div>
-            <div class="relative bg-linear-to-l from-[#252730] to-[#424655] py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
               <div class="flex justify-between">
                 <label for="Tags">Tags</label>
                 <span class="text-xs align-text-bottom">comma separated, max of five</span>
@@ -168,6 +295,38 @@ const activeTab = ref('html')
               <div class="relative">
                 <input type="text" class="w-full border border-gray-300 rounded-sm px-4 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-sm text-gray-500 placeholder-gray-500" />
               </div>
+            </div>
+          </div>
+          <div v-show="activeTab === 'behavior'" class="md:w-3/4 w-full flex flex-col gap-4">
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+              <div class="flex flex-col">
+              <label for="autoSave">Auto Save</label>
+              <span class="text-xs align-text-bottom mb-4 mt-1">If active, Pens will autosave every 30 seconds after being saved once.</span>
+              </div>
+              <label class="py-2 hover:cursor-pointer">
+                <div class="relative inline-block w-13 h-7 ">
+                  <input type="checkbox" class="opacity-0 w-0 h-0 peer" @click="toggleAutoSave" v-model="currentWork.isAutoSave"/>
+                  <span
+                    class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
+                    ></span>
+                </div>
+              </label>
+              <span class="ml-2">{{ currentWork.isAutoSave ? 'on' : 'off' }}</span>              
+            </div>
+            <div class="relative editorSettingCard-linear-bgc py-3 px-4 w-full before:h-full before:w-1 before:bg-gray-500 before:content-[''] before:absolute before:top-0 before:left-0">
+              <div class="flex flex-col">
+              <label for="autoUpdatingPreview">Auto-Updating Preview</label>
+              <span class="text-xs align-text-bottom mb-4 mt-1">If enabled, the preview panel updates automatically as you code. If disabled, use the "Run" button to update.</span>
+              </div>
+              <label class="py-2 hover:cursor-pointer">
+                <div class="relative inline-block w-13 h-7 ">
+                  <input type="checkbox" class="opacity-0 w-0 h-0 peer" @click="toggleAutoPreview" v-model="currentWork.isAutoPreview"/>
+                  <span
+                    class="absolute pointer bg-gray-300 top-0 left-0 right-0 bottom-0 rounded-4xl peer-checked:bg-green-400  transition before:content-[''] before:h-8 before:w-8 before:left-0 before:bottom-[-2px] before:bg-white before:transition  before:absolute before:rounded-4xl  peer-checked:before:translate-x-6"
+                    ></span>
+                </div>
+              </label>
+              <span class="ml-2">{{ currentWork.isAutoPreview ? 'on' : 'off' }}</span>              
             </div>
           </div>
         </div>

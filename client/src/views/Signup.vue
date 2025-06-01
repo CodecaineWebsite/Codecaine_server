@@ -5,12 +5,13 @@
 			<form class="mb-4">
 				<input type="hidden" name="authenticity_token" value="..." />
 				<button
-					type="submit"
+					type="button"
+					@click="signInWithGoogle"
 					class="w-full flex items-center justify-center gap-2 bg-gray-700 text-white font-bold py-3 rounded-md cursor-pointer hover:bg-black transition duration-200"
 				>
 					<img
 						src="https://img.icons8.com/color/16/000000/google-logo.png"
-						alt="G"
+						alt="Google logo"
 					/>
 					<span>Sign Up with Google</span>
 				</button>
@@ -48,9 +49,8 @@
 								v-model="email"
 								type="email"
 								id="email"
-								name="user[email]"
 								required
-								maxlength="55"
+								maxlength="20"
 								class="w-full border border-gray-300 rounded px-3 py-2 text-black bg-gray-200 hover:bg-white transition"
 							/>
 						</div>
@@ -63,12 +63,12 @@
 							>
 							<input
 								v-model="password"
-								type="password"
 								id="password"
-								name="user[password]"
+								type="password"
 								required
 								class="w-full border border-gray-300 rounded px-3 py-2 text-black bg-gray-200 hover:bg-white transition"
 							/>
+							<!-- 密碼驗證提示之後要改 -->
 							<ul class="text-xs text-gray-600 mt-2 list-disc pl-5">
 								<li>Include an <strong>UPPER</strong> and lowercase letter</li>
 								<li>Include a number</li>
@@ -92,12 +92,18 @@
 	</div>
 </template>
 
-<!-- 顯示與動畫 -->
 <script setup>
 import { ref } from "vue";
 import { auth } from "../config/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "vue-router";
+//google登入的部分
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useAuthStore } from "../stores/useAuthStore";
+import api from "../stores/api"; // 假設有一個 api.js 檔案處理 API 請求
+
+const authStore = useAuthStore();
+const provider = new GoogleAuthProvider();
 const router = useRouter();
 
 const showEmailForm = ref(false);
@@ -116,10 +122,10 @@ async function register() {
 			email.value,
 			password.value
 		);
-
 		success.value = "註冊成功！";
 		alert(success.value); //alert最後可以再調整美觀的樣式
 		router.push("/login");
+		return;
 	} catch (e) {
 		let msg = "";
 		switch (e.code) {
@@ -139,6 +145,25 @@ async function register() {
 	}
 }
 
+// Google 登入函式
+async function signInWithGoogle() {
+	try {
+		const result = await signInWithPopup(auth, provider);
+		const user = result.user;
+		const token = await user.getIdToken();
+		authStore.setToken(token); // 儲存 token 到 store
+		// 呼叫後端，送出 Firebase Token 做登入或註冊
+		await api.get("/api/auth/me");
+
+		alert("Google 登入成功！");
+		router.push("/trending"); // 登入成功後導向你想的頁面
+	} catch (error) {
+		console.error("Google 登入錯誤:", error);
+		alert("Google 登入失敗");
+	}
+}
+
+// 顯示與動畫
 function beforeEnter(el) {
 	el.style.height = "0";
 	el.style.opacity = "0";

@@ -1,4 +1,3 @@
-// 📦 種子資料產生器 seed.js
 import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -10,31 +9,51 @@ import {
   followsTable,
   tagsTable,
   penTagsTable
-} from "../db/schema.js";
+} from "../models/schema.js";
 import { eq } from "drizzle-orm";
 
 dotenv.config();
-
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);
 
-// 工具：隨機取樣
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+// 🧑‍🔬 測試用使用者
+const users = [
+  {
+    id: "seed_user_1",
+    email: "lucy@example.com",
+    username: "lucy",
+    password_hash: "dummy",
+    display_name: "Lucy",
+    is_pro: false,
+  },
+  {
+    id: "seed_user_2",
+    email: "jay@example.com",
+    username: "jay",
+    password_hash: "dummy",
+    display_name: "Jay",
+    is_pro: false,
+  },
+  {
+    id: "seed_user_3",
+    email: "momo@example.com",
+    username: "momo",
+    password_hash: "dummy",
+    display_name: "Momo",
+    is_pro: true,
+  },
+];
 
 const sampleTags = ["html", "css", "javascript", "gsap", "anime.js", "tailwind", "vue", "react"];
-const sampleUsers = [
-  { email: "lucy@example.com", username: "lucy", password_hash: "123", display_name: "Lucy" },
-  { email: "jay@example.com", username: "jay", password_hash: "123", display_name: "Jay" },
-  { email: "momo@example.com", username: "momo", password_hash: "123", display_name: "Momo" },
-];
+
+// 小工具
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const run = async () => {
   console.log("🌱 開始播種資料...");
 
-  // 1. 使用者
-  const users = await db.insert(usersTable).values(sampleUsers).returning();
+  const insertedUsers = await db.insert(usersTable).values(users).returning();
 
-  // 2. 標籤
   const tagRecords = await Promise.all(
     sampleTags.map((name) =>
       db.insert(tagsTable).values({ name }).onConflictDoNothing().returning()
@@ -42,49 +61,51 @@ const run = async () => {
   );
   const tags = tagRecords.flatMap((t) => t);
 
-  // 3. 作品
   const pens = [];
   for (let i = 0; i < 10; i++) {
-    const author = pick(users);
+    const author = pick(insertedUsers);
     const [pen] = await db.insert(pensTable).values({
       user_id: author.id,
       title: `作品 ${i + 1}`,
-      html_code: `<h1>Hello ${i}</h1>`
+      html_code: `<h1>Hello ${i}</h1>`,
+      css_code: "",
+      js_code: "",
+      description: null,
+      is_private: false,
     }).returning();
     pens.push(pen);
 
-    // 隨機加幾個標籤
     const chosenTags = [...tags].sort(() => 0.5 - Math.random()).slice(0, 2);
     for (const tag of chosenTags) {
       await db.insert(penTagsTable).values({ pen_id: pen.id, tag_id: tag.id }).onConflictDoNothing();
     }
   }
 
-  // 4. 留言
   for (const pen of pens) {
     for (let i = 0; i < 2; i++) {
-      const user = pick(users);
+      const user = pick(insertedUsers);
       await db.insert(commentsTable).values({
         pen_id: pen.id,
         user_id: user.id,
-        content: `這是 ${user.username} 留在 ${pen.title} 的留言`
+        content: `這是 ${user.username} 留在 ${pen.title} 的留言`,
       });
     }
   }
 
-  // 5. 收藏
-  for (const user of users) {
+  for (const user of insertedUsers) {
     const liked = [...pens].sort(() => 0.5 - Math.random()).slice(0, 3);
     for (const pen of liked) {
-      await db.insert(favoritesTable).values({ user_id: user.id, pen_id: pen.id }).onConflictDoNothing();
+      await db.insert(favoritesTable).values({
+        user_id: user.id,
+        pen_id: pen.id,
+      }).onConflictDoNothing();
     }
   }
 
-  // 6. 追蹤
   await db.insert(followsTable).values([
-    { follower_id: users[0].id, following_id: users[1].id },
-    { follower_id: users[0].id, following_id: users[2].id },
-    { follower_id: users[1].id, following_id: users[0].id },
+    { follower_id: insertedUsers[0].id, following_id: insertedUsers[1].id },
+    { follower_id: insertedUsers[0].id, following_id: insertedUsers[2].id },
+    { follower_id: insertedUsers[1].id, following_id: insertedUsers[0].id },
   ]).onConflictDoNothing();
 
   console.log("✅ 播種完成！");
@@ -112,16 +133,14 @@ if (process.argv.includes("--cleanup")) {
   });
 }
 
+// ✅ 3 位使用者（使用非 Firebase UID 格式，避免衝突）
 
-// 自動建立的資料：
-// 3 位使用者
+// ✅ 8 組常見標籤（html, css, javascript…）
 
-// 8 組常見標籤（html, css, javascript…）
+// ✅ 10 筆作品，每筆隨機加上 2 個標籤
 
-// 10 筆作品，每筆隨機加上 2 個標籤
+// ✅ 每篇作品有 2 則留言
 
-// 每篇作品有 2 則留言
+// ✅ 每個使用者收藏 3 筆作品
 
-// 每個使用者收藏 3 筆作品
-
-// 使用者彼此之間有追蹤關係
+// ✅ 使用者彼此有追蹤關係

@@ -1,13 +1,14 @@
 <template>
   <div class="login-component">
     <div class="main-wrapper">
-      <div class="logo">CODEPEN</div>
+      <div class="logo">Codecaine</div>
       <div class="header">Log In</div>
     </div>
 
     <div class="container">
       <div class="left">
         <button class="social-btn">
+          <!-- Google SVG -->
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 533.5 544.3">
             <path fill="#4285F4" d="M533.5 278.4c0-17.4-1.4-34.1-4.3-50.4H272v95.5h146.7c-6.3 34.1-25.3 63-54 82v68h87.3c51.2-47.1 81.5-116.7 81.5-195.1z"/>
             <path fill="#34A853" d="M272 544.3c73.6 0 135.3-24.4 180.4-66.2l-87.3-68c-24.2 16.2-55.3 25.8-93.1 25.8-71.4 0-132-48.1-153.6-112.7h-90.7v70.6C72.8 483.3 165.2 544.3 272 544.3z"/>
@@ -18,6 +19,7 @@
         </button>
 
         <button class="social-btn">
+          <!-- GitHub SVG -->
           <svg viewBox="0 0 16 16" fill="#fff" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.22 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
           </svg>
@@ -79,68 +81,51 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, nextTick } from 'vue';
 
-export default {
-  name: 'LoginComponent',
-  setup() {
-    const infoOpen = ref(false);
-    const infoContent = ref(null);
+// 以下都是直接寫在最上層，就能自動暴露給 template 使用
 
-    const resetOpen = ref(false);
-    const resetBox = ref(null);
+const infoOpen = ref(false);
+const infoContent = ref(null);
 
-    
-    const toggleInfo = () => {
-      if (!infoOpen.value) {
-        
-        infoOpen.value = true;
-        nextTick(() => {
-          const el = infoContent.value;
-          el.style.maxHeight = el.scrollHeight + 'px';
-          el.style.opacity = '1';
-        });
-      } else {
-        
-        const el = infoContent.value;
-        el.style.maxHeight = '0';
-        el.style.opacity = '0';
-        setTimeout(() => {
-          infoOpen.value = false;
-        }, 500); 
-      }
-    };
+const resetOpen = ref(false);
+const resetBox = ref(null);
 
-    
-    const toggleReset = () => {
-      resetOpen.value = !resetOpen.value;
-      nextTick(() => {
-        const el = resetBox.value;
-        if (resetOpen.value) {
-          el.style.maxHeight = el.scrollHeight + 'px';
-          el.style.opacity = '1';
-        } else {
-          el.style.maxHeight = '0';
-          el.style.opacity = '0';
-        }
-      });
-    };
-
-    return {
-      infoOpen,
-      infoContent,
-      toggleInfo,
-      resetOpen,
-      resetBox,
-      toggleReset
-    };
+const toggleInfo = () => {
+  if (!infoOpen.value) {
+    infoOpen.value = true;
+    nextTick(() => {
+      const el = infoContent.value;
+      el.style.maxHeight = el.scrollHeight + 'px';
+      el.style.opacity = '1';
+    });
+  } else {
+    const el = infoContent.value;
+    el.style.maxHeight = '0';
+    el.style.opacity = '0';
+    setTimeout(() => {
+      infoOpen.value = false;
+    }, 500);
   }
+};
+
+const toggleReset = () => {
+  resetOpen.value = !resetOpen.value;
+  nextTick(() => {
+    const el = resetBox.value;
+    if (resetOpen.value) {
+      el.style.maxHeight = el.scrollHeight + 'px';
+      el.style.opacity = '1';
+    } else {
+      el.style.maxHeight = '0';
+      el.style.opacity = '0';
+    }
+  });
 };
 </script>
 
 <style scoped>
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -158,7 +143,6 @@ export default {
   min-height: 100vh;
   padding: 1rem;
 }
-
 
 .main-wrapper {
   max-width: 960px;
@@ -184,7 +168,6 @@ export default {
   margin-bottom: 0;
 }
 
-
 .container {
   display: flex;
   max-width: 960px;
@@ -203,9 +186,8 @@ export default {
   flex: 1;
 }
 
-
 .social-btn {
-  width: 75%;
+  width: 100%;
   display: flex;
   align-items: center;
   padding: 0.75rem 1rem;
@@ -286,7 +268,6 @@ export default {
   color: #ffffff;
 }
 
-
 .divider {
   position: relative;
   display: flex;
@@ -323,7 +304,6 @@ export default {
   background: #1e1f26;
   color: #ccc;
 }
-
 
 .right {
   flex: 1;
@@ -368,7 +348,6 @@ export default {
   background: #2fa055;
 }
 
-
 .forgot {
   text-align: center;
   margin: 0.75rem 0;
@@ -379,7 +358,6 @@ export default {
   text-decoration: none;
   cursor: pointer;
 }
-
 
 #reset-box {
   max-height: 0;
@@ -414,7 +392,6 @@ export default {
 .btn-secondary:hover {
   background: #4b4e5a;
 }
-
 
 .signup-footer {
   max-width: 960px;

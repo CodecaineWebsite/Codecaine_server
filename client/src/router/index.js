@@ -79,10 +79,15 @@ const router = createRouter({
 			],
 		},
 		{
-			path: "/pen",
-			name: "pen",
-			component: () => import("../views/Pen.vue"),
-		},
+      path: "/pen",
+      name: "newPen",
+      component: () => import("../views/Pen.vue"),
+    },
+    {
+      path: "/:username/pen/:id",
+      name: "pen",
+      component: () => import("../views/Pen.vue"),
+    }
 	],
 });
 router.beforeEach((to, from, next) => {
