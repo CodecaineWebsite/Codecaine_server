@@ -1,11 +1,58 @@
 @import "tailwindcss";
 
 @theme {
-  --font-archivo: "Archivo Black","sans-serif";
+  /* 字體 */
+  --font-archivo: "Archivo Black", "sans-serif";
+
+  /* 顏色樣式 */
+  --color-cc-1: white;
+  --color-cc-2: #f1f1f3;
+  --color-cc-3: rgb(234, 234.5, 237.5);
+  --color-cc-4: #e3e4e8;
+  --color-cc-5: #d5d7de;
+  --color-cc-6: #c7c9d3;
+  --color-cc-7: #b7bbc8;
+  --color-cc-8: #aaaebc;
+  --color-cc-9: #9b9dad;
+  --color-cc-10: #868ca0;
+  --color-cc-11: #717790;
+  --color-cc-12: #5a5f73;
+  --color-cc-13: #444857;
+  --color-cc-14: #2c303a;
+  --color-cc-15: rgb(37, 39.5, 48);
+  --color-cc-16: #1e1f26;
+  --color-cc-17: #131417;
+  --color-cc-18: #0a0a0c;
+  --color-cc-19: #010101;
+  --color-cc-20: black;
+  --color-cc-green: #47cf73;
+  --color-cc-green-light: #d3ffe1;
+  --color-cc-green-dark: #248c46;
+  --color-cc-yellow: #ffdd40;
+  --color-cc-yellow-light: #f9e9a2;
+  --color-cc-yellow-dark: #d9b200;
+  --color-cc-yellow-darker: #5c4813;
+  --color-cc-purple: #ae63e4;
+  --color-cc-purple-light: #be9fe4;
+  --color-cc-purple-dark: #754cac;
+  --color-cc-red: #ff3c41;
+  --color-cc-red-very-light: #ffcfcb;
+  --color-cc-red-light: #f19994;
+  --color-cc-red-dark: #a00808;
+  --color-cc-blue: #0ebeff;
+  --color-cc-blue-light: #76daff;
+  --color-cc-blue-dark: #3d88c3;
+  --color-cc-link: #76daff;
+  --color-cc-link-on-white: #1f798f;
+  --color-cc-link-on-black: #56bcf9;
+  --color-cc-pens: #0ebeff;
+  --color-cc-posts: #47cf73;
+  --color-cc-collections: #ae63e4;
+  --color-cc-projects: #ffdd40;
 }
 
-.editor-bgc{
-  background-color: #1C1C1C;
+.editor-bgc {
+  background-color: #1c1c1c;
 }
 .editor-block-title-color {
   color: #b2b8c5;
@@ -20,7 +67,7 @@
 }
 
 .editor-resizer-border-color {
-  border-color: #2D2D2D;
+  border-color: #2d2d2d;
 }
 
 .font-size-15 {
