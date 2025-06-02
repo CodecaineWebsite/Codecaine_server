@@ -22,6 +22,26 @@
 .editor-resizer-border-color {
   border-color: #2D2D2D;
 }
+@layer utilities {
+  .bg-card-text{
+    @apply bg-[#1e1f26];
+  }
+  .bg-card-background {
+    @apply bg-[#111];
+  }
+  .bg-card-menu {
+    @apply bg-[#2d2c36];
+  }
+  .hover-bg-card-hover:hover {
+    @apply bg-[#3a3b47];
+  }
+  .bg-card-button-primary {
+    @apply bg-[#2d2d38];
+  }
+  .bg-card-button-secondary {
+    @apply bg-[#4b4c5c];
+  }
+}
 
 .bg-panel {
   background-color: #1E1F26;
