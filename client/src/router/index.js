@@ -131,6 +131,11 @@ const router = createRouter({
     },
     {
       path: "/pen",
+      name: "newPen",
+      component: () => import("../views/Pen.vue"),
+    },
+    {
+      path: "/:username/pen/:id",
       name: "pen",
       component: () => import("../views/Pen.vue"),
     },
