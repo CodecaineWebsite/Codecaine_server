@@ -23,6 +23,49 @@
   border-color: #2D2D2D;
 }
 
+.bg-panel {
+  background-color: #1E1F26;
+}
+
+.bg-input {
+  background-color: #2f2f3a;
+}
+
+.bg-button {
+  background-color: #3c3f4a;
+}
+
+.bg-button-hover:hover {
+  background-color: #4a4e5c;
+}
+
+.border-default {
+  border-color: #444654;
+}
+
+.border-panel {
+  border-color: #2d2e36;
+}
+
+.border-danger {
+  border-color: #dc2626;
+}
+
+.bg-grid-active {
+  background-color: #71738a;
+}
+
+.bg-list-hover:hover {
+  background-color: #4A4B55;
+}
+
+.bg-page {
+  background-color: #2a2b32;
+}
+
+.bg-dropdown {
+  background-color: #2A2B32;
+}
 .font-size-15 {
   font-size: 15px;
 }
