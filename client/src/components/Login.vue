@@ -78,8 +78,8 @@
 <script setup>
 import { ref, nextTick } from 'vue';
 
-import GoogleIcon from './icons/GoogleIcon.vue';
-import GithubIcon from './icons/GithubIcon.vue';
+import GoogleIcon from '@/components/icons/GoogleIcon.vue';
+import GithubIcon from '@/components/icons/GithubIcon.vue';
 
 
 const infoOpen = ref(false);
