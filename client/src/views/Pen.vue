@@ -3,6 +3,7 @@
   import Icon from '../assets/icon.svg';
   import Edit from '../assets/edit.svg';
   import Like from '../assets/like.svg';
+  import Run from '../assets/run.svg';
   import Cloud from '../assets/cloud.svg';
   import Arrow from '../assets/arrow.svg';
   import ArrowWhite from '../assets/arrow-white.svg';
@@ -25,9 +26,9 @@
 
   const route = useRoute();
   const workStore = useWorkStore()
-  const { updateCurrentCode, toggleAutoSave, toggleAutoPreview handleCurrentIdChange  }= workStore; //放function
+  const { updateCurrentCode, toggleAutoSave, toggleAutoPreview, handleCurrentIdChange  }= workStore; //放function
   const { currentWork } = storeToRefs(workStore); //放資料
-  const { html, css, javascript, isAutoPreview } = toRefs(currentWork.value)
+  const { html, css, javascript } = toRefs(currentWork.value)
   handleCurrentIdChange(route.params.id)
 
   const htmlCode = ref(currentWork.value.html);
@@ -361,6 +362,12 @@
         <button v-if="isLoggedIn" type="button" class="text-[aliceblue] rounded px-3 md:px-5 py-1 md:py-2 bg-[#444857] editorSmallButton-hover-bgc  hover:cursor-pointer">
           <div class="h-7 flex">
             <img :src="Like" alt="likeBtn" class="w-4">
+          </div>
+        </button>
+        <button v-if="!currentWork.isAutoPreview" type="button" class="text-[aliceblue] rounded px-3 md:px-5 py-1 md:py-2 bg-[#444857] editorSmallButton-hover-bgc  hover:cursor-pointer">
+          <div class="h-7 flex items-center gap-1">
+            <img :src="Run" alt="runBtn" class="w-4">
+            <span>Run</span>
           </div>
         </button>
         <div class="md:flex hidden">
