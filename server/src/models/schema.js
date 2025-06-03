@@ -16,7 +16,9 @@ const usersTable = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   username: varchar("username", { length: 50 }).notNull(),
   is_pro: boolean("is_pro").default(false),
-  profile_image: text("profile_image"), // 存網址
+  profile_image_url: text("profile_image_url"), // 存網址
+  profile_image_key: varchar("profile_image_key",{length:255}),
+  profile_image_last_updated: timestamp('profile_image_last_updated').defaultNow(),
   display_name: varchar("display_name", { length: 100 }),
   location: varchar("location", { length: 255 }),
   bio: text("bio"),
