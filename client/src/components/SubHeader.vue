@@ -108,11 +108,15 @@
                 </button>
               </li>
               <li>
-                <button class="px-4 py-2 text-left hover:bg-gray-700 w-full">
+                <button
+                  class="px-4 py-2 text-left hover:bg-gray-700 w-full cursor-pointer"
+                  @click="profile"
+                >
                   Profile
                 </button>
               </li>
 
+              <hr class="border-gray-700 my-1 mx-4" />
               <hr class="border-gray-700 my-1 mx-4" />
 
               <li class="flex items-center px-4 py-2 hover:bg-gray-700">
@@ -169,6 +173,9 @@ const handleLogout = async () => {
   await signOut(auth);
   authStore.clearToken();
   router.push("/");
+};
+const profile = () => {
+  router.push("/profile");
 };
 
 const showMenu = ref(false);
