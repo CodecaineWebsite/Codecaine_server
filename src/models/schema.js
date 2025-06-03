@@ -32,13 +32,23 @@ const usersTable = pgTable("users", {
 const pensTable = pgTable("pens", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   user_id: varchar("user_id", { length: 128 }).references(() => usersTable.id),
+  title: varchar("title", { length: 100 }).default("untitled"),
+  description: varchar("description", { length: 500 }), // 刪除 description 的 not null設定
   html_code: text("html_code"),
   css_code: text("css_code"),
   js_code: text("js_code"),
-  title: varchar("title", { length: 100 }).notNull(),
-  description: text(), // 刪除 description 的 not null設定
+  resource_css: array(text("resource_css")),
+  resource_js: array(text("resource_js")),
+  favorites_count: integer("favorites_count").default(0),
+  views: integer("views").default(0),
+  view_mode: varchar("view_mode", { length: 32 }).default("center"),
+  is_autosave: boolean("is_autosave").default(true),
+  is_autopreview: boolean("is_autopreview").default(true),
   is_private: boolean("is_private").default(false),
+  is_deleted: boolean("is_deleted").default(false),
   created_at: timestamp().defaultNow(),
+  updated_at: timestamp().defaultNow(),
+  deleted_at: timestamp(),
 });
 // 未來擴充：Preprocessors, external Scripts, npm packages, CSS, Base, Vendor Prefixing, auto save, auto-upating preview, format on save, code indentation, code intent width
 
