@@ -97,7 +97,7 @@ import api from "../stores/api";
 async function syncUser() {
 	try {
 		const res = await api.get(
-			"/auth/me" // 原為 POST http://localhost:3000/api/addusers , 改為 GET http://localhost:3000/api/auth/me
+			"/api/auth/me" // 原為 POST http://localhost:3000/api/addusers , 改為 GET http://localhost:3000/api/auth/me
 		);
 
 		console.log("身份驗證成功：", res.data);
