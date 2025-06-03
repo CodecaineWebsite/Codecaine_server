@@ -9,14 +9,14 @@ npm install
 ### 2. 安裝 PostgreSQL 與 pgAdmin，並建立一個測試資料庫
 
 ### 3. 設定環境變數（.env）
-請在 /server 目錄下建立 .env 檔，內容如下：
+請在根目錄下建立 .env 檔，內容如下：
 
 ```
 DATABASE_URL=postgresql://[你的postgres帳號]:[密碼]@localhost:5432/[資料庫名稱]
 FIREBASE_SERVICE_ACCOUNT={"type":"service_account", ...}
 ```
 DATABASE_URL：連線資料庫用
-FIREBASE_SERVICE_ACCOUNT：完整內容請至 Discord 下載威廷的環境變數檔
+FIREBASE_SERVICE_ACCOUNT：請向威廷索取
 
 ### 4. 建立資料表與種子資料
 請在 /server 目錄執行：
@@ -51,7 +51,7 @@ req.userID // 使用者的 firebase uid
 req.user   // 使用者的 firebase user 物件
 ```
 
-使用者首次登入/註冊後，前端請呼叫：
+使用者註冊後首次登入，前端呼叫：
 
 ```
 GET /api/auth/me
