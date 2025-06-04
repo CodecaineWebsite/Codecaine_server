@@ -7,7 +7,9 @@ import {
   boolean,
   primaryKey,
   serial,
+  array,
 } from "drizzle-orm/pg-core";
+import { sql } from 'drizzle-orm';
 
 // 使用者資料表
 const usersTable = pgTable("users", {
@@ -37,8 +39,8 @@ const pensTable = pgTable("pens", {
   html_code: text("html_code"),
   css_code: text("css_code"),
   js_code: text("js_code"),
-  resources_css: array(text("resources_css")),
-  resources_js: array(text("resources_js")),
+  resources_css: text("resources_css").array().notNull().default(sql`'{}'::text[]`),
+  resources_js: text("resources_js").array().notNull().default(sql`'{}'::text[]`),
   favorites_count: integer("favorites_count").default(0),
   comments_count: integer("comments_count").default(0),
   views_count: integer("views_count").default(0),
