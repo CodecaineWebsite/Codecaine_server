@@ -7,7 +7,6 @@ import {
   boolean,
   primaryKey,
   serial,
-  array,
 } from "drizzle-orm/pg-core";
 import { sql } from 'drizzle-orm';
 
