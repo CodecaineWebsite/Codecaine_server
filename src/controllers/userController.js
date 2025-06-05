@@ -175,7 +175,7 @@ export const updateUserEmail = async (req, res) => {
 	try {
 		await db.update(usersTable).set({ email }).where(eq(usersTable.id, uid));
 
-		return res.status(200).json({ message: "信箱已更新成功" });
+		return res.status(200).json({ message: "Email updated successfully." });
 	} catch (error) {
 		console.error("更新信箱錯誤：", error);
 		return res.status(500).json({ error: "更新失敗" });
