@@ -16,16 +16,28 @@ dotenv.config();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);
 
-// 使用者
-const users = Array.from({ length: 10 }).map((_, i) => ({
+// 真實風格人名
+const names = [
+  "lucy",
+  "jay",
+  "momo",
+  "alex",
+  "nina",
+  "leo",
+  "ella",
+  "max",
+  "yuki",
+  "zack",
+];
+
+const users = names.map((name, i) => ({
   id: `seed_user_${i + 1}`,
-  email: `user${i + 1}@example.com`,
-  username: `user${i + 1}`,
-  display_name: `User ${i + 1}`,
+  email: `${name}@example.com`,
+  username: name,
+  display_name: name[0].toUpperCase() + name.slice(1),
   is_pro: i % 3 === 0,
 }));
 
-// 標籤
 const sampleTags = [
   "html",
   "css",
@@ -148,7 +160,7 @@ const run = async () => {
         favorites_count: favorites,
         views_count: Math.floor(Math.random() * 451) + 50, // 50–500
       })
-      .where(eq(pensTable.id,penId));
+      .where(eq(pensTable.id, penId));
   }
 
   console.log("✅ 播種完成！");
@@ -176,10 +188,11 @@ if (process.argv.includes("--cleanup")) {
   });
 }
 
-// ✅ 10 位使用者（使用非 Firebase UID 格式，避免衝突）
+// ✅ 10 位使用者（以 lucy、jay、momo 等人名命名）
 // ✅ 8 組常見標籤（html, css, javascript…）
 // ✅ 每人發表 3 份作品（共 30 筆），每筆隨機加上 2 個標籤
 // ✅ 每篇作品有 5 則留言（共 150 則）
 // ✅ 每位使用者收藏 5 筆其他使用者的作品（共 50 筆）
 // ✅ 前 3 位使用者彼此互相追蹤
-// ✅ 新增作品的 comments_count / favorites_count / views_count 
+// ✅ 每筆作品新增的 comments_count / favorites_count / views_count
+
