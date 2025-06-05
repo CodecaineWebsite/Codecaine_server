@@ -164,7 +164,10 @@ export const getUserFollowers = async (req, res) => {
 	}
 };
 
-// put / updateUserEmail
+/**
+ * PUT /api/users/:id/email
+ * 更新信箱
+ */
 export const updateUserEmail = async (req, res) => {
 	const { email } = req.body;
 	const uid = req.userId;
