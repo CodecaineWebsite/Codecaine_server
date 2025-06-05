@@ -164,16 +164,15 @@ export const getUserFollowers = async (req, res) => {
 	}
 };
 
-// post / updateUserEmail
+// put / updateUserEmail
 export const updateUserEmail = async (req, res) => {
 	const { email } = req.body;
-
+	const uid = req.userId;
 	if (!email) {
 		return res.status(400).json({ error: "Missing email" });
 	}
 
 	try {
-		const uid = req.userId;
 		await db.update(usersTable).set({ email }).where(eq(usersTable.id, uid));
 
 		return res.status(200).json({ message: "信箱已更新成功" });

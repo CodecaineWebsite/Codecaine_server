@@ -49,6 +49,8 @@ router.put(
 	updateUserProfile
 );
 
+router.put("/:id/email", verifyFirebase, updateUserEmail);
+
 /**
  * GET /api/users/:id/pens
  * 查詢某使用者的所有作品
@@ -66,8 +68,6 @@ router.get("/:id/following", getUserFollowing);
  * 查詢追蹤此使用者的人
  */
 router.get("/:id/followers", getUserFollowers);
-
-router.post("/update-email", verifyFirebase, updateUserEmail);
 
 export default router;
 
