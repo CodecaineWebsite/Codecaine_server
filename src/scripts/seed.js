@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { eq } from "drizzle-orm";
 import { Pool } from "pg";
 import {
   usersTable,
@@ -8,45 +9,46 @@ import {
   commentsTable,
   followsTable,
   tagsTable,
-  penTagsTable
+  penTagsTable,
 } from "../models/schema.js";
-import { eq } from "drizzle-orm";
 
 dotenv.config();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);
 
-// 🧑‍🔬 測試用使用者
-const users = [
-  {
-    id: "seed_user_1",
-    email: "lucy@example.com",
-    username: "lucy",
-    password_hash: "dummy",
-    display_name: "Lucy",
-    is_pro: false,
-  },
-  {
-    id: "seed_user_2",
-    email: "jay@example.com",
-    username: "jay",
-    password_hash: "dummy",
-    display_name: "Jay",
-    is_pro: false,
-  },
-  {
-    id: "seed_user_3",
-    email: "momo@example.com",
-    username: "momo",
-    password_hash: "dummy",
-    display_name: "Momo",
-    is_pro: true,
-  },
+// 真實風格人名
+const names = [
+  "lucy",
+  "jay",
+  "momo",
+  "alex",
+  "nina",
+  "leo",
+  "ella",
+  "max",
+  "yuki",
+  "zack",
 ];
 
-const sampleTags = ["html", "css", "javascript", "gsap", "anime.js", "tailwind", "vue", "react"];
+const users = names.map((name, i) => ({
+  id: `seed_user_${i + 1}`,
+  email: `${name}@example.com`,
+  username: name,
+  display_name: name[0].toUpperCase() + name.slice(1),
+  is_pro: i % 3 === 0,
+}));
 
-// 小工具
+const sampleTags = [
+  "html",
+  "css",
+  "javascript",
+  "gsap",
+  "anime.js",
+  "tailwind",
+  "vue",
+  "react",
+];
+
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const run = async () => {
@@ -62,51 +64,104 @@ const run = async () => {
   const tags = tagRecords.flatMap((t) => t);
 
   const pens = [];
-  for (let i = 0; i < 10; i++) {
-    const author = pick(insertedUsers);
-    const [pen] = await db.insert(pensTable).values({
-      user_id: author.id,
-      title: `作品 ${i + 1}`,
-      html_code: `<h1>Hello ${i}</h1>`,
-      css_code: "",
-      js_code: "",
-      description: null,
-      is_private: false,
-    }).returning();
-    pens.push(pen);
+  for (const author of insertedUsers) {
+    for (let j = 0; j < 3; j++) {
+      const [pen] = await db
+        .insert(pensTable)
+        .values({
+          user_id: author.id,
+          title: `${author.username} 的作品 ${j + 1}`,
+          html_code: `<h1>${author.username} says hi (${j + 1})</h1>`,
+          css_code: "body { background: #eee; }",
+          js_code: "console.log('Hello!');",
+          description: `這是 ${author.username} 的第 ${j + 1} 份作品。`,
+          resources_css: [],
+          resources_js: [],
+        })
+        .returning();
+      pens.push(pen);
 
-    const chosenTags = [...tags].sort(() => 0.5 - Math.random()).slice(0, 2);
-    for (const tag of chosenTags) {
-      await db.insert(penTagsTable).values({ pen_id: pen.id, tag_id: tag.id }).onConflictDoNothing();
+      const chosenTags = [...tags]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 2);
+      for (const tag of chosenTags) {
+        await db
+          .insert(penTagsTable)
+          .values({ pen_id: pen.id, tag_id: tag.id })
+          .onConflictDoNothing();
+      }
     }
   }
 
   for (const pen of pens) {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 5; i++) {
       const user = pick(insertedUsers);
       await db.insert(commentsTable).values({
         pen_id: pen.id,
         user_id: user.id,
-        content: `這是 ${user.username} 留在 ${pen.title} 的留言`,
+        content: `💬 ${user.username} 的留言 (${i + 1})`,
       });
     }
   }
 
   for (const user of insertedUsers) {
-    const liked = [...pens].sort(() => 0.5 - Math.random()).slice(0, 3);
+    const liked = [...pens]
+      .filter((p) => p.user_id !== user.id)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 5);
+
     for (const pen of liked) {
-      await db.insert(favoritesTable).values({
-        user_id: user.id,
-        pen_id: pen.id,
-      }).onConflictDoNothing();
+      await db
+        .insert(favoritesTable)
+        .values({
+          user_id: user.id,
+          pen_id: pen.id,
+        })
+        .onConflictDoNothing();
     }
   }
 
-  await db.insert(followsTable).values([
-    { follower_id: insertedUsers[0].id, following_id: insertedUsers[1].id },
-    { follower_id: insertedUsers[0].id, following_id: insertedUsers[2].id },
-    { follower_id: insertedUsers[1].id, following_id: insertedUsers[0].id },
-  ]).onConflictDoNothing();
+  await db
+    .insert(followsTable)
+    .values([
+      { follower_id: insertedUsers[0].id, following_id: insertedUsers[1].id },
+      { follower_id: insertedUsers[0].id, following_id: insertedUsers[2].id },
+      { follower_id: insertedUsers[1].id, following_id: insertedUsers[0].id },
+      { follower_id: insertedUsers[1].id, following_id: insertedUsers[2].id },
+      { follower_id: insertedUsers[2].id, following_id: insertedUsers[0].id },
+    ])
+    .onConflictDoNothing();
+
+  // ✅ 更新每筆作品的留言數、收藏數與隨機觀看次數
+  const updatedCounts = new Map();
+  for (const pen of pens) {
+    updatedCounts.set(pen.id, { comments: 0, favorites: 0 });
+  }
+
+  const allComments = await db.select().from(commentsTable);
+  for (const comment of allComments) {
+    if (updatedCounts.has(comment.pen_id)) {
+      updatedCounts.get(comment.pen_id).comments++;
+    }
+  }
+
+  const allFavorites = await db.select().from(favoritesTable);
+  for (const fav of allFavorites) {
+    if (updatedCounts.has(fav.pen_id)) {
+      updatedCounts.get(fav.pen_id).favorites++;
+    }
+  }
+
+  for (const [penId, { comments, favorites }] of updatedCounts.entries()) {
+    await db
+      .update(pensTable)
+      .set({
+        comments_count: comments,
+        favorites_count: favorites,
+        views_count: Math.floor(Math.random() * 451) + 50, // 50–500
+      })
+      .where(eq(pensTable.id, penId));
+  }
 
   console.log("✅ 播種完成！");
   process.exit();
@@ -133,14 +188,11 @@ if (process.argv.includes("--cleanup")) {
   });
 }
 
-// ✅ 3 位使用者（使用非 Firebase UID 格式，避免衝突）
-
+// ✅ 10 位使用者（以 lucy、jay、momo 等人名命名）
 // ✅ 8 組常見標籤（html, css, javascript…）
+// ✅ 每人發表 3 份作品（共 30 筆），每筆隨機加上 2 個標籤
+// ✅ 每篇作品有 5 則留言（共 150 則）
+// ✅ 每位使用者收藏 5 筆其他使用者的作品（共 50 筆）
+// ✅ 前 3 位使用者彼此互相追蹤
+// ✅ 每筆作品新增的 comments_count / favorites_count / views_count
 
-// ✅ 10 筆作品，每筆隨機加上 2 個標籤
-
-// ✅ 每篇作品有 2 則留言
-
-// ✅ 每個使用者收藏 3 筆作品
-
-// ✅ 使用者彼此有追蹤關係
