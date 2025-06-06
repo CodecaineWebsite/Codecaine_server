@@ -36,7 +36,7 @@ router.get("/:category", async (req, res) => {
     let total;
     let totalPages;
     let page = parseInt(rawPage, 10);
-    const limit = 6;
+    const limit = 6; 
     const offset = (page - 1) * limit;
     try {
       const [countRow] = await db
