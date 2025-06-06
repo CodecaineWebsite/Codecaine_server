@@ -16,7 +16,7 @@ router.get("/:category", async (req, res) => {
   const { category } = req.params;
   const { q = "", page: rawPage = "1" } = req.query;
   const table = categoryMap[category];
-
+  const limit = 6; 
   // const keyword = `%${q.toLowerCase()}%`;
 
   if (!table) return res.status(400).json({ error: "無效的分類" });
@@ -36,8 +36,7 @@ router.get("/:category", async (req, res) => {
     let total;
     let totalPages;
     let page = parseInt(rawPage, 10);
-    const limit = 6; 
-    const offset = (page - 1) * limit;
+    
     try {
       const [countRow] = await db
         .select({ count: count() })
@@ -47,13 +46,17 @@ router.get("/:category", async (req, res) => {
 
       total = Number(countRow.count);
       totalPages = Math.ceil(total / limit);
+      if (page > totalPages || page < 0) {
+        page = 1;
+      }
     } catch (err) {
       console.error("搜尋總筆數錯誤:", err);
       return res.status(500).json({ error: "無法取得搜尋筆數" });
     }
 
     let results = [];
-
+    
+    const offset = (page - 1) * limit;
     try {
       results = await db
         .select({
