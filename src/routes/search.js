@@ -16,7 +16,7 @@ router.get("/:category", async (req, res) => {
   const { category } = req.params;
   const { q = "", page: rawPage = "1" } = req.query;
   const table = categoryMap[category];
-  const limit = 6; 
+  const limit = 6;
   // const keyword = `%${q.toLowerCase()}%`;
 
   if (!table) return res.status(400).json({ error: "無效的分類" });
@@ -36,7 +36,7 @@ router.get("/:category", async (req, res) => {
     let total;
     let totalPages;
     let page = parseInt(rawPage, 10);
-    
+
     try {
       const [countRow] = await db
         .select({ count: count() })
@@ -55,13 +55,16 @@ router.get("/:category", async (req, res) => {
     }
 
     let results = [];
-    
+
     const offset = (page - 1) * limit;
     try {
       results = await db
         .select({
           id: table.id,
           username: usersTable.username,
+          user_display_name: usersTable.display_name,
+          profile_image: usersTable.profile_image_url,
+          is_pro: usersTable.is_pro,
           title: table.title,
           description: table.description,
           favorites_count: table.favorites_count,
