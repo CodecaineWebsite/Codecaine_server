@@ -15,10 +15,7 @@ const categoryMap = {
 router.get("/:category", async (req, res) => {
   const { category } = req.params;
   const { q = "", page: rawPage = "1" } = req.query;
-  const page = parseInt(rawPage, 10);
   const table = categoryMap[category];
-  const limit = 6;
-  const offset = (page - 1) * limit;
 
   // const keyword = `%${q.toLowerCase()}%`;
 
@@ -34,12 +31,13 @@ router.get("/:category", async (req, res) => {
     )
   );
 
-  const whereClause = and(...keywordConditions);
+  const whereClause = and(eq(table.is_private, false), ...keywordConditions);
   try {
-
     let total;
     let totalPages;
-
+    let page = parseInt(rawPage, 10);
+    const limit = 6;
+    const offset = (page - 1) * limit;
     try {
       const [countRow] = await db
         .select({ count: count() })
@@ -60,10 +58,13 @@ router.get("/:category", async (req, res) => {
       results = await db
         .select({
           id: table.id,
+          username: usersTable.username,
           title: table.title,
           description: table.description,
+          favorites_count: table.favorites_count,
+          comments_count: table.comments_count,
+          views_count: table.views_count,
           created_at: table.created_at,
-          username: usersTable.username,
         })
         .from(table)
         .leftJoin(usersTable, eq(table.user_id, usersTable.id))
