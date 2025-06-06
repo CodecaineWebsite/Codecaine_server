@@ -12,7 +12,7 @@ import tagsRouter from "./src/routes/tags.js";
 import favoritesRouter from "./src/routes/favorites.js";
 import commentsRouter from "./src/routes/comments.js";
 import followsRouter from "./src/routes/follows.js";
-import searchRouter from "./src/routes/search.js"
+import searchRouter from "./src/routes/search.js";
 
 const { Pool } = pg;
 dotenv.config();
@@ -31,6 +31,7 @@ app.use(
 	})
 );
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
