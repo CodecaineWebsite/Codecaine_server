@@ -14,7 +14,7 @@ const categoryMap = {
  */
 router.get("/:category", async (req, res) => {
   const { category } = req.params;
-  const { q = "", rawPage = "1" } = req.query;
+  const { q = "", page: rawPage = "1" } = req.query;
   const page = parseInt(rawPage, 10);
   const table = categoryMap[category];
   const limit = 6;
