@@ -3,7 +3,7 @@ import db from "../config/db.js";
 import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
-
+import { verifyFirebase } from "../middlewares/verifyFirebase.js"
 const router = Router();
 
 /**
@@ -37,15 +37,26 @@ router.get("/:id", async (req, res) => {
  *   tags: ["html", "gsap"]
  * }
  */
-router.post("/", async (req, res) => {
+router.post("/", verifyFirebase, async (req, res) => {
+  const { userId } = req;
+  
   const {
     user_id,
     title,
+    description,
     html_code,
     css_code,
     js_code,
-    description,
-    is_public = true,
+    resources_css,
+    resources_js,
+    view_mode,
+    is_autosave,
+    is_autopreview,
+    is_private = false,
+    is_deleted = false,
+    created_at,
+    updated_at,
+    deleted_at,
     tags = [],
   } = req.body;
 
@@ -53,15 +64,23 @@ router.post("/", async (req, res) => {
   const [newPen] = await db
     .insert(pensTable)
     .values({
-      user_id,
+      user_id: userId,
       title,
+      description,
       html_code,
       css_code,
       js_code,
-      description,
-      is_public,
+      resources_css,
+      resources_js,
+      view_mode,
+      is_autosave,
+      is_autopreview,
+      is_private,
+      created_at,
+      updated_at,
     })
     .returning();
+  console.log(req.userId);
 
   // 2. 新增標籤（如果有）
   for (const tagName of tags) {
@@ -95,24 +114,63 @@ router.post("/", async (req, res) => {
  * PUT /api/pens/:id
  * 編輯作品（不包含標籤）
  */
-router.put("/:id", async (req, res) => {
+router.put("/:id", verifyFirebase, async (req, res) => {
+  const { userId } = req;
+  const { title, html, css, js } = req.body;
   const id = parseInt(req.params.id);
+  const work = await db.select().from(pensTable).where(eq(pensTable.id, id))[0];
   const update = await db
-    .update(pensTable)
-    .set(req.body)
-    .where(eq(pensTable.id, id))
-    .returning();
+  .update(pensTable)
+  .set({ title, html, css, js })
+  .where(eq(pensTable.id, id))
+  .returning();
+
+  if (!work || work.userId !== userId) {
+    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  }
+
   if (update.length === 0) return res.status(404).json({ error: "找不到作品" });
   res.json(update[0]);
 });
+/**
+ * PUT /api/pens/:id
+ * 暫時刪除作品
+ */
+router.put("/:id/trash", verifyFirebase, async (req, res) => {
+  const { userId } = req;
+  const id = parseInt(req.params.id);
+  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+  if (!work) return res.status(404).json({ error: "找不到作品" });
+  if (work.userId !== userId) return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  const now = new Date();
+    const update = await db
+    .update(pensTable)
+    .set({ deleted_at: now })
+    .where(eq(pensTable.id, id))
+    .returning();
+  res.json({ message: "已丟入垃圾桶，3 天後將自動刪除", data: update[0] });
+
+});
+
+async function deleteOldTrash() {
+  const now = new Date();
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+  const deleted = await db
+    .delete(pensTable)
+    .where(sql`${pensTable.deleted_at} IS NOT NULL AND ${pensTable.deleted_at} < ${threeDaysAgo}`);
+
+  console.log(`永久刪除 ${deleted.length || 0} 筆資料`);
+}
 
 /**
  * DELETE /api/pens/:id
  * 刪除作品（目前不 cascade 標籤關聯）
  */
 router.delete("/:id", async (req, res) => {
+  const { userId } = req;
   const id = parseInt(req.params.id);
-
+  req.userId
   await db.delete(pensTable).where(eq(pensTable.id, id));
   res.status(204).end();
 });
