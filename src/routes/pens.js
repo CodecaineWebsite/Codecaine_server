@@ -80,7 +80,6 @@ router.post("/", verifyFirebase, async (req, res) => {
       updated_at,
     })
     .returning();
-  console.log(req.userId);
 
   // 2. 新增標籤（如果有）
   for (const tagName of tags) {
@@ -116,21 +115,81 @@ router.post("/", verifyFirebase, async (req, res) => {
  */
 router.put("/:id", verifyFirebase, async (req, res) => {
   const { userId } = req;
-  const { title, html, css, js } = req.body;
   const id = parseInt(req.params.id);
-  const work = await db.select().from(pensTable).where(eq(pensTable.id, id))[0];
+  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+  
+  const {
+    title,
+    description,
+    html_code,
+    css_code,
+    js_code,
+    resources_css,
+    resources_js,
+    view_mode,
+    is_autosave,
+    is_autopreview,
+    is_private = false,
+    tags = [],
+  } = req.body;
+  
+  if (!work || work.user_id !== userId) {
+    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  }
+  
+  const now = new Date();
   const update = await db
   .update(pensTable)
-  .set({ title, html, css, js })
+  .set({ 
+    title,
+    description,
+    html_code,
+    css_code,
+    js_code,
+    resources_css,
+    resources_js,
+    view_mode,
+    is_autosave,
+    is_autopreview,
+    is_private,
+    updated_at: now,
+    tags, 
+  })
   .where(eq(pensTable.id, id))
   .returning();
 
-  if (!work || work.userId !== userId) {
-    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
-  }
-
   if (update.length === 0) return res.status(404).json({ error: "找不到作品" });
   res.json(update[0]);
+
+  // 🔁 更新 tags
+  // 1. 先刪掉舊的關聯
+  await db.delete(penTagsTable).where(eq(penTagsTable.pen_id, id));
+  
+  // 2. 建立新的關聯
+  for (const tagName of tags) {
+    // 確保 tag 存在（不存在就建立）
+    const [tag] = await db
+    .insert(tagsTable)
+    .values({ name: tagName })
+    .onConflictDoNothing()
+    .returning();
+    
+    const tagRecord =
+    tag || (await db.select().from(tagsTable).where(eq(tagsTable.name, tagName)))[0];
+    if (!tagRecord) continue;
+    
+    // 建立新關聯
+    await db
+    .insert(penTagsTable)
+    .values({
+      pen_id: id,
+      tag_id: tagRecord.id,
+    })
+    .onConflictDoNothing();
+  }
+  
+  res.json(updatedPen);
+  
 });
 /**
  * PUT /api/pens/:id
@@ -149,7 +208,7 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
     .where(eq(pensTable.id, id))
     .returning();
   res.json({ message: "已丟入垃圾桶，3 天後將自動刪除", data: update[0] });
-
+ 
 });
 
 async function deleteOldTrash() {
