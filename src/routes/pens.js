@@ -161,7 +161,7 @@ router.put("/:id", verifyFirebase, async (req, res) => {
   if (update.length === 0) return res.status(404).json({ error: "找不到作品" });
   res.json(update[0]);
 
-  // 🔁 更新 tags
+  // 更新 tags
   // 1. 先刪掉舊的關聯
   await db.delete(penTagsTable).where(eq(penTagsTable.pen_id, id));
   
