@@ -1,13 +1,18 @@
 import { Router } from "express";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
 import {
-  getUserById,
-  updateUserProfile,
-  getUserPens,
-  getUserFollowing,
-  getUserFollowers,
+	getUserById,
+	updateUserProfile,
+	getUserPens,
+	getUserFollowing,
+	getUserFollowers,
+	updateUserEmail,
 } from "../controllers/userController.js";
 import { upload } from "../config/s3.js";
+//工具包 在這裡完成router以後再拆成controller
+import db from "../config/db.js";
+import { usersTable, pensTable, followsTable } from "../models/schema.js";
+import { eq } from "drizzle-orm";
 
 const router = Router();
 
@@ -15,7 +20,7 @@ const router = Router();
  * GET /api/users/:id
  * 取得使用者個人資料（不含密碼）
  */
-router.get("/:id",getUserById);
+router.get("/:id", getUserById);
 
 /**
  * PUT /api/users/:id
@@ -38,11 +43,13 @@ router.get("/:id",getUserById);
  * - 未傳的欄位會保留原值，不會被清空
  */
 router.put(
-  "/:id",
-  verifyFirebase,
-  upload.single("profile_image"),
-  updateUserProfile
+	"/:id",
+	verifyFirebase,
+	upload.single("profile_image"),
+	updateUserProfile
 );
+
+router.put("/:id/email", verifyFirebase, updateUserEmail);
 
 /**
  * GET /api/users/:id/pens
