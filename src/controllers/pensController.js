@@ -32,12 +32,16 @@ export async function getMyPens(req, res) {
   // 關鍵字搜尋
   // 若關鍵字為空則略過空字串或全空白的搜尋，則不會加入搜尋條件 (撈出所有資料)
   if (q.trim()) {
-    filters.push(
+    const keywords = q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+
+    const keywordConditions = keywords.map((kw) =>
       or(
-        ilike(pensTable.title, `%${q}%`),
-        ilike(pensTable.description, `%${q}%`)
+        ilike(pensTable.title, `%${kw}%`),
+        ilike(pensTable.description, `%${kw}%`)
       )
     );
+
+    filters.push(and(...keywordConditions));
   }
 
   // 隱私過濾 (預設已為ALL)
@@ -76,7 +80,7 @@ export async function getMyPens(req, res) {
     ELSE 0
     END)`;
 
-    // 熱門權重分數加權 views * 1 + favorites * 3 + comments * 5 + 三天內新作品加 10 分
+      // 熱門權重分數加權 views * 1 + favorites * 3 + comments * 5 + 三天內新作品加 10 分
     }
 
     // 加入排序條件
@@ -87,7 +91,7 @@ export async function getMyPens(req, res) {
     );
 
     // 執行查詢
-    const pens = await query.limit(limit).offset(offset); 
+    const pens = await query.limit(limit).offset(offset);
 
     // 設定筆數查詢條件
     let countQuery = db.select({ count: sql`COUNT(*)` }).from(pensTable);
@@ -99,7 +103,6 @@ export async function getMyPens(req, res) {
     }
 
     countQuery = countQuery.where(and(...filters));
-
 
     const [{ count }] = await countQuery;
 
