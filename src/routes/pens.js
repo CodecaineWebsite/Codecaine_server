@@ -118,6 +118,10 @@ router.put("/:id", verifyFirebase, async (req, res) => {
   const id = parseInt(req.params.id);
   const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
   
+  if (!work || work.user_id !== userId) {
+    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  }
+  
   const {
     title,
     description,
@@ -133,12 +137,9 @@ router.put("/:id", verifyFirebase, async (req, res) => {
     tags = [],
   } = req.body;
   
-  if (!work || work.user_id !== userId) {
-    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
-  }
   
   const now = new Date();
-  const update = await db
+  const [updatedPen] = await db
   .update(pensTable)
   .set({ 
     title,
@@ -158,10 +159,9 @@ router.put("/:id", verifyFirebase, async (req, res) => {
   .where(eq(pensTable.id, id))
   .returning();
 
-  if (update.length === 0) return res.status(404).json({ error: "找不到作品" });
-  res.json(update[0]);
+  if (!updatedPen) return res.status(404).json({ error: "找不到作品" });
 
-  // 🔁 更新 tags
+  // 更新 tags
   // 1. 先刪掉舊的關聯
   await db.delete(penTagsTable).where(eq(penTagsTable.pen_id, id));
   
