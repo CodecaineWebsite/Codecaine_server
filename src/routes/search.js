@@ -15,11 +15,8 @@ const categoryMap = {
 router.get("/:category", async (req, res) => {
   const { category } = req.params;
   const { q = "", page: rawPage = "1" } = req.query;
-  const page = parseInt(rawPage, 10);
   const table = categoryMap[category];
   const limit = 6;
-  const offset = (page - 1) * limit;
-
   // const keyword = `%${q.toLowerCase()}%`;
 
   if (!table) return res.status(400).json({ error: "無效的分類" });
@@ -34,11 +31,11 @@ router.get("/:category", async (req, res) => {
     )
   );
 
-  const whereClause = and(...keywordConditions);
+  const whereClause = and(eq(table.is_private, false), ...keywordConditions);
   try {
-
     let total;
     let totalPages;
+    let page = parseInt(rawPage, 10);
 
     try {
       const [countRow] = await db
@@ -49,6 +46,9 @@ router.get("/:category", async (req, res) => {
 
       total = Number(countRow.count);
       totalPages = Math.ceil(total / limit);
+      if (page > totalPages || page < 0) {
+        page = 1;
+      }
     } catch (err) {
       console.error("搜尋總筆數錯誤:", err);
       return res.status(500).json({ error: "無法取得搜尋筆數" });
@@ -56,14 +56,21 @@ router.get("/:category", async (req, res) => {
 
     let results = [];
 
+    const offset = (page - 1) * limit;
     try {
       results = await db
         .select({
           id: table.id,
+          username: usersTable.username,
+          user_display_name: usersTable.display_name,
+          profile_image: usersTable.profile_image_url,
+          is_pro: usersTable.is_pro,
           title: table.title,
           description: table.description,
+          favorites_count: table.favorites_count,
+          comments_count: table.comments_count,
+          views_count: table.views_count,
           created_at: table.created_at,
-          username: usersTable.username,
         })
         .from(table)
         .leftJoin(usersTable, eq(table.user_id, usersTable.id))
