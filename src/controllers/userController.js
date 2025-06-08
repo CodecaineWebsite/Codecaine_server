@@ -38,7 +38,8 @@ export const updateUserProfile = async (req, res) => {
   const file = req.file;
   const fields = req.body;
   const updateData = {
-    username: fields.username, //username與displayname是否留一個就好?
+    display_name: fields.display_name,
+    username: fields.username,
     bio: fields.bio,
     location: fields.location,
     profile_link1: fields.profile_link1,
