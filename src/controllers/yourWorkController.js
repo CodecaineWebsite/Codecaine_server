@@ -2,7 +2,7 @@ import db from "../config/db.js";
 import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
 import { and, eq, ilike, or, asc, desc, sql } from "drizzle-orm";
 
-export async function getMyPens(req, res) {
+export async function searchYourWork(req, res) {
   const userId = req.userId; // 由 verifyFirebase middleware 注入
   const {
     q = "",

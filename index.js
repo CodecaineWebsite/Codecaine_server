@@ -10,7 +10,7 @@ import favoritesRouter from "./src/routes/favorites.js";
 import commentsRouter from "./src/routes/comments.js";
 import followsRouter from "./src/routes/follows.js";
 import searchRouter from "./src/routes/search.js";
-import myRouter from "./src/routes/my.js"
+import yourWorkRouter from "./src/routes/yourWork.js"
 
 const PORT = 3000;
 
@@ -31,7 +31,7 @@ app.use("/api/favorites", favoritesRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
 app.use("/api/search", searchRouter);
-app.use("/api/my",myRouter)
+app.use("/api/my",yourWorkRouter);
 
 app.listen(PORT, () => {
 	console.log(`Server running at http://localhost:${PORT}`);
