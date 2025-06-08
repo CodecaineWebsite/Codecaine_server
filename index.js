@@ -1,9 +1,6 @@
 import express from "express";
 import { Router } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import { drizzle } from "drizzle-orm/node-postgres";
-import pg from "pg";
 
 import authRouter from "./src/routes/auth.js";
 import usersRouter from "./src/routes/users.js";
@@ -13,14 +10,7 @@ import favoritesRouter from "./src/routes/favorites.js";
 import commentsRouter from "./src/routes/comments.js";
 import followsRouter from "./src/routes/follows.js";
 import searchRouter from "./src/routes/search.js";
-
-const { Pool } = pg;
-dotenv.config();
-
-const pool = new Pool({
-	connectionString: process.env.DATABASE_URL,
-});
-const db = drizzle(pool);
+import myRouter from "./src/routes/my.js"
 
 const PORT = 3000;
 
