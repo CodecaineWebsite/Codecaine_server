@@ -10,7 +10,6 @@ router.get("/pens", async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 4, 50);
   const offset = (page - 1) * 4;
 
-  
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
@@ -29,13 +28,11 @@ router.get("/pens", async (req, res) => {
     const pens = await db
       .select()
       .from(pensTable)
-      .orderBy(desc(trendingScore))
+      .orderBy(desc(trendingScore), desc(pensTable.created_at))
       .limit(limit)
       .offset(offset);
 
-    const [{ total }] = await db
-      .select({ total: count() })
-      .from(pensTable);
+    const [{ total }] = await db.select({ total: count() }).from(pensTable);
 
     res.json({
       results: pens,
