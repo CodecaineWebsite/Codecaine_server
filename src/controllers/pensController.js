@@ -45,7 +45,6 @@ export async function getMyPens(req, res) {
   if (privacy === "private") filters.push(eq(pensTable.is_private, true));
 
   try {
-
     let query; // 建立查詢語句
 
     // 若要過濾標前則 join tag 表
@@ -63,20 +62,34 @@ export async function getMyPens(req, res) {
 
     query = query.where(and(...filters));
 
+    // 設定排序條件
     let sortColumn = pensTable.created_at;
     if (sortKey === "updated") {
       sortColumn = pensTable.updated_at;
     } else if (sortKey === "popular") {
-      sortColumn = pensTable.favorites_count; // 熱門定義需重新調整
+      sortColumn = sql`
+    (${pensTable.views_count} * 1) +
+    (${pensTable.favorites_count} * 3) +
+    (${pensTable.comments_count} * 5) + 
+    (CASE
+    WHEN ${pensTable.created_at} > NOW() - interval '3 days' THEN 10
+    ELSE 0
+    END)`;
+
+    // 熱門權重分數加權 views * 1 + favorites * 3 + comments * 5 + 三天內新作品加 10 分
     }
 
+    // 加入排序條件
+    const isAsc = orderKey === "asc";
     query = query.orderBy(
-      orderKey === "asc" ? asc(sortColumn) : desc(sortColumn)
+      isAsc ? asc(sortColumn) : desc(sortColumn), // 第一排序
+      isAsc ? asc(pensTable.created_at) : desc(pensTable.created_at) // 第二排序
     );
 
-    const pens = await query.limit(limit).offset(offset); // 送出查詢
+    // 執行查詢
+    const pens = await query.limit(limit).offset(offset); 
 
-    // 計算筆數
+    // 設定筆數查詢條件
     let countQuery = db.select({ count: sql`COUNT(*)` }).from(pensTable);
 
     if (tag) {
@@ -86,6 +99,7 @@ export async function getMyPens(req, res) {
     }
 
     countQuery = countQuery.where(and(...filters));
+
 
     const [{ count }] = await countQuery;
 
@@ -100,5 +114,3 @@ export async function getMyPens(req, res) {
     res.status(500).json({ error: "伺服器錯誤，無法取得作品列表" });
   }
 }
-
-// TODO: 熱門定義需重新調整
