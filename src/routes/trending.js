@@ -28,11 +28,19 @@ router.get("/pens", async (req, res) => {
     const pens = await db
       .select()
       .from(pensTable)
+      .where(
+        and(eq(pensTable.is_private, false), eq(pensTable.is_deleted, false))
+      )
       .orderBy(desc(trendingScore), desc(pensTable.created_at))
       .limit(limit)
       .offset(offset);
 
-    const [{ total }] = await db.select({ total: count() }).from(pensTable);
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(pensTable)
+      .where(
+        and(eq(pensTable.is_private, false), eq(pensTable.is_deleted, false))
+      );
 
     res.json({
       results: pens,
@@ -41,8 +49,8 @@ router.get("/pens", async (req, res) => {
       currentPage: page,
     });
   } catch (err) {
-    console.error("取得 Trending 作品失敗", err);
-    res.status(500).json({ error: "伺服器錯誤" });
+    console.error("Failed to fetch trending pens:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
