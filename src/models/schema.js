@@ -12,10 +12,9 @@ import { sql } from 'drizzle-orm';
 
 // 使用者資料表
 const usersTable = pgTable("users", {
-  // id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   id: varchar("id", { length: 128 }).primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  username: varchar("username", { length: 50 }).notNull(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
   is_pro: boolean("is_pro").default(false),
   profile_image_url: text("profile_image_url"), // 存網址
   profile_image_key: varchar("profile_image_key",{length:255}),
@@ -26,6 +25,7 @@ const usersTable = pgTable("users", {
   profile_link1: text("profile_link1"),
   profile_link2: text("profile_link2"),
   profile_link3: text("profile_link3"),
+  is_deleted: boolean("is_deleted").default(false),
   created_at: timestamp().defaultNow(),
 });
 
@@ -47,12 +47,12 @@ const pensTable = pgTable("pens", {
   is_autosave: boolean("is_autosave").default(true),
   is_autopreview: boolean("is_autopreview").default(true),
   is_private: boolean("is_private").default(false),
+  is_trash: boolean("is_trash").default(false),
   is_deleted: boolean("is_deleted").default(false),
   created_at: timestamp().defaultNow(),
   updated_at: timestamp().defaultNow(),
   deleted_at: timestamp(),
 });
-// 未來擴充：Preprocessors, external Scripts, npm packages, CSS, Base, Vendor Prefixing, auto save, auto-upating preview, format on save, code indentation, code intent width
 
 // 收藏資料表
 const favoritesTable = pgTable(
