@@ -14,6 +14,8 @@ import commentsRouter from "./src/routes/comments.js";
 import followsRouter from "./src/routes/follows.js";
 import searchRouter from "./src/routes/search.js";
 
+import followingRouter from "./src/routes/following.js";
+
 const { Pool } = pg;
 dotenv.config();
 
@@ -41,6 +43,7 @@ app.use("/api/favorites", favoritesRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
 app.use("/api/search", searchRouter);
+app.use("/api/following",followingRouter);
 
 app.listen(PORT, () => {
 	console.log(`Server running at http://localhost:${PORT}`);
