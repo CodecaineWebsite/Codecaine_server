@@ -71,6 +71,11 @@ router.get("/:category", async (req, res) => {
           comments_count: table.comments_count,
           views_count: table.views_count,
           created_at: table.created_at,
+          updated_at: table.updated_at,
+          favorites_count: table.favorites_count,
+          comments_count: table.comments_count,
+          views_count: table.views_count,
+          username: usersTable.username,
         })
         .from(table)
         .leftJoin(usersTable, eq(table.user_id, usersTable.id))
