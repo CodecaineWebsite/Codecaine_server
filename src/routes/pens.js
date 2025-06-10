@@ -1,7 +1,7 @@
 import { Router } from "express";
 import db from "../config/db.js";
-import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
-import { eq } from "drizzle-orm";
+import { pensTable, penTagsTable, tagsTable, usersTable } from "../models/schema.js";
+import { and, eq, sql, or } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js"
 const router = Router();
@@ -12,16 +12,42 @@ const router = Router();
  */
 router.get("/", async (req, res) => {
   const pens = await db.select().from(pensTable);
-  res.json(pens);
+  const users = await db.select().from(usersTable);
+  res.json(pens, users);
 });
 
 /**
  * GET /api/pens/:id
  * 取得單一作品
  */
-router.get("/:id", async (req, res) => {
+router.get("/:id",verifyFirebase, async (req, res) => {
   const id = parseInt(req.params.id);
-  const result = await db.select().from(pensTable).where(eq(pensTable.id, id));
+  const penAuthor = await db.select().from(pensTable).where(eq(pensTable.id, id));
+  // const userResult = await db.select().from(usersTable).where(eq(usersTable.id, id));
+  const viewerId = req.userId || null
+  // console.log(pensTable.is_private)
+  // console.log(viewerId);
+  // console.log(req.userId);
+  
+    const result = await db
+    .select({
+      ...pensTable,
+      username: usersTable.username,
+      display_name: usersTable.display_name,
+      profile_image_url: usersTable.profile_image_url,
+    })
+    .from(pensTable)
+    .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+    .where(
+      and(
+        eq(pensTable.id, id),
+        eq(pensTable.is_deleted, false),
+        eq(usersTable.is_deleted, false),
+        // 僅作者本人能看 is_private 的作品
+        or(eq(pensTable.is_private, false), eq(pensTable.user_id, viewerId))
+      )
+    );
+
   if (result.length === 0) return res.status(404).json({ error: "找不到作品" });
   res.json(result[0]);
 });
@@ -197,14 +223,22 @@ router.put("/:id", verifyFirebase, async (req, res) => {
  */
 router.put("/:id/trash", verifyFirebase, async (req, res) => {
   const { userId } = req;
+  
   const id = parseInt(req.params.id);
   const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+  console.log(work.user_id);
+  console.log(userId);
+  console.log(work.user_id !== userId);
+  
   if (!work) return res.status(404).json({ error: "找不到作品" });
-  if (work.userId !== userId) return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  if (work.user_id !== userId){ 
+    console.log("為啥");
+    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  }
   const now = new Date();
     const update = await db
     .update(pensTable)
-    .set({ deleted_at: now })
+    .set({ deleted_at: now, is_deleted: true })
     .where(eq(pensTable.id, id))
     .returning();
   res.json({ message: "已丟入垃圾桶，3 天後將自動刪除", data: update[0] });
@@ -227,11 +261,24 @@ async function deleteOldTrash() {
  * 刪除作品（目前不 cascade 標籤關聯）
  */
 router.delete("/:id", async (req, res) => {
-  const { userId } = req;
   const id = parseInt(req.params.id);
-  req.userId
-  await db.delete(pensTable).where(eq(pensTable.id, id));
+  const { userId } = req;
+  if (!userId) {
+    return res.status(401).json({ error: "未授權" });
+  }
+  const pen = await db
+    .select()
+    .from(pensTable)
+    .where(and(eq(pensTable.id, id), eq(pensTable.user_id, userId)));
   res.status(204).end();
+  if (pen.length === 0) {
+    return res.status(403).json({ error: "無權限刪除此作品" });
+  }
+  // 執行軟刪除（建議）
+  await db
+  .update(pensTable)
+  .set({ is_trash: true })
+  .where(eq(pensTable.id, id));
 });
 
 export default router;
