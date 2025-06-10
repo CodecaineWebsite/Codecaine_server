@@ -13,6 +13,7 @@ import favoritesRouter from "./src/routes/favorites.js";
 import commentsRouter from "./src/routes/comments.js";
 import followsRouter from "./src/routes/follows.js";
 import searchRouter from "./src/routes/search.js";
+import trendingRouter from "./src/routes/trending.js"
 
 import followingRouter from "./src/routes/following.js";
 
@@ -44,6 +45,7 @@ app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
 app.use("/api/search", searchRouter);
 app.use("/api/following",followingRouter);
+app.use("/api/trending",trendingRouter)
 
 app.listen(PORT, () => {
 	console.log(`Server running at http://localhost:${PORT}`);
