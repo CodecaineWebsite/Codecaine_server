@@ -12,7 +12,7 @@ import followsRouter from "./src/routes/follows.js";
 import searchRouter from "./src/routes/search.js";
 import yourWorkRouter from "./src/routes/yourWork.js"
 import trendingRouter from "./src/routes/trending.js"
-
+import followingRouter from "./src/routes/following.js";
 const PORT = 3000;
 
 const app = express();
@@ -32,8 +32,9 @@ app.use("/api/favorites", favoritesRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/follows", followsRouter);
 app.use("/api/search", searchRouter);
-app.use("/api/my",yourWorkRouter);
+app.use("/api/following",followingRouter);
 app.use("/api/trending",trendingRouter)
+app.use("/api/my",yourWorkRouter);
 
 app.listen(PORT, () => {
 	console.log(`Server running at http://localhost:${PORT}`);
