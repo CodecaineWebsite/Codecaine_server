@@ -1,4 +1,4 @@
-import { desc, sql, count, gte } from "drizzle-orm";
+import { desc, sql, count, and, eq } from "drizzle-orm";
 import { pensTable } from "../models/schema.js";
 import db from "../config/db.js";
 import express from "express";
