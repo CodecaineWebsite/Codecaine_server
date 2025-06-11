@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { eq, and } from "drizzle-orm";
 import db from "../config/db.js";
-import { followsTable } from "../models/schema.js";
+import { followsTable, usersTable } from "../models/schema.js";
 import { requireAuth } from "../middlewares/auth.js";
+import { verifyFirebase } from "../middlewares/verifyFirebase.js";
 
 const router = Router();
 
@@ -11,19 +12,26 @@ const router = Router();
  * 追蹤某使用者
  * Body: { following_id }
  */
-router.post("/", async (req, res) => {
-  const { follower_id, following_id } = req.body;
-
+router.post("/:username", verifyFirebase, async (req, res) => {
+  const follower_id = req.userId; // 從驗證中取得目前使用者 ID
+  const following_username = req.params.username; // 修正這一行
+  const user = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.username, following_username))
+    .limit(1);
+  if (!user.length) return res.status(404).json({ error: "User not found" });
+  const following_id = user[0].id;
   if (follower_id === following_id) {
     return res.status(400).json({ error: "不能追蹤自己！" });
   }
 
-  await db
+  const result = await db
     .insert(followsTable)
     .values({ follower_id, following_id })
     .onConflictDoNothing();
 
-  res.status(201).json({ success: true });
+  res.status(201).json({ success: true, result: result });
 });
 
 /**
