@@ -4,6 +4,7 @@ import { pensTable, penTagsTable, tagsTable, usersTable } from "../models/schema
 import { and, eq, sql, or } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js"
+import { verifySelf } from "../middlewares/verifySelf.js"
 const router = Router();
 
 /**
@@ -20,7 +21,7 @@ router.get("/", async (req, res) => {
  * GET /api/pens/:id
  * 取得單一作品
  */
-router.get("/:id",verifyFirebase, async (req, res) => {
+router.get("/:id", verifySelf, async (req, res) => {
   const id = parseInt(req.params.id);
   const penAuthor = await db.select().from(pensTable).where(eq(pensTable.id, id));
   // const userResult = await db.select().from(usersTable).where(eq(usersTable.id, id));
