@@ -116,17 +116,28 @@ router.get("/check/:username", verifyFirebase, async (req, res) => {
  * GET /api/follows/check/
  * 檢查這個人追蹤了哪些人
  */
-router.get("/checkFollowing", async (req, res) => {
-  const follower_id = req.userId;
-  const result = await db
+router.get("/followings/:username", async (req, res) => {
+  const { username } = req.params;
+  const user = await db
     .select()
-    .from(followsTable)
-    .where(eq(followsTable.follower_id, follower_id));
-  if (!result.length) {
-    return res.status(404).json({ error: "You haven't followed anyone yet." });
-  } else {
-    res.json(result);
+    .from(usersTable)
+    .where(eq(usersTable.username, username))
+    .limit(1);
+  if (!user.length) {
+    return res.status(404).json({ error: "User not found" });
   }
+  const userId = user[0].id;
+  const followings = await db
+    .select({
+      id: usersTable.id,
+      username: usersTable.username,
+      display_name: usersTable.display_name,
+    })
+    .from(followsTable)
+    .innerJoin(usersTable, eq(followsTable.following_id, usersTable.id))
+    .where(eq(followsTable.follower_id, userId));
+
+  res.json({ followings });
 });
 
 /**
@@ -134,4 +145,5 @@ router.get("/checkFollowing", async (req, res) => {
  * GET /api/follows/check/
  * 檢查有哪些人追蹤這個人
  */
+router.get("/followers/:username", async (req, res) => {});
 export default router;
