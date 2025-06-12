@@ -2,7 +2,7 @@ import db from "../config/db.js";
 import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
 import { and, eq, ilike, or, asc, desc, sql } from "drizzle-orm";
 
-export async function searchYourWork(req, res) {
+export async function searchMyWork(req, res) {
   const userId = req.userId; // 由 verifyFirebase middleware 注入
   const {
     q = "",
@@ -115,5 +115,24 @@ export async function searchYourWork(req, res) {
   } catch (err) {
     console.error("取得使用者作品失敗", err);
     res.status(500).json({ error: "伺服器錯誤，無法取得作品列表" });
+  }
+}
+
+export async function getUserTags(req, res) {
+
+  const userId = req.userId;
+
+  try {
+    const tags = await db
+      .selectDistinct(({ name: tagsTable.name }))
+      .from(pensTable)
+      .innerJoin(penTagsTable, eq(pensTable.id, penTagsTable.pen_id))
+      .innerJoin(tagsTable, eq(penTagsTable.tag_id, tagsTable.id))
+      .where(and(eq(pensTable.user_id, userId), eq(pensTable.is_deleted, false)));
+
+    res.json(tags.map((t) => t.name)); // 回傳純陣列 ["Vue", "CSS", ...]
+  } catch (err) {
+    console.error("取得使用者 tags 失敗", err);
+    res.status(500).json({ error: "伺服器錯誤，無法取得 tags" });
   }
 }
