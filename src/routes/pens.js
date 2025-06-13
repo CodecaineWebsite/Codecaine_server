@@ -23,33 +23,28 @@ router.get("/", async (req, res) => {
  */
 router.get("/:id", verifySelf, async (req, res) => {
   const id = parseInt(req.params.id);
-  const penAuthor = await db.select().from(pensTable).where(eq(pensTable.id, id));
-  // const userResult = await db.select().from(usersTable).where(eq(usersTable.id, id));
+  await db.select().from(pensTable).where(eq(pensTable.id, id));
   const viewerId = req.userId || null
-  // console.log(pensTable.is_private)
-  // console.log(viewerId);
-  // console.log(req.userId);
   
-    const result = await db
-    .select({
-      ...pensTable,
-      username: usersTable.username,
-      display_name: usersTable.display_name,
-      profile_image_url: usersTable.profile_image_url,
-    })
-    .from(pensTable)
-    .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-    .where(
-      and(
-        eq(pensTable.id, id),
-        eq(pensTable.is_trash, false),
-        eq(pensTable.is_deleted, false),
-        eq(usersTable.is_deleted, false),
-        // 僅作者本人能看 is_private 的作品
-        or(eq(pensTable.is_private, false), eq(pensTable.user_id, viewerId))
-      )
-    );
-
+  const result = await db
+  .select({
+    ...pensTable,
+    username: usersTable.username,
+    display_name: usersTable.display_name,
+    profile_image_url: usersTable.profile_image_url,
+  })
+  .from(pensTable)
+  .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+  .where(
+    and(
+      eq(pensTable.id, id),
+      eq(pensTable.is_trash, false),
+      eq(pensTable.is_deleted, false),
+      eq(usersTable.is_deleted, false),
+      // 僅作者本人能看 is_private 的作品
+      or(eq(pensTable.is_private, false), eq(pensTable.user_id, viewerId))
+    )
+  );
   if (result.length === 0) return res.status(404).json({ error: "找不到作品" });
   res.json(result[0]);
 });
@@ -57,17 +52,9 @@ router.get("/:id", verifySelf, async (req, res) => {
 /**
  * POST /api/pens
  * 新增一份作品（支援標籤）
- * 傳入格式：
- * {
- *   user_id: 1,
- *   title: "My Pen",
- *   html_code: "<h1>Hello</h1>",
- *   tags: ["html", "gsap"]
- * }
  */
 router.post("/", verifyFirebase, async (req, res) => {
-  const { userId } = req;
-  
+  const { userId } = req;  
   const {
     user_id,
     title,
@@ -133,7 +120,6 @@ router.post("/", verifyFirebase, async (req, res) => {
       })
       .onConflictDoNothing(); // 避免重複
   }
-
   res.status(201).json(newPen);
 });
 
@@ -164,7 +150,6 @@ router.put("/:id", verifyFirebase, async (req, res) => {
     is_private = false,
     tags = [],
   } = req.body;
-  
   
   const now = new Date();
   const [updatedPen] = await db
@@ -215,22 +200,17 @@ router.put("/:id", verifyFirebase, async (req, res) => {
     })
     .onConflictDoNothing();
   }
-  
   res.json(updatedPen);
-  
 });
+
 /**
  * PUT /api/pens/:id
  * 暫時刪除作品
  */
 router.put("/:id/trash", verifyFirebase, async (req, res) => {
   const { userId } = req;
-  
   const id = parseInt(req.params.id);
   const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
-  console.log(work.user_id);
-  console.log(userId);
-  console.log(work.user_id !== userId);
   
   if (!work) return res.status(404).json({ error: "找不到作品" });
   if (work.user_id !== userId){ 
@@ -243,7 +223,6 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
     .where(eq(pensTable.id, id))
     .returning();
   res.json({ message: "已丟入垃圾桶，3 天後將自動刪除", data: update[0] });
- 
 });
 
 async function deleteOldTrash() {
@@ -260,6 +239,7 @@ async function deleteOldTrash() {
 
   console.log(`標記為刪除的筆數：${updated} 筆`);
   }
+  
 /**
  * DELETE /api/pens/:id
  * 刪除作品（目前不 cascade 標籤關聯）
