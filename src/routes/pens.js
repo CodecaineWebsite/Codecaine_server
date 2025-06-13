@@ -225,6 +225,23 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
   res.json({ message: "已丟入垃圾桶，3 天後將自動刪除", data: update[0] });
 });
 
+router.put("/:id/restore", verifyFirebase, async (req, res) => {
+  const { userId } = req;
+  const id = parseInt(req.params.id);
+  
+  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+  if (!work) return res.status(404).json({ error: "找不到作品" });
+  if (work.user_id !== userId){ 
+    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  }
+  const update = await db
+  .update(pensTable)
+  .set({ deleted_at: null, is_trash: false })
+  .where(eq(pensTable.id, id))
+  .returning();
+  res.json({ message: "已從垃圾桶復原", data: update[0] });
+});
+
 async function deleteOldTrash() {
   const now = new Date();
   const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
@@ -239,7 +256,7 @@ async function deleteOldTrash() {
 
   console.log(`標記為刪除的筆數：${updated} 筆`);
   }
-  
+
 /**
  * DELETE /api/pens/:id
  * 刪除作品（目前不 cascade 標籤關聯）
