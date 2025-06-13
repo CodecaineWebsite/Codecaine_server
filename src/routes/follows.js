@@ -113,7 +113,7 @@ router.get("/check/:username", verifyFirebase, async (req, res) => {
 ///編輯中 先將追蹤功能推上去 之後再整理controller
 /**
  *
- * GET /api/follows/check/
+ * GET /api/followings/:username
  * 檢查這個人追蹤了哪些人
  */
 router.get("/followings/:username", async (req, res) => {
@@ -132,6 +132,7 @@ router.get("/followings/:username", async (req, res) => {
       id: usersTable.id,
       username: usersTable.username,
       display_name: usersTable.display_name,
+      profile_image: usersTable.profile_image_url || null,
     })
     .from(followsTable)
     .innerJoin(usersTable, eq(followsTable.following_id, usersTable.id))
@@ -142,8 +143,31 @@ router.get("/followings/:username", async (req, res) => {
 
 /**
  *
- * GET /api/follows/check/
+ * GET /api/follows/followers/:username
  * 檢查有哪些人追蹤這個人
  */
-router.get("/followers/:username", async (req, res) => {});
+router.get("/followers/:username", async (req, res) => {
+  const { username } = req.params;
+  const user = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.username, username))
+    .limit(1);
+  if (!user.length) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  const userId = user[0].id;
+  const followers = await db
+    .select({
+      id: usersTable.id,
+      username: usersTable.username,
+      display_name: usersTable.display_name,
+      profile_image: usersTable.profile_image_url || null,
+    })
+    .from(followsTable)
+    .innerJoin(usersTable, eq(followsTable.follower_id, usersTable.id))
+    .where(eq(followsTable.following_id, userId));
+
+  res.json({ followers });
+});
 export default router;
