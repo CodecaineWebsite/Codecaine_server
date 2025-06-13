@@ -5,16 +5,22 @@ import { followsTable, usersTable } from "../models/schema.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
 
 const router = Router();
+const getFollowIds = (req) => {
+  return {
+    follower_id: req.userId,
+    following_username: req.params.username,
+  };
+};
 
 /**
  * POST /api/follows
  * 追蹤某使用者
  * Body: { follower_id, following_id }
  */
+
 router.post("/:username", verifyFirebase, async (req, res) => {
   try {
-    const follower_id = req.userId; // 從驗證中取得目前使用者 ID
-    const following_username = req.params.username; // 修正這一行
+    const { follower_id, following_username } = getFollowIds(req);
     const currentUser = await db
       .select()
       .from(usersTable)
@@ -53,8 +59,7 @@ router.post("/:username", verifyFirebase, async (req, res) => {
  */
 router.delete("/:username", verifyFirebase, async (req, res) => {
   try {
-    const follower_id = req.userId; // 從驗證中取得目前使用者 ID
-    const following_username = req.params.username; // 修正這一行
+    const { follower_id, following_username } = getFollowIds(req);
     const currentUser = await db
       .select()
       .from(usersTable)
@@ -79,7 +84,7 @@ router.delete("/:username", verifyFirebase, async (req, res) => {
         )
       );
 
-    res.status(201).json({ result: false });
+    res.status(200).json({ result: false });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
@@ -92,8 +97,7 @@ router.delete("/:username", verifyFirebase, async (req, res) => {
  */
 router.get("/check/:username", verifyFirebase, async (req, res) => {
   try {
-    const follower_id = req.userId; // 從驗證中取得目前使用者 ID
-    const following_username = req.params.username; // 修正這一行
+    const { follower_id, following_username } = getFollowIds(req);
     const currentUser = await db
       .select()
       .from(usersTable)
