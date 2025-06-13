@@ -118,7 +118,7 @@ export async function searchMyWork(req, res) {
   }
 }
 
-export async function getUserTags(req, res) {
+export async function getMyTags(req, res) {
 
   const userId = req.userId;
 
