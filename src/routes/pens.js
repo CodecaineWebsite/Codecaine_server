@@ -17,6 +17,27 @@ router.get("/", async (req, res) => {
   res.json(pens, users);
 });
 
+router.get("/trash", verifyFirebase, async (req, res) => {
+  const viewerId = req.userId;
+  const results = await db
+    .select({
+      ...pensTable,
+      username: usersTable.username,
+      display_name: usersTable.display_name,
+      profile_image_url: usersTable.profile_image_url,
+    })
+    .from(pensTable)
+    .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+    .where(
+      and(
+        eq(pensTable.is_trash, true),
+        eq(pensTable.is_deleted, false),
+        eq(usersTable.is_deleted, false),
+        eq(pensTable.user_id, viewerId) // 只能看自己的垃圾桶
+      )
+    )
+  res.json(results);
+});
 /**
  * GET /api/pens/:id
  * 取得單一作品
