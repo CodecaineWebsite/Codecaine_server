@@ -8,16 +8,17 @@ const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 const REGION = process.env.AWS_REGION;
 
 /**
- * GET /api/users/:id
+ * GET /api/users/:username
  * 取得使用者個人資料（不含密碼）
  */
 export const getUserById = async (req, res) => {
-  const id = req.params.id;
+  const username = req.params.username;
   try {
     const result = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.id, id));
+      .where(eq(usersTable.username, username))
+      .limit(1);
     if (result.length === 0)
       return res.status(404).json({ error: "使用者不存在" });
 
