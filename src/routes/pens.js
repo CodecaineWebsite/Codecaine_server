@@ -42,6 +42,7 @@ router.get("/:id", verifySelf, async (req, res) => {
     .where(
       and(
         eq(pensTable.id, id),
+        eq(pensTable.is_trash, false),
         eq(pensTable.is_deleted, false),
         eq(usersTable.is_deleted, false),
         // 僅作者本人能看 is_private 的作品
