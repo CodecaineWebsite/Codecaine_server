@@ -25,7 +25,7 @@ export async function addFavorite(req, res) {
     res.status(201).json({
       success: true,
       message: "Favorited successfully",
-      pen_id: inserted.pen_id,
+      pen_id: result.pen_id,
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to favorite", details: err.message });
@@ -105,8 +105,7 @@ export async function getFavoritesByUsername(req, res) {
       id: pensTable.id,
       title: pensTable.title,
       description: pensTable.description,
-      preview_image: pensTable.preview_image,
-      privacy: pensTable.privacy,
+      is_private: pensTable.is_private,
       created_at: pensTable.created_at,
       updated_at: pensTable.updated_at,
       favorites_count: pensTable.favorites_count,
