@@ -1,7 +1,16 @@
 import db from "../config/db.js";
-import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
+import {
+  pensTable,
+  penTagsTable,
+  tagsTable,
+  usersTable,
+} from "../models/schema.js";
 import { and, eq, ilike, or, asc, desc, sql } from "drizzle-orm";
 
+/**
+ *
+ *
+ */
 export async function searchMyWork(req, res) {
   const userId = req.userId; // 由 verifyFirebase middleware 注入
   const {
@@ -25,24 +34,25 @@ export async function searchMyWork(req, res) {
 
   const selectPensColumns = {
     id: pensTable.id,
-    user_id: pensTable.user_id,
     title: pensTable.title,
     description: pensTable.description,
-    html_code: pensTable.html_code,
-    css_code: pensTable.css_code,
-    js_code: pensTable.js_code,
-    views_count: pensTable.views_count,
-    favorites_count: pensTable.favorites_count,
-    comments_count: pensTable.comments_count,
     is_private: pensTable.is_private,
     created_at: pensTable.created_at,
     updated_at: pensTable.updated_at,
-  };
+    favorites_count: pensTable.favorites_count,
+    comments_count: pensTable.comments_count,
+    views_count: pensTable.views_count,
+    username: usersTable.username,
+    user_display_name: usersTable.display_name,
+    profile_image: usersTable.profile_image_url,
+    is_pro: usersTable.is_pro,
+  }; // 要查詢的欄位
 
   // 搜尋條件陣列：初始條件：自己的作品 + 非刪除
   const filters = [
     eq(pensTable.user_id, userId),
     eq(pensTable.is_deleted, false),
+    eq(pensTable.is_trash, false),
   ];
 
   // 關鍵字搜尋
@@ -73,11 +83,15 @@ export async function searchMyWork(req, res) {
         .select(selectPensColumns)
         .from(pensTable)
         .leftJoin(penTagsTable, eq(pensTable.id, penTagsTable.pen_id))
+        .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id))
         .leftJoin(tagsTable, eq(penTagsTable.tag_id, tagsTable.id));
 
       filters.push(eq(tagsTable.name, tag));
     } else {
-      query = db.select(selectPensColumns).from(pensTable);
+      query = db
+        .select(selectPensColumns)
+        .from(pensTable)
+        .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id));
     }
 
     query = query.where(and(...filters));
@@ -125,6 +139,7 @@ export async function searchMyWork(req, res) {
 
     res.json({
       total: count,
+      totalPages: Math.ceil(count / limit),
       page,
       hasNextPage: offset + pens.length < count,
       results: pens,
@@ -134,6 +149,13 @@ export async function searchMyWork(req, res) {
     res.status(500).json({ error: "伺服器錯誤，無法取得作品列表" });
   }
 }
+
+
+/*
+ * 取得使用者的所有 tags
+ * GET /api/your-work/tags
+ * 回傳格式: ["Vue", "CSS", ...]
+ */
 
 export async function getMyTags(req, res) {
   const userId = req.userId;
