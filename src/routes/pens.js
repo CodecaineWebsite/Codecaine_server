@@ -1,9 +1,10 @@
 import { Router } from "express";
 import db from "../config/db.js";
-import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
-import { eq } from "drizzle-orm";
+import { pensTable, penTagsTable, tagsTable, usersTable } from "../models/schema.js";
+import { and, eq, sql, or } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js"
+import { verifySelf } from "../middlewares/verifySelf.js"
 const router = Router();
 
 /**
@@ -12,16 +13,59 @@ const router = Router();
  */
 router.get("/", async (req, res) => {
   const pens = await db.select().from(pensTable);
-  res.json(pens);
+  const users = await db.select().from(usersTable);
+  res.json(pens, users);
 });
 
+router.get("/trash", verifyFirebase, async (req, res) => {
+  const viewerId = req.userId;
+  const results = await db
+    .select({
+      ...pensTable,
+      username: usersTable.username,
+      display_name: usersTable.display_name,
+      profile_image_url: usersTable.profile_image_url,
+    })
+    .from(pensTable)
+    .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+    .where(
+      and(
+        eq(pensTable.is_trash, true),
+        eq(pensTable.is_deleted, false),
+        eq(usersTable.is_deleted, false),
+        eq(pensTable.user_id, viewerId) // 只能看自己的垃圾桶
+      )
+    )
+  res.json(results);
+});
 /**
  * GET /api/pens/:id
  * 取得單一作品
  */
-router.get("/:id", async (req, res) => {
+router.get("/:id", verifySelf, async (req, res) => {
   const id = parseInt(req.params.id);
-  const result = await db.select().from(pensTable).where(eq(pensTable.id, id));
+  await db.select().from(pensTable).where(eq(pensTable.id, id));
+  const viewerId = req.userId || null
+  
+  const result = await db
+  .select({
+    ...pensTable,
+    username: usersTable.username,
+    display_name: usersTable.display_name,
+    profile_image_url: usersTable.profile_image_url,
+  })
+  .from(pensTable)
+  .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+  .where(
+    and(
+      eq(pensTable.id, id),
+      eq(pensTable.is_trash, false),
+      eq(pensTable.is_deleted, false),
+      eq(usersTable.is_deleted, false),
+      // 僅作者本人能看 is_private 的作品
+      or(eq(pensTable.is_private, false), eq(pensTable.user_id, viewerId))
+    )
+  );
   if (result.length === 0) return res.status(404).json({ error: "找不到作品" });
   res.json(result[0]);
 });
@@ -29,17 +73,9 @@ router.get("/:id", async (req, res) => {
 /**
  * POST /api/pens
  * 新增一份作品（支援標籤）
- * 傳入格式：
- * {
- *   user_id: 1,
- *   title: "My Pen",
- *   html_code: "<h1>Hello</h1>",
- *   tags: ["html", "gsap"]
- * }
  */
 router.post("/", verifyFirebase, async (req, res) => {
-  const { userId } = req;
-  
+  const { userId } = req;  
   const {
     user_id,
     title,
@@ -105,7 +141,6 @@ router.post("/", verifyFirebase, async (req, res) => {
       })
       .onConflictDoNothing(); // 避免重複
   }
-
   res.status(201).json(newPen);
 });
 
@@ -136,7 +171,6 @@ router.put("/:id", verifyFirebase, async (req, res) => {
     is_private = false,
     tags = [],
   } = req.body;
-  
   
   const now = new Date();
   const [updatedPen] = await db
@@ -187,10 +221,9 @@ router.put("/:id", verifyFirebase, async (req, res) => {
     })
     .onConflictDoNothing();
   }
-  
   res.json(updatedPen);
-  
 });
+
 /**
  * PUT /api/pens/:id
  * 暫時刪除作品
@@ -199,39 +232,75 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
   const { userId } = req;
   const id = parseInt(req.params.id);
   const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+  
   if (!work) return res.status(404).json({ error: "找不到作品" });
-  if (work.userId !== userId) return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  if (work.user_id !== userId){ 
+    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  }
   const now = new Date();
     const update = await db
     .update(pensTable)
-    .set({ deleted_at: now })
+    .set({ deleted_at: now, is_trash: true })
     .where(eq(pensTable.id, id))
     .returning();
   res.json({ message: "已丟入垃圾桶，3 天後將自動刪除", data: update[0] });
- 
+});
+
+router.put("/:id/restore", verifyFirebase, async (req, res) => {
+  const { userId } = req;
+  const id = parseInt(req.params.id);
+  
+  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+  if (!work) return res.status(404).json({ error: "找不到作品" });
+  if (work.user_id !== userId){ 
+    return res.status(403).json({ error: "你沒有權限修改這筆作品" });
+  }
+  const update = await db
+  .update(pensTable)
+  .set({ deleted_at: null, is_trash: false })
+  .where(eq(pensTable.id, id))
+  .returning();
+  res.json({ message: "已從垃圾桶復原", data: update[0] });
 });
 
 async function deleteOldTrash() {
   const now = new Date();
   const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
 
-  const deleted = await db
-    .delete(pensTable)
-    .where(sql`${pensTable.deleted_at} IS NOT NULL AND ${pensTable.deleted_at} < ${threeDaysAgo}`);
+  // 將三天前丟入垃圾桶的資料標記為 is_deleted = true（假刪除）
+  const updated = await db
+    .update(pensTable)
+    .set({ is_deleted: true })
+    .where(
+      sql`${pensTable.deleted_at} IS NOT NULL AND ${pensTable.deleted_at} < ${threeDaysAgo}`
+    );
 
-  console.log(`永久刪除 ${deleted.length || 0} 筆資料`);
-}
+  console.log(`標記為刪除的筆數：${updated} 筆`);
+  }
 
 /**
  * DELETE /api/pens/:id
  * 刪除作品（目前不 cascade 標籤關聯）
  */
 router.delete("/:id", async (req, res) => {
-  const { userId } = req;
   const id = parseInt(req.params.id);
-  req.userId
-  await db.delete(pensTable).where(eq(pensTable.id, id));
+  const { userId } = req;
+  if (!userId) {
+    return res.status(401).json({ error: "未授權" });
+  }
+  const pen = await db
+    .select()
+    .from(pensTable)
+    .where(and(eq(pensTable.id, id), eq(pensTable.user_id, userId)));
   res.status(204).end();
+  if (pen.length === 0) {
+    return res.status(403).json({ error: "無權限刪除此作品" });
+  }
+  // 執行軟刪除（建議）
+  await db
+  .update(pensTable)
+  .set({ is_trash: true })
+  .where(eq(pensTable.id, id));
 });
 
 export default router;
