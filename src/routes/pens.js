@@ -188,7 +188,6 @@ router.put("/:id", verifyFirebase, async (req, res) => {
     is_autopreview,
     is_private,
     updated_at: now,
-    tags, 
   })
   .where(eq(pensTable.id, id))
   .returning();
