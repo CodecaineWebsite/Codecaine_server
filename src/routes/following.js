@@ -8,8 +8,13 @@ const router = express.Router();
 
 router.get("/pens", verifyFirebase, async (req, res) => {
   const userId = req.userId;
-  const page = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit = Math.min(parseInt(req.query.limit) || 4, 50);
+
+  const rawPage = parseInt(req.query.page, 10);
+  const rawLimit = parseInt(req.query.limit, 10);
+
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const limit =
+    Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 50 ? rawLimit : 4;
   const offset = (page - 1) * limit;
   const sort = req.query.sort || "recent"; // "recent" | "top"
 

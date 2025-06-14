@@ -2,7 +2,7 @@ import db from "../config/db.js";
 import { pensTable, penTagsTable, tagsTable } from "../models/schema.js";
 import { and, eq, ilike, or, asc, desc, sql } from "drizzle-orm";
 
-export async function searchYourWork(req, res) {
+export async function searchMyWork(req, res) {
   const userId = req.userId; // 由 verifyFirebase middleware 注入
   const {
     q = "",
@@ -22,6 +22,22 @@ export async function searchYourWork(req, res) {
   const page = parseInt(rawPage, 10) || 1;
   const limit = view === "table" ? 10 : 6;
   const offset = (page - 1) * limit;
+
+  const selectPensColumns = {
+    id: pensTable.id,
+    user_id: pensTable.user_id,
+    title: pensTable.title,
+    description: pensTable.description,
+    html_code: pensTable.html_code,
+    css_code: pensTable.css_code,
+    js_code: pensTable.js_code,
+    views_count: pensTable.views_count,
+    favorites_count: pensTable.favorites_count,
+    comments_count: pensTable.comments_count,
+    is_private: pensTable.is_private,
+    created_at: pensTable.created_at,
+    updated_at: pensTable.updated_at,
+  };
 
   // 搜尋條件陣列：初始條件：自己的作品 + 非刪除
   const filters = [
@@ -54,14 +70,14 @@ export async function searchYourWork(req, res) {
     // 若要過濾標前則 join tag 表
     if (tag) {
       query = db
-        .select()
+        .select(selectPensColumns)
         .from(pensTable)
         .leftJoin(penTagsTable, eq(pensTable.id, penTagsTable.pen_id))
         .leftJoin(tagsTable, eq(penTagsTable.tag_id, tagsTable.id));
 
       filters.push(eq(tagsTable.name, tag));
     } else {
-      query = db.select().from(pensTable);
+      query = db.select(selectPensColumns).from(pensTable);
     }
 
     query = query.where(and(...filters));
@@ -104,7 +120,8 @@ export async function searchYourWork(req, res) {
 
     countQuery = countQuery.where(and(...filters));
 
-    const [{ count }] = await countQuery;
+    const countResult = await countQuery;
+    const count = Number(countResult[0]?.count ?? 0);
 
     res.json({
       total: count,
@@ -115,5 +132,25 @@ export async function searchYourWork(req, res) {
   } catch (err) {
     console.error("取得使用者作品失敗", err);
     res.status(500).json({ error: "伺服器錯誤，無法取得作品列表" });
+  }
+}
+
+export async function getMyTags(req, res) {
+  const userId = req.userId;
+
+  try {
+    const tags = await db
+      .selectDistinct({ name: tagsTable.name })
+      .from(pensTable)
+      .innerJoin(penTagsTable, eq(pensTable.id, penTagsTable.pen_id))
+      .innerJoin(tagsTable, eq(penTagsTable.tag_id, tagsTable.id))
+      .where(
+        and(eq(pensTable.user_id, userId), eq(pensTable.is_deleted, false))
+      );
+
+    res.json(tags.map((t) => t.name)); // 回傳純陣列 ["Vue", "CSS", ...]
+  } catch (err) {
+    console.error("取得使用者 tags 失敗", err);
+    res.status(500).json({ error: "伺服器錯誤，無法取得 tags" });
   }
 }
