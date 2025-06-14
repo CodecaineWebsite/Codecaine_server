@@ -14,7 +14,7 @@ const router = Router();
 router.get("/", async (req, res) => {
   const pens = await db.select().from(pensTable);
   const users = await db.select().from(usersTable);
-  res.json(pens, users);
+  res.json({pens, users});
 });
 
 router.get("/trash", verifyFirebase, async (req, res) => {
@@ -67,7 +67,19 @@ router.get("/:id", verifySelf, async (req, res) => {
     )
   );
   if (result.length === 0) return res.status(404).json({ error: "找不到作品" });
-  res.json(result[0]);
+  const pen = result[0];
+
+  const tagRecords = await db
+    .select({ name: tagsTable.name })
+    .from(penTagsTable)
+    .innerJoin(tagsTable, eq(penTagsTable.tag_id, tagsTable.id))
+    .where(eq(penTagsTable.pen_id, id));
+
+  const tags = tagRecords.map((t) => t.name);
+  res.json({
+    ...pen,
+    tags,
+  });
 });
 
 /**
@@ -200,6 +212,7 @@ router.put("/:id", verifyFirebase, async (req, res) => {
   
   // 2. 建立新的關聯
   for (const tagName of tags) {
+    if (!tagName.trim()) continue; // 避免空字串
     // 確保 tag 存在（不存在就建立）
     const [tag] = await db
     .insert(tagsTable)
