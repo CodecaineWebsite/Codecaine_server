@@ -6,6 +6,16 @@ import {
   updateComment,
   deleteComment,
 } from "../controllers/commentsController.js";
+import rateLimit from "express-rate-limit";
+
+const commentLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // Limit each IP to 10 requests per windowMs
+  message: {
+    status: "error",
+    message: "Too many requests, please try again later.",
+  },
+});
 
 const router = Router();
 
@@ -81,7 +91,7 @@ router.get("/", getComments);
  *   "created_at": "2025-06-15T13:47:00.000Z",
  * }
  */
-router.post("/", verifyFirebase, postComment);
+router.post("/", verifyFirebase, commentLimiter, postComment);
 
 /**
  * PUT /api/comments/:id
@@ -114,7 +124,7 @@ router.post("/", verifyFirebase, postComment);
  *   "updated_at": "2025-06-15T13:00:00.000Z"
  * }
  */
-router.put("/:id", verifyFirebase, updateComment);
+router.put("/:id", verifyFirebase,commentLimiter, updateComment);
 
 /**
  * DELETE /api/comments/:id
