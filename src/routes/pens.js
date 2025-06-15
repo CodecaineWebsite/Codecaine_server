@@ -198,7 +198,7 @@ try {
     return res.status(403).json({ error: "You do not have permission to update this pen" });
   }
   if (work.is_trash) {
-    return res.status(404).json({ error: "Pen not found" });
+    return res.status(400).json({ error: "Cannot update a pen that is in the trash" });
   }
   if (work.is_deleted) {
     return res.status(404).json({ error: "Pen not found" });
