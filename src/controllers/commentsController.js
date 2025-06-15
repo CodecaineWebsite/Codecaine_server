@@ -12,13 +12,13 @@ export async function getComments(req, res) {
       .json({ error: "Missing or invalid pen_id parameter" });
   }
   try {
-    const existing = await db
+    const existingPen = await db
       .select()
-      .from(commentsTable)
-      .where(eq(commentsTable.pen_id, pen_id))
+      .from(pensTable)
+      .where(eq(pensTable.id, pen_id))
       .limit(1);
 
-    if (existing.length === 0) {
+    if (existingPen.length === 0) {
       return res.status(404).json({ error: "Pen not found" });
     }
 
@@ -78,7 +78,23 @@ export async function postComment(req, res) {
       .set({ comments_count: sql`${pensTable.comments_count} + 1` })
       .where(eq(pensTable.id, pen_id));
 
-    return res.status(201).json(newComment);
+    const [user] = await db
+      .select({
+        id: usersTable.id,
+        username: usersTable.username,
+        display_name: usersTable.display_name,
+        profile_image_url: usersTable.profile_image_url,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, user_id))
+      .limit(1);
+
+    return res.status(201).json({
+      id: newComment.id,
+      content: newComment.content,
+      created_at: newComment.created_at,
+      user,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
@@ -153,7 +169,7 @@ export async function deleteComment(req, res) {
         .status(403)
         .json({ error: "No permission to delete this comment" });
     }
-    
+
     const { pen_id } = existing;
     await db.delete(commentsTable).where(eq(commentsTable.id, comment_id));
 
