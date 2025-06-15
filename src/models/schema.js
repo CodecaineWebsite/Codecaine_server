@@ -8,7 +8,7 @@ import {
   primaryKey,
   serial,
 } from "drizzle-orm/pg-core";
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 
 // 使用者資料表
 const usersTable = pgTable("users", {
@@ -17,8 +17,10 @@ const usersTable = pgTable("users", {
   username: varchar("username", { length: 50 }).notNull().unique(),
   is_pro: boolean("is_pro").default(false),
   profile_image_url: text("profile_image_url"), // 存網址
-  profile_image_key: varchar("profile_image_key",{length:255}),
-  profile_image_last_updated: timestamp('profile_image_last_updated').defaultNow(),
+  profile_image_key: varchar("profile_image_key", { length: 255 }),
+  profile_image_last_updated: timestamp("profile_image_last_updated", {
+    withTimezone: true,
+  }).defaultNow(),
   display_name: varchar("display_name", { length: 100 }),
   location: varchar("location", { length: 255 }),
   bio: text("bio"),
@@ -26,7 +28,7 @@ const usersTable = pgTable("users", {
   profile_link2: text("profile_link2"),
   profile_link3: text("profile_link3"),
   is_deleted: boolean("is_deleted").default(false),
-  created_at: timestamp().defaultNow(),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 // 作品資料表 (我們需要為pens取個新名字, 像是 compounds 或 doses 之類的(????))
@@ -38,8 +40,14 @@ const pensTable = pgTable("pens", {
   html_code: text("html_code"),
   css_code: text("css_code"),
   js_code: text("js_code"),
-  resources_css: text("resources_css").array().notNull().default(sql`'{}'::text[]`),
-  resources_js: text("resources_js").array().notNull().default(sql`'{}'::text[]`),
+  resources_css: text("resources_css")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  resources_js: text("resources_js")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   favorites_count: integer("favorites_count").default(0),
   comments_count: integer("comments_count").default(0),
   views_count: integer("views_count").default(0),
@@ -49,9 +57,9 @@ const pensTable = pgTable("pens", {
   is_private: boolean("is_private").default(false),
   is_trash: boolean("is_trash").default(false),
   is_deleted: boolean("is_deleted").default(false),
-  created_at: timestamp().defaultNow(),
-  updated_at: timestamp().defaultNow(),
-  deleted_at: timestamp(),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  deleted_at: timestamp("deleted_at", { withTimezone: true }).defaultNow(),
 });
 
 // 收藏資料表
@@ -64,7 +72,7 @@ const favoritesTable = pgTable(
     pen_id: integer("pen_id")
       .references(() => pensTable.id)
       .notNull(),
-    created_at: timestamp("created_at").defaultNow(),
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.user_id, table.pen_id] }),
@@ -81,7 +89,7 @@ const commentsTable = pgTable("comments", {
     .references(() => usersTable.id)
     .notNull(),
   content: text("content").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 // 使用者追蹤資料表
@@ -94,7 +102,7 @@ const followsTable = pgTable(
     following_id: varchar("following_id", { length: 128 })
       .references(() => usersTable.id)
       .notNull(), // 被追蹤的人
-    created_at: timestamp("created_at").defaultNow(),
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.follower_id, table.following_id] }),
