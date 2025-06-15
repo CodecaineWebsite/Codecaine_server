@@ -1,71 +1,58 @@
 import { Router } from "express";
-import db from "../config/db.js";
-import { favoritesTable, pensTable } from "../models/schema.js";
-import { eq, and, inArray } from "drizzle-orm";
+import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import {
+  addFavorite,
+  removeFavorite,
+  getFavoritesByUsername,
+} from "../controllers/favoritesController.js";
 
 const router = Router();
 
 /**
  * POST /api/favorites
- * 收藏一個作品
- * Body: { user_id, pen_id }
+ * Add a pen to the current user's favorites (authentication required)
+ * @body {number} pen_id - The ID of the pen to be favorited (required)
+ *
+ * @header Authorization Bearer token (provided by Firebase)
+ *
+ * @response {201} Successfully favorited the pen
+ * @response {400} Missing pen_id in request body
+ * @response {500} Failed to favorite the pen due to a server or database error
+ *
+ * @example
+ * POST /api/favorites
+ * {
+ *   "pen_id": 42
+ * }
  */
-router.post("/", async (req, res) => {
-  const { user_id, pen_id } = req.body;
-
-  try {
-    await db
-      .insert(favoritesTable)
-      .values({ user_id, pen_id })
-      .onConflictDoNothing();
-    res.status(201).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: "收藏失敗", details: err.message });
-  }
-});
+router.post("/", verifyFirebase, addFavorite);
 
 /**
  * DELETE /api/favorites
- * 取消收藏
- * Body: { user_id, pen_id }
+ * Remove a favorited pen for the logged-in user
+ *
+ * @body {number} pen_id - ID of the pen to remove from favorites
+ * @header Authorization Bearer token (Firebase JWT)
+ *
+ * @response {200} Successfully removed
+ * @response {400} Missing pen_id
+ * @response {404} Favorite not found
+ * @response {500} Failed to remove favorite
  */
-router.delete("/", async (req, res) => {
-  const { user_id, pen_id } = req.body;
-
-  await db
-    .delete(favoritesTable)
-    .where(
-      and(
-        eq(favoritesTable.user_id, user_id),
-        eq(favoritesTable.pen_id, pen_id)
-      )
-    );
-
-  res.status(204).end();
-});
+router.delete("/", verifyFirebase, removeFavorite);
 
 /**
- * GET /api/favorites/:user_id
- * 取得某使用者的所有收藏作品
+ * GET /api/favorites/:username
+ * 公開查詢某使用者的收藏作品
+ *
+ * @param {string} username - 使用者帳號名稱（非 ID）
+ * @query {string} view - 顯示模式，"grid" 或 "table"，預設為 "grid"
+ * @query {number} page - 分頁頁數，預設為 1
+ *
+ * @returns {Object} 收藏作品清單與分頁資訊
+ * @example
+ * GET /api/favorites/lucy123?view=table&page=2
  */
-router.get("/:user_id", async (req, res) => {
-  const user_id = parseInt(req.params.user_id);
-
-  const result = await db
-    .select({
-      pen_id: favoritesTable.pen_id,
-    })
-    .from(favoritesTable)
-    .where(eq(favoritesTable.user_id, user_id));
-
-  const penIds = result.map((r) => r.pen_id);
-
-  const pens = await db
-    .select()
-    .from(pensTable)
-    .where(inArray(pensTable.id, penIds));
-
-  res.json(pens);
-});
+router.get("/:username", getFavoritesByUsername);
 
 export default router;
