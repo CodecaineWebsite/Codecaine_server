@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import db from "../config/db.js";
 import { followsTable, usersTable } from "../models/schema.js";
 
@@ -118,12 +118,16 @@ export const checkFollowing = async (req, res) => {
 };
 
 /**
- * 查詢這個人追蹤了哪些人
- * GET /api/follows/followings/:username
+ * 查詢這個人追蹤了哪些人（分頁）
+ * GET /api/follows/followings/:username?page=1&pageSize=20
  */
 export const getFollowings = async (req, res) => {
   try {
     const { username } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 30;
+    const offset = (page - 1) * pageSize;
+
     const user = await db
       .select()
       .from(usersTable)
@@ -133,6 +137,13 @@ export const getFollowings = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
     const userId = user[0].id;
+    const totalResult = await db
+      .select({ count: sql`count(*)`.mapWith(Number) })
+      .from(followsTable)
+      .where(eq(followsTable.follower_id, userId));
+    const totalCount = totalResult[0]?.count || 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
     const followings = await db
       .select({
         id: usersTable.id,
@@ -142,9 +153,17 @@ export const getFollowings = async (req, res) => {
       })
       .from(followsTable)
       .innerJoin(usersTable, eq(followsTable.following_id, usersTable.id))
-      .where(eq(followsTable.follower_id, userId));
+      .where(eq(followsTable.follower_id, userId))
+      .limit(pageSize)
+      .offset(offset);
 
-    res.json({ followings });
+    res.json({
+      followings,
+      total: totalCount,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
@@ -152,12 +171,16 @@ export const getFollowings = async (req, res) => {
 };
 
 /**
- * 查詢有哪些人追蹤這個人
- * GET /api/follows/followers/:username
+ * 查詢有哪些人追蹤這個人（分頁）
+ * GET /api/follows/followers/:username?page=1&pageSize=20
  */
 export const getFollowers = async (req, res) => {
   try {
     const { username } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 30;
+    const offset = (page - 1) * pageSize;
+
     const user = await db
       .select()
       .from(usersTable)
@@ -167,6 +190,14 @@ export const getFollowers = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
     const userId = user[0].id;
+
+    const totalResult = await db
+      .select({ count: sql`count(*)`.mapWith(Number) })
+      .from(followsTable)
+      .where(eq(followsTable.following_id, userId));
+    const totalCount = totalResult[0]?.count || 0;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
     const followers = await db
       .select({
         id: usersTable.id,
@@ -176,9 +207,17 @@ export const getFollowers = async (req, res) => {
       })
       .from(followsTable)
       .innerJoin(usersTable, eq(followsTable.follower_id, usersTable.id))
-      .where(eq(followsTable.following_id, userId));
+      .where(eq(followsTable.following_id, userId))
+      .limit(pageSize)
+      .offset(offset);
 
-    res.json({ followers });
+    res.json({
+      followers,
+      total: totalCount,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
