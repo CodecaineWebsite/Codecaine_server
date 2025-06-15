@@ -1,10 +1,14 @@
 import { Router } from "express";
 import db from "../config/db.js";
-import { pensTable, penTagsTable, tagsTable, usersTable } from "../models/schema.js";
+import {
+  pensTable,
+  penTagsTable,
+  tagsTable,
+  usersTable,
+} from "../models/schema.js";
 import { and, eq, sql, or } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
-import { verifyFirebase } from "../middlewares/verifyFirebase.js"
-import { verifySelf } from "../middlewares/verifySelf.js"
+import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import { verifySelf } from "../middlewares/verifySelf.js";
 const router = Router();
 
 /**
@@ -35,7 +39,7 @@ router.get("/trash", verifyFirebase, async (req, res) => {
         eq(usersTable.is_deleted, false),
         eq(pensTable.user_id, viewerId) // 只能看自己的垃圾桶
       )
-    )
+    );
   res.json(results);
 });
 /**
@@ -45,27 +49,27 @@ router.get("/trash", verifyFirebase, async (req, res) => {
 router.get("/:id", verifySelf, async (req, res) => {
   const id = parseInt(req.params.id);
   await db.select().from(pensTable).where(eq(pensTable.id, id));
-  const viewerId = req.userId || null
-  
+  const viewerId = req.userId || null;
+
   const result = await db
-  .select({
-    ...pensTable,
-    username: usersTable.username,
-    display_name: usersTable.display_name,
-    profile_image_url: usersTable.profile_image_url,
-  })
-  .from(pensTable)
-  .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-  .where(
-    and(
-      eq(pensTable.id, id),
-      eq(pensTable.is_trash, false),
-      eq(pensTable.is_deleted, false),
-      eq(usersTable.is_deleted, false),
-      // 僅作者本人能看 is_private 的作品
-      or(eq(pensTable.is_private, false), eq(pensTable.user_id, viewerId))
-    )
-  );
+    .select({
+      ...pensTable,
+      username: usersTable.username,
+      display_name: usersTable.display_name,
+      profile_image_url: usersTable.profile_image_url,
+    })
+    .from(pensTable)
+    .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+    .where(
+      and(
+        eq(pensTable.id, id),
+        eq(pensTable.is_trash, false),
+        eq(pensTable.is_deleted, false),
+        eq(usersTable.is_deleted, false),
+        // 僅作者本人能看 is_private 的作品
+        or(eq(pensTable.is_private, false), eq(pensTable.user_id, viewerId))
+      )
+    );
   if (result.length === 0) return res.status(404).json({ error: "找不到作品" });
   res.json(result[0]);
 });
@@ -75,7 +79,7 @@ router.get("/:id", verifySelf, async (req, res) => {
  * 新增一份作品（支援標籤）
  */
 router.post("/", verifyFirebase, async (req, res) => {
-  const { userId } = req;  
+  const { userId } = req;
   const {
     user_id,
     title,
@@ -151,12 +155,14 @@ router.post("/", verifyFirebase, async (req, res) => {
 router.put("/:id", verifyFirebase, async (req, res) => {
   const { userId } = req;
   const id = parseInt(req.params.id);
-  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
-  
+  const work = (
+    await db.select().from(pensTable).where(eq(pensTable.id, id))
+  )[0];
+
   if (!work || work.user_id !== userId) {
     return res.status(403).json({ error: "你沒有權限修改這筆作品" });
   }
-  
+
   const {
     title,
     description,
@@ -171,55 +177,56 @@ router.put("/:id", verifyFirebase, async (req, res) => {
     is_private = false,
     tags = [],
   } = req.body;
-  
+
   const now = new Date();
   const [updatedPen] = await db
-  .update(pensTable)
-  .set({ 
-    title,
-    description,
-    html_code,
-    css_code,
-    js_code,
-    resources_css,
-    resources_js,
-    view_mode,
-    is_autosave,
-    is_autopreview,
-    is_private,
-    updated_at: now,
-    tags, 
-  })
-  .where(eq(pensTable.id, id))
-  .returning();
+    .update(pensTable)
+    .set({
+      title,
+      description,
+      html_code,
+      css_code,
+      js_code,
+      resources_css,
+      resources_js,
+      view_mode,
+      is_autosave,
+      is_autopreview,
+      is_private,
+      updated_at: now,
+      tags,
+    })
+    .where(eq(pensTable.id, id))
+    .returning();
 
   if (!updatedPen) return res.status(404).json({ error: "找不到作品" });
 
   // 更新 tags
   // 1. 先刪掉舊的關聯
   await db.delete(penTagsTable).where(eq(penTagsTable.pen_id, id));
-  
+
   // 2. 建立新的關聯
   for (const tagName of tags) {
     // 確保 tag 存在（不存在就建立）
     const [tag] = await db
-    .insert(tagsTable)
-    .values({ name: tagName })
-    .onConflictDoNothing()
-    .returning();
-    
+      .insert(tagsTable)
+      .values({ name: tagName })
+      .onConflictDoNothing()
+      .returning();
+
     const tagRecord =
-    tag || (await db.select().from(tagsTable).where(eq(tagsTable.name, tagName)))[0];
+      tag ||
+      (await db.select().from(tagsTable).where(eq(tagsTable.name, tagName)))[0];
     if (!tagRecord) continue;
-    
+
     // 建立新關聯
     await db
-    .insert(penTagsTable)
-    .values({
-      pen_id: id,
-      tag_id: tagRecord.id,
-    })
-    .onConflictDoNothing();
+      .insert(penTagsTable)
+      .values({
+        pen_id: id,
+        tag_id: tagRecord.id,
+      })
+      .onConflictDoNothing();
   }
   res.json(updatedPen);
 });
@@ -231,14 +238,16 @@ router.put("/:id", verifyFirebase, async (req, res) => {
 router.put("/:id/trash", verifyFirebase, async (req, res) => {
   const { userId } = req;
   const id = parseInt(req.params.id);
-  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
-  
+  const work = (
+    await db.select().from(pensTable).where(eq(pensTable.id, id))
+  )[0];
+
   if (!work) return res.status(404).json({ error: "找不到作品" });
-  if (work.user_id !== userId){ 
+  if (work.user_id !== userId) {
     return res.status(403).json({ error: "你沒有權限修改這筆作品" });
   }
   const now = new Date();
-    const update = await db
+  const update = await db
     .update(pensTable)
     .set({ deleted_at: now, is_trash: true })
     .where(eq(pensTable.id, id))
@@ -249,17 +258,19 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
 router.put("/:id/restore", verifyFirebase, async (req, res) => {
   const { userId } = req;
   const id = parseInt(req.params.id);
-  
-  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+
+  const work = (
+    await db.select().from(pensTable).where(eq(pensTable.id, id))
+  )[0];
   if (!work) return res.status(404).json({ error: "找不到作品" });
-  if (work.user_id !== userId){ 
+  if (work.user_id !== userId) {
     return res.status(403).json({ error: "你沒有權限修改這筆作品" });
   }
   const update = await db
-  .update(pensTable)
-  .set({ deleted_at: null, is_trash: false })
-  .where(eq(pensTable.id, id))
-  .returning();
+    .update(pensTable)
+    .set({ deleted_at: null, is_trash: false })
+    .where(eq(pensTable.id, id))
+    .returning();
   res.json({ message: "已從垃圾桶復原", data: update[0] });
 });
 
@@ -276,7 +287,7 @@ async function deleteOldTrash() {
     );
 
   console.log(`標記為刪除的筆數：${updated} 筆`);
-  }
+}
 
 /**
  * DELETE /api/pens/:id
@@ -298,9 +309,9 @@ router.delete("/:id", async (req, res) => {
   }
   // 執行軟刪除（建議）
   await db
-  .update(pensTable)
-  .set({ is_trash: true })
-  .where(eq(pensTable.id, id));
+    .update(pensTable)
+    .set({ is_trash: true })
+    .where(eq(pensTable.id, id));
 });
 
 export default router;
