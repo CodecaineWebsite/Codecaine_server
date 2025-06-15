@@ -198,10 +198,10 @@ try {
     return res.status(403).json({ error: "You do not have permission to update this pen" });
   }
   if (work.is_trash) {
-    return res.status(400).json({ error: "Cannot update a pen that is in the trash" });
+    return res.status(404).json({ error: "Pen not found" });
   }
   if (work.is_deleted) {
-    return res.status(400).json({ error: "Cannot update a deleted pen" });
+    return res.status(404).json({ error: "Pen not found" });
   }
   const {
     title,
@@ -282,7 +282,7 @@ try {
 });
 
 /**
- * PUT /api/pens/:id
+ * PUT /api/pens/:id/trash
  * 暫時刪除作品
  */
 router.put("/:id/trash", verifyFirebase, async (req, res) => {
@@ -296,7 +296,7 @@ try {
     return res.status(403).json({ error: "You do not have permission to move this pen to trash" });
   }
   const now = new Date();
-  const updated = await db
+  const [updated] = await db
     .update(pensTable)
     .set({ deleted_at: now, is_trash: true })
     .where(eq(pensTable.id, id))
@@ -308,6 +308,10 @@ try {
   }
 });
 
+/**
+ * PUT /api/pens/:id/restore
+ * 將作品從垃圾桶還原
+ */
 router.put("/:id/restore", verifyFirebase, async (req, res) => {
   try {
     const { userId } = req;
@@ -375,7 +379,10 @@ router.delete("/:id", verifyFirebase, async (req, res) => {
   try {
     await db
       .update(pensTable)
-      .set({ is_deleted: true })
+      .set({ 
+        is_deleted: true,
+        deleted_at: new Date(),
+      })
       .where(eq(pensTable.id, id));
     return res.status(204).end();
   } catch (err) {
