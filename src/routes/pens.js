@@ -51,6 +51,7 @@ router.get("/:id", verifySelf, async (req, res) => {
   .select({
     ...pensTable,
     username: usersTable.username,
+    is_pro: usersTable.is_pro,
     display_name: usersTable.display_name,
     profile_image_url: usersTable.profile_image_url,
   })
