@@ -1,68 +1,139 @@
 import { Router } from "express";
-import db from "../config/db.js";
-import { commentsTable } from "../models/schema.js";
-import { eq } from "drizzle-orm";
+import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import {
+  getComments,
+  postComment,
+  updateComment,
+  deleteComment,
+} from "../controllers/commentsController.js";
 
 const router = Router();
 
 /**
- * GET /api/comments/:pen_id
- * 查某個作品的所有留言
+ * GET /api/comments?pen_id={pen_id}
+ * Get all comments for a specific pen
+ *
+ * @query {number} pen_id - The ID of the pen to fetch comments for (required)
+ *
+ * @response {200} Successfully returned the list of comments with user info
+ * @response {400} Missing or invalid pen_id parameter
+ * @response {404} Pen not found (no comments associated with this pen)
+ * @response {500} Internal server error (e.g., database query failed)
+ *
+ * @example
+ * GET /api/comments?pen_id=42
+ *
+ * Response:
+ * [
+ *   {
+ *     "id": 1,
+ *     "content": "This is a great pen!",
+ *     "created_at": "2025-06-15T12:34:56.000Z",
+ *     "user": {
+ *       "id": "abc123",
+ *       "username": "lucy",
+ *       "display_name": "Lucy Harrison",
+ *       "profile_image_url": "https://example.com/avatar.jpg"
+ *     }
+ *   },
+ *   {
+ *     "id": 2,
+ *     "content": "Very helpful, thanks!",
+ *     "created_at": "2025-06-15T13:00:00.000Z",
+ *     "user": {
+ *       "id": "def456",
+ *       "username": "bob",
+ *       "display_name": "Bob T.",
+ *       "profile_image_url": "https://example.com/avatar2.jpg"
+ *     }
+ *   }
+ * ]
  */
-router.get("/:pen_id", async (req, res) => {
-  const pen_id = parseInt(req.params.pen_id);
-
-  const comments = await db
-    .select()
-    .from(commentsTable)
-    .where(eq(commentsTable.pen_id, pen_id));
-
-  res.json(comments);
-});
+router.get("/", getComments);
 
 /**
  * POST /api/comments
- * 新增留言
- * Body: { pen_id, user_id, content }
+ * Add a new comment to a pen (authentication required)
+ *
+ * @body {number} pen_id - The ID of the pen to comment on (required)
+ * @body {string} content - The comment content (required)
+ *
+ * @header Authorization Bearer token (provided by Firebase)
+ *
+ * @response {201} Successfully added the comment
+ * @response {400} Missing or invalid pen_id or content
+ * @response {404} Pen not found
+ * @response {500} Failed to add comment due to a server or database error
+ *
+ * @example
+ * POST /api/comments
+ * {
+ *   "pen_id": 42,
+ *   "content": "This is a great project! Thanks for sharing."
+ * }
+ *
+ * Response:
+ * {
+ *   "id": 123,
+ *   "pen_id": 42,
+ *   "user_id": "abc123",
+ *   "content": "This is a great project! Thanks for sharing.",
+ *   "created_at": "2025-06-15T13:47:00.000Z",
+ * }
  */
-router.post("/", async (req, res) => {
-  const { pen_id, user_id, content } = req.body;
-
-  const [newComment] = await db
-    .insert(commentsTable)
-    .values({ pen_id, user_id, content })
-    .returning();
-
-  res.status(201).json(newComment);
-});
+router.post("/", verifyFirebase, postComment);
 
 /**
  * PUT /api/comments/:id
- * 編輯留言內容
+ * Edit an existing comment (authentication required)
+ *
+ * @param {number} id - The ID of the comment to be edited (in path)
+ * @body {string} content - The updated comment content (required)
+ *
+ * @header Authorization Bearer token (provided by Firebase)
+ *
+ * @response {200} Successfully updated the comment
+ * @response {400} Missing or invalid comment_id or content
+ * @response {403} No permission to edit this comment (not the author)
+ * @response {404} Comment not found
+ * @response {500} Failed to update the comment due to a server or database error
+ *
+ * @example
+ * PUT /api/comments/123
+ * {
+ *   "content": "Updated comment content with **markdown**"
+ * }
+ *
+ * Response:
+ * {
+ *   "id": 123,
+ *   "pen_id": 42,
+ *   "user_id": "abc123",
+ *   "content": "Updated comment content with **markdown**",
+ *   "created_at": "2025-06-15T12:00:00.000Z",
+ *   "updated_at": "2025-06-15T13:00:00.000Z"
+ * }
  */
-router.put("/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-  const { content } = req.body;
-
-  const result = await db
-    .update(commentsTable)
-    .set({ content })
-    .where(eq(commentsTable.id, id))
-    .returning();
-
-  if (result.length === 0) return res.status(404).json({ error: "找不到留言" });
-  res.json(result[0]);
-});
+router.put("/:id", verifyFirebase, updateComment);
 
 /**
  * DELETE /api/comments/:id
- * 刪除留言
+ * Delete an existing comment (authentication required)
+ *
+ * @param {number} id - The ID of the comment to delete (in path)
+ *
+ * @header Authorization Bearer token (provided by Firebase)
+ *
+ * @response {204} Successfully deleted the comment
+ * @response {400} Invalid comment ID
+ * @response {403} No permission to delete this comment (not the author)
+ * @response {500} Failed to delete the comment due to a server or database error
+ *
+ * @example
+ * DELETE /api/comments/123
+ *
+ * Response: (No Content)
  */
-router.delete("/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-
-  await db.delete(commentsTable).where(eq(commentsTable.id, id));
-  res.status(204).end();
-});
+router.delete("/:id", verifyFirebase, deleteComment);
 
 export default router;
