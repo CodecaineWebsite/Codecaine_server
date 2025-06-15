@@ -73,6 +73,11 @@ export async function postComment(req, res) {
       .values({ pen_id, user_id, content })
       .returning();
 
+    await db
+      .update(pensTable)
+      .set({ comments_count: sql`${pensTable.comments_count} + 1` })
+      .where(eq(pensTable.id, pen_id));
+
     return res.status(201).json(newComment);
   } catch (err) {
     console.error(err);
@@ -95,7 +100,12 @@ export async function updateComment(req, res) {
     const existing = await db
       .select()
       .from(commentsTable)
-      .where(and(eq(commentsTable.id, comment_id), eq(commentsTable.user_id, user_id)));
+      .where(
+        and(
+          eq(commentsTable.id, comment_id),
+          eq(commentsTable.user_id, user_id)
+        )
+      );
 
     if (existing.length === 0)
       return res
@@ -125,8 +135,11 @@ export async function deleteComment(req, res) {
   }
 
   try {
-    const existing = await db
-      .select()
+    const [existing] = await db
+      .select({
+        id: commentsTable.id,
+        pen_id: commentsTable.pen_id,
+      })
       .from(commentsTable)
       .where(
         and(
@@ -135,11 +148,20 @@ export async function deleteComment(req, res) {
         )
       );
 
-    if (existing.length === 0) {
+    if (!existing) {
       return res
         .status(403)
         .json({ error: "No permission to delete this comment" });
     }
+    
+    const { pen_id } = existing;
+    await db.delete(commentsTable).where(eq(commentsTable.id, comment_id));
+
+    await db
+      .update(pensTable)
+      .set({ comments_count: sql`${pensTable.comments_count} - 1` })
+      .where(eq(pensTable.id, pen_id));
+
     return res.status(204).end();
   } catch (err) {
     console.error(err);
