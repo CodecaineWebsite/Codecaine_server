@@ -3,7 +3,7 @@ import { pensTable, usersTable } from "../models/schema.js";
 import { eq, sql, and } from "drizzle-orm";
 
 // 查詢作品欄位
-const selectPensColumns = {
+const selectCainesColumns = {
   id: pensTable.id,
   title: pensTable.title,
   description: pensTable.description,
@@ -22,7 +22,7 @@ const selectPensColumns = {
  * GET /api/usersCaines/:username/public
  * 取得該位使用者的所有公開作品
  */
-export async function getUserPublicPens(req, res) {
+export async function getUserPublicCaines(req, res) {
   try {
     const { username } = req.params;
     const page = Number(req.query.page) || 1;
@@ -40,8 +40,8 @@ export async function getUserPublicPens(req, res) {
     }
     const userId = targetUser[0]?.id;
 
-    const pens = await db
-      .select(selectPensColumns)
+    const Caines = await db
+      .select(selectCainesColumns)
       .from(pensTable)
       .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
       .where(
@@ -62,7 +62,7 @@ export async function getUserPublicPens(req, res) {
       total: count,
       totalPages: Math.ceil(count / limit),
       page,
-      results: pens,
+      results: Caines,
     });
   } catch (err) {
     console.error(err);
@@ -74,7 +74,7 @@ export async function getUserPublicPens(req, res) {
  * GET /api/usersCaines/:username/private
  * 取得該位使用者的所有私人作品（需驗證身份）
  */
-export async function getUserPrivatePens(req, res) {
+export async function getUserPrivateCaines(req, res) {
   try {
     const { username } = req.params;
     const page = Number(req.query.page) || 1;
@@ -96,8 +96,8 @@ export async function getUserPrivatePens(req, res) {
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    const pens = await db
-      .select(selectPensColumns)
+    const Caines = await db
+      .select(selectCainesColumns)
       .from(pensTable)
       .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
       .where(and(eq(pensTable.user_id, userId), eq(pensTable.is_private, true)))
@@ -116,7 +116,7 @@ export async function getUserPrivatePens(req, res) {
       total: count,
       totalPages: Math.ceil(count / limit),
       page,
-      results: pens,
+      results: Caines,
     });
   } catch (err) {
     console.error(err);
