@@ -282,16 +282,19 @@ try {
   }
 });
 
+
+/**
+ * PUT /api/pens/:id/view
+ * 新增瀏覽數
+*/
 const viewCache = new LRU({
   max: 10000,
-  ttl: 1000 * 60 * 5 // 5分鐘過期
+  ttl: 1000 * 60 * 5 
 });
-
 router.put('/:id/view', async (req, res) => {
   const penId = parseInt(req.params.id); 
   const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
   const userId = req.user?.id; // 如果你有驗證中介層
-
   const key = userId ? `${penId}_user_${userId}` : `${penId}_ip_${ip}`;
 
   try {
