@@ -1,6 +1,6 @@
 import db from "../config/db.js";
 import { commentsTable, pensTable, usersTable } from "../models/schema.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 // GET /api/comments?pen_id=xxx
 export async function getComments(req, res) {
@@ -135,7 +135,24 @@ export async function updateComment(req, res) {
       .returning();
 
     if (!updated) return res.status(404).json({ error: "Comment not found" });
-    return res.json(updated);
+
+    const [commentWithUser] = await db
+      .select({
+        id: commentsTable.id,
+        content: commentsTable.content,
+        created_at: commentsTable.created_at,
+        user: {
+          id: usersTable.id,
+          username: usersTable.username,
+          display_name: usersTable.display_name,
+          profile_image_url: usersTable.profile_image_url,
+        },
+      })
+      .from(commentsTable)
+      .where(eq(commentsTable.id, comment_id))
+      .leftJoin(usersTable, eq(commentsTable.user_id, usersTable.id));
+
+    return res.json(commentWithUser);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error" });
