@@ -1,4 +1,4 @@
-import { pensTable, followsTable } from "../models/schema.js";
+import { pensTable, followsTable, usersTable } from "../models/schema.js";
 import { and, eq, inArray, desc, sql, count } from "drizzle-orm";
 import db from "../config/db.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
@@ -17,6 +17,34 @@ router.get("/pens", verifyFirebase, async (req, res) => {
     Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 50 ? rawLimit : 4;
   const offset = (page - 1) * limit;
   const sort = req.query.sort || "recent"; // "recent" | "top"
+
+  const selectPensColumns = {
+    id: pensTable.id,
+    title: pensTable.title,
+    description: pensTable.description,
+    html_code: pensTable.html_code,
+    css_code: pensTable.css_code,
+    js_code: pensTable.js_code,
+    resources_css: pensTable.resources_css,
+    resources_js: pensTable.resources_js,
+    is_private: pensTable.is_private,
+    created_at: pensTable.created_at,
+    updated_at: pensTable.updated_at,
+    favorites_count: pensTable.favorites_count,
+    comments_count: pensTable.comments_count,
+    views_count: pensTable.views_count,
+    username: usersTable.username,
+    user_display_name: usersTable.display_name,
+    profile_image: usersTable.profile_image_url,
+    is_pro: usersTable.is_pro,
+  }; // 要查詢的欄位
+
+  // 搜尋條件陣列：初始條件： 非刪除 + 非私有 + 非垃圾桶
+  const filters = [
+    eq(pensTable.is_private, false),
+    eq(pensTable.is_deleted, false),
+    eq(pensTable.is_trash, false),
+  ];
 
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
@@ -54,13 +82,12 @@ router.get("/pens", verifyFirebase, async (req, res) => {
       sort === "top" ? desc(trendingScore) : desc(pensTable.created_at);
 
     const pens = await db
-      .select()
+      .select(selectPensColumns)
       .from(pensTable)
       .where(
         and(
           inArray(pensTable.user_id, followedIds),
-          eq(pensTable.is_private, false),
-          eq(pensTable.is_deleted, false)
+          ...filters
         )
       )
       .orderBy(orderBy)
@@ -73,8 +100,7 @@ router.get("/pens", verifyFirebase, async (req, res) => {
       .where(
         and(
           inArray(pensTable.user_id, followedIds),
-          eq(pensTable.is_private, false),
-          eq(pensTable.is_deleted, false)
+          ...filters
         )
       );
 

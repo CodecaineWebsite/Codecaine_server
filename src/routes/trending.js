@@ -6,17 +6,23 @@ import express from "express";
 const router = express.Router();
 
 router.get("/pens", async (req, res) => {
-  const page = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit = Math.min(parseInt(req.query.limit) || 4, 50);
-  const offset = (page - 1) * 4;
+  const rawPage = parseInt(req.query.page, 10);
+  const rawLimit = parseInt(req.query.limit, 10);
 
-  const threeDaysAgo = new Date();
-  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const limit =
+    Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 50 ? rawLimit : 4;
+  const offset = (page - 1) * limit;
 
   const selectPensColumns = {
     id: pensTable.id,
     title: pensTable.title,
     description: pensTable.description,
+    html_code: pensTable.html_code,
+    css_code: pensTable.css_code,
+    js_code: pensTable.js_code,
+    resources_css: pensTable.resources_css,
+    resources_js: pensTable.resources_js,
     is_private: pensTable.is_private,
     created_at: pensTable.created_at,
     updated_at: pensTable.updated_at,
@@ -37,6 +43,8 @@ router.get("/pens", async (req, res) => {
   ];
 
   // 熱門加權公式：views * 1 + favorites * 3 + comments * 5 + 最近三天作品加十分
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
   const trendingScore = sql`
     ${pensTable.views_count} * 1 +
     ${pensTable.favorites_count} * 3 +
@@ -52,9 +60,7 @@ router.get("/pens", async (req, res) => {
       .select(selectPensColumns)
       .from(pensTable)
       .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-      .where(
-        and(...filters)
-      )
+      .where(and(...filters))
       .orderBy(desc(trendingScore), desc(pensTable.created_at))
       .limit(limit)
       .offset(offset);
@@ -62,9 +68,7 @@ router.get("/pens", async (req, res) => {
     const [{ total }] = await db
       .select({ total: count() })
       .from(pensTable)
-      .where(
-        and(...filters)
-      );
+      .where(and(...filters));
 
     res.json({
       results: pens,
