@@ -5,8 +5,9 @@ import {
   penTagsTable,
   tagsTable,
   usersTable,
+  favoritesTable,
 } from "../models/schema.js";
-import { and, eq, sql, or } from "drizzle-orm";
+import { and, eq, sql, desc, or } from "drizzle-orm";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js"
 import { verifySelf } from "../middlewares/verifySelf.js"
 import LRU from 'lru-cache';
@@ -88,15 +89,31 @@ router.get("/:id", verifySelf, async (req, res) => {
       return res.status(404).json({ error: "Pen not found" });
     }
     const pen = result[0];
+
     const tagRecords = await db
       .select({ name: tagsTable.name })
       .from(penTagsTable)
       .innerJoin(tagsTable, eq(penTagsTable.tag_id, tagsTable.id))
       .where(eq(penTagsTable.pen_id, id));
     const tags = tagRecords.map((t) => t.name);
+
+    const favoriteUsers = await db
+      .select({
+        display_name: usersTable.display_name,
+        username: usersTable.username,
+        profile_image_url: usersTable.profile_image_url,
+      })
+      .from(favoritesTable)
+      .innerJoin(usersTable, eq(favoritesTable.user_id, usersTable.id))
+      .where(eq(favoritesTable.pen_id, id))
+      .orderBy(desc(favoritesTable.created_at))
+      .limit(12);
+
+
     res.json({
       ...pen,
       tags,
+      favorites: favoriteUsers,
     });
   } catch (err) {
     console.error("Failed to fetch pen:", err);
