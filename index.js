@@ -36,7 +36,7 @@ app.use("/api/following",followingRouter);
 app.use("/api/trending",trendingRouter)
 app.use("/api/my",yourWorkRouter);
 
-// 全域錯誤處理 middleware（放在所有 route 之後）
+// 全域錯誤處理
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Internal server error" });

@@ -5,7 +5,6 @@ import { eq } from 'drizzle-orm';
 export async function injectFollowedIds(req, res, next) {
   try {
     const userId = req.userId;
-
     const rows = await db
       .select({ id: followsTable.following_id })
       .from(followsTable)

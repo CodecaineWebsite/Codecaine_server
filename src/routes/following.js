@@ -19,12 +19,9 @@ router.get(
   validateSortParam,
   injectFollowedIds,
   async (req, res) => {
-    const userId = req.userId;
     const { page, limit, offset } = req.pagination;
     const { sort, followedIds } = req;
-    // 搜尋條件陣列：初始條件： 非刪除 + 非私有 + 非垃圾桶
     
-
     if (followedIds.length === 0) {
       return res.json({
         results: [],
@@ -42,7 +39,6 @@ router.get(
 
       // count 查詢
       const filters = [...publicPensFilters(),inArray(pensTable.user_id, followedIds)];
-
       const [{ total }] = await db
         .select({ total: count() })
         .from(pensTable)
@@ -58,5 +54,3 @@ router.get(
 );
 
 export default router;
-
-//TODO: following_id 這個欄位 要改成 followed_id

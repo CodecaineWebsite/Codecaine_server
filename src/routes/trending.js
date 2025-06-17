@@ -10,8 +10,6 @@ const router = express.Router();
 
 router.get("/pens", validatePaginationParams, async (req, res) => {
   const { page, limit, offset } = req.pagination;
-
-  // 搜尋條件陣列：初始條件： 非刪除 + 非私有 + 非垃圾桶
   const filters = publicPensFilters();
 
   try {
@@ -28,7 +26,7 @@ router.get("/pens", validatePaginationParams, async (req, res) => {
       .select({ total: count() })
       .from(pensTable)
       .where(and(...filters));
-    // 如果沒有筆記，直接返回空結果
+
     if (total === 0) {
       return res.json({
         results: [],
