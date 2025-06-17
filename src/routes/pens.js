@@ -7,7 +7,6 @@ import {
   usersTable,
 } from "../models/schema.js";
 import { and, eq, sql, or } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js"
 import { verifySelf } from "../middlewares/verifySelf.js"
 import LRU from 'lru-cache';
