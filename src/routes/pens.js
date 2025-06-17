@@ -7,7 +7,7 @@ import {
   usersTable,
   favoritesTable,
 } from "../models/schema.js";
-import { and, eq, desc, or } from "drizzle-orm";
+import { and, eq, sql, desc, or } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
 import { verifySelf } from "../middlewares/verifySelf.js";
