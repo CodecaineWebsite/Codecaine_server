@@ -7,8 +7,11 @@ import {
   usersTable,
 } from "../models/schema.js";
 import { and, eq, sql, or } from "drizzle-orm";
-import { verifyFirebase } from "../middlewares/verifyFirebase.js";
-import { verifySelf } from "../middlewares/verifySelf.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { verifyFirebase } from "../middlewares/verifyFirebase.js"
+import { verifySelf } from "../middlewares/verifySelf.js"
+import LRU from 'lru-cache';
+
 const router = Router();
 
 /**
@@ -288,6 +291,35 @@ router.put("/:id", verifyFirebase, async (req, res) => {
   } catch (err) {
     console.error("Error updating pen:", err);
     res.status(500).json({ error: "Failed to update pen" });
+  }
+});
+
+
+/**
+ * PUT /api/pens/:id/view
+ * 新增瀏覽數
+*/
+const viewCache = new LRU({
+  max: 10000,
+  ttl: 1000 * 60 * 5 
+});
+router.put('/:id/view', async (req, res) => {
+  const penId = parseInt(req.params.id); 
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+  const userId = req.user?.id; // 如果你有驗證中介層
+  const key = userId ? `${penId}_user_${userId}` : `${penId}_ip_${ip}`;
+
+  try {
+  if (!viewCache.has(key)) {
+    await db.update(pensTable)
+      .set({ views_count: sql`${pensTable.views_count} + 1` })
+      .where(eq(pensTable.id, penId));
+    viewCache.set(key, true);
+  }
+    res.json({ success: true });
+  } catch (err) {
+    console.error('View count update failed:', err);
+    res.status(500).json({ success: false, message: 'Failed to update views count' });
   }
 });
 
