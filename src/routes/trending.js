@@ -3,6 +3,7 @@ import { pensTable, usersTable } from "../models/schema.js";
 import { validatePaginationParams } from "../middlewares/validatePaginationParams.js";
 import { publicPensFilters } from "../utils/filters.js";
 import { selectPensColumns, trendingScore } from "../queries/pensSelect.js";
+import { paginateResponse } from "../utils/paginationResponse.js";
 import db from "../config/db.js";
 import express from "express";
 
