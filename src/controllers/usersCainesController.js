@@ -26,7 +26,7 @@ export async function getUserPublicCaines(req, res) {
   try {
     const { username } = req.params;
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.pageSize) || 6;
+    const limit = req.query.view === "table" ? 15 : 6;
     const offset = (page - 1) * limit;
 
     const targetUser = await db
@@ -78,7 +78,7 @@ export async function getUserPrivateCaines(req, res) {
   try {
     const { username } = req.params;
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.pageSize) || 6;
+    const limit = req.query.view === "table" ? 15 : 6;
     const offset = (page - 1) * limit;
 
     const targetUser = await db
