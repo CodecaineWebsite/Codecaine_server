@@ -1,21 +1,16 @@
 import { pensTable, followsTable, usersTable } from "../models/schema.js";
 import { and, eq, inArray, desc, sql, count } from "drizzle-orm";
-import db from "../config/db.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import db from "../config/db.js";
+import { validatePaginationParams } from "../middlewares/validatePaginationParams.js";
 import express from "express";
 
 const router = express.Router();
 
-router.get("/pens", verifyFirebase, async (req, res) => {
+router.get("/pens", verifyFirebase, validatePaginationParams, async (req, res) => {
   const userId = req.userId;
+  const { page, limit, offset } = req.pagination;
 
-  const rawPage = parseInt(req.query.page, 10);
-  const rawLimit = parseInt(req.query.limit, 10);
-
-  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
-  const limit =
-    Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 50 ? rawLimit : 4;
-  const offset = (page - 1) * limit;
   const sort = req.query.sort || "recent"; // "recent" | "top"
 
   const selectPensColumns = {
@@ -84,6 +79,8 @@ router.get("/pens", verifyFirebase, async (req, res) => {
     const pens = await db
       .select(selectPensColumns)
       .from(pensTable)
+      .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+      .leftJoin(followsTable, eq(pensTable.user_id, followsTable.following_id))
       .where(
         and(
           inArray(pensTable.user_id, followedIds),
@@ -97,6 +94,8 @@ router.get("/pens", verifyFirebase, async (req, res) => {
     const [{ total }] = await db
       .select({ total: count() })
       .from(pensTable)
+      .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id))
+      .leftJoin(followsTable, eq(pensTable.user_id, followsTable.following_id))
       .where(
         and(
           inArray(pensTable.user_id, followedIds),

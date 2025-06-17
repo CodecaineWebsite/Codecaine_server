@@ -1,19 +1,14 @@
 import { desc, sql, count, and, eq } from "drizzle-orm";
 import { pensTable, usersTable } from "../models/schema.js";
+import { validatePaginationParams } from "../middlewares/validatePaginationParams.js";
 import db from "../config/db.js";
 import express from "express";
 
 const router = express.Router();
 
-router.get("/pens", async (req, res) => {
-  const rawPage = parseInt(req.query.page, 10);
-  const rawLimit = parseInt(req.query.limit, 10);
-
-  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
-  const limit =
-    Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 50 ? rawLimit : 4;
-  const offset = (page - 1) * limit;
-
+router.get("/pens", validatePaginationParams, async (req, res) => {
+  const { page, limit, offset } = req.pagination;
+  
   const selectPensColumns = {
     id: pensTable.id,
     title: pensTable.title,
