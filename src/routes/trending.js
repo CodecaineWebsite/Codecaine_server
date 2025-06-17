@@ -1,5 +1,5 @@
 import { desc, sql, count, and, eq } from "drizzle-orm";
-import { pensTable } from "../models/schema.js";
+import { pensTable, usersTable } from "../models/schema.js";
 import db from "../config/db.js";
 import express from "express";
 
@@ -12,6 +12,29 @@ router.get("/pens", async (req, res) => {
 
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+  const selectPensColumns = {
+    id: pensTable.id,
+    title: pensTable.title,
+    description: pensTable.description,
+    is_private: pensTable.is_private,
+    created_at: pensTable.created_at,
+    updated_at: pensTable.updated_at,
+    favorites_count: pensTable.favorites_count,
+    comments_count: pensTable.comments_count,
+    views_count: pensTable.views_count,
+    username: usersTable.username,
+    user_display_name: usersTable.display_name,
+    profile_image: usersTable.profile_image_url,
+    is_pro: usersTable.is_pro,
+  }; // 要查詢的欄位
+
+  // 搜尋條件陣列：初始條件： 非刪除 + 非私有 + 非垃圾桶
+  const filters = [
+    eq(pensTable.is_private, false),
+    eq(pensTable.is_deleted, false),
+    eq(pensTable.is_trash, false),
+  ];
 
   // 熱門加權公式：views * 1 + favorites * 3 + comments * 5 + 最近三天作品加十分
   const trendingScore = sql`
@@ -26,10 +49,11 @@ router.get("/pens", async (req, res) => {
 
   try {
     const pens = await db
-      .select()
+      .select(selectPensColumns)
       .from(pensTable)
+      .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id))
       .where(
-        and(eq(pensTable.is_private, false), eq(pensTable.is_deleted, false))
+        and(...filters)
       )
       .orderBy(desc(trendingScore), desc(pensTable.created_at))
       .limit(limit)
@@ -39,7 +63,7 @@ router.get("/pens", async (req, res) => {
       .select({ total: count() })
       .from(pensTable)
       .where(
-        and(eq(pensTable.is_private, false), eq(pensTable.is_deleted, false))
+        and(...filters)
       );
 
     res.json({
