@@ -1,5 +1,5 @@
-import { pensTable, followsTable, usersTable } from "../models/schema.js";
-import { and, eq, inArray, desc, sql, count } from "drizzle-orm";
+import { pensTable,} from "../models/schema.js";
+import { and, inArray, count } from "drizzle-orm";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
 import { validatePaginationParams } from "../middlewares/validatePaginationParams.js";
 import { validateSortParam } from "../middlewares/validateSortParam.js";
@@ -42,7 +42,7 @@ router.get(
 
       // count 查詢
       const filters = [...publicPensFilters(),inArray(pensTable.user_id, followedIds)];
-      
+
       const [{ total }] = await db
         .select({ total: count() })
         .from(pensTable)
