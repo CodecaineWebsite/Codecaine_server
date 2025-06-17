@@ -5,8 +5,8 @@ import { validatePaginationParams } from "../middlewares/validatePaginationParam
 import { validateSortParam } from "../middlewares/validateSortParam.js";
 import { injectFollowedIds } from "../middlewares/injectFollowedId.js";
 import { publicPensFilters } from "../utils/filters.js";
-import { selectPensColumns, trendingScore } from "../queries/pensSelect.js";
 import { paginateResponse } from "../utils/paginationResponse.js";
+import { listFollowedPens } from "../services/pensService.js";
 import db from "../config/db.js";
 import express from "express";
 
@@ -23,7 +23,7 @@ router.get(
     const { page, limit, offset } = req.pagination;
     const { sort, followedIds } = req;
     // 搜尋條件陣列：初始條件： 非刪除 + 非私有 + 非垃圾桶
-    const filters = [...publicPensFilters()];
+    
 
     if (followedIds.length === 0) {
       return res.json({
@@ -34,32 +34,18 @@ router.get(
       });
     }
 
-    filters.push(inArray(pensTable.user_id, followedIds));
-    const orderBy =
-      sort === "top" ? desc(trendingScore()) : desc(pensTable.created_at);
-
+;
     try {
-      const pens = await db
-        .select(selectPensColumns)
-        .from(pensTable)
-        .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-        .leftJoin(
-          followsTable,
-          eq(pensTable.user_id, followsTable.following_id)
-        )
-        .where(and(inArray(pensTable.user_id, followedIds), ...filters))
-        .orderBy(orderBy)
-        .limit(limit)
-        .offset(offset);
+      const pens = await listFollowedPens({
+        followedIds, limit, offset, sort
+      });
 
+      // count 查詢
+      const filters = [...publicPensFilters(),inArray(pensTable.user_id, followedIds)];
+      
       const [{ total }] = await db
         .select({ total: count() })
         .from(pensTable)
-        .leftJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-        .leftJoin(
-          followsTable,
-          eq(pensTable.user_id, followsTable.following_id)
-        )
         .where(and(...filters));
 
       const response = paginateResponse({ data: pens, total, page, limit });
