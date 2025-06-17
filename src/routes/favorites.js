@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
-import { addFavorite, removeFavorite, getFavoritesByUsername } from "../controllers/favoritesController.js";
+import {
+  addFavorite,
+  removeFavorite,
+  getFavoritesByUsername,
+} from "../controllers/favoritesController.js";
 
 const router = Router();
 
@@ -37,7 +41,6 @@ router.post("/", verifyFirebase, addFavorite);
  */
 router.delete("/", verifyFirebase, removeFavorite);
 
-
 /**
  * GET /api/favorites/:username
  * 公開查詢某使用者的收藏作品
@@ -51,6 +54,5 @@ router.delete("/", verifyFirebase, removeFavorite);
  * GET /api/favorites/lucy123?view=table&page=2
  */
 router.get("/:username", getFavoritesByUsername);
-
 
 export default router;
