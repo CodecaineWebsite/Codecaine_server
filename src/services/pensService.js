@@ -9,10 +9,6 @@ export async function listFollowedPens({ followedIds, limit, offset, sort }) {
     return [];
   }
 
-  const filters = [
-    ...publicPensFilters(), // 非私有、非刪除、非垃圾桶
-    inArray(pensTable.user_id, followedIds),
-  ];
   const orderBy = sort === 'top' ? desc(trendingScore()) : desc(pensTable.created_at);
 
   return db

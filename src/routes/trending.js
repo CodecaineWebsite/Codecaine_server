@@ -9,7 +9,9 @@ import express from "express";
 const router = express.Router();
 
 router.get("/pens", validatePaginationParams, async (req, res) => {
-  const { page, limit, offset } = req.pagination;
+  const { page, limit: rawLimit } = req.pagination;
+  const limit = rawLimit ?? 4;
+  const offset = (page - 1) * limit;
   const filters = publicPensFilters();
 
   try {

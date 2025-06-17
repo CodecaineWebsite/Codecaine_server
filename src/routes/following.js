@@ -19,7 +19,10 @@ router.get(
   validateSortParam,
   injectFollowedIds,
   async (req, res) => {
-    const { page, limit, offset } = req.pagination;
+    const { page, limit: rawLimit } = req.pagination;
+    const limit = rawLimit ?? 4;
+    const offset = (page - 1) * limit;
+
     const { sort, followedIds } = req;
     
     if (followedIds.length === 0) {
