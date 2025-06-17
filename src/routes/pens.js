@@ -1,11 +1,17 @@
 import { Router } from "express";
 import db from "../config/db.js";
-import { pensTable, penTagsTable, tagsTable, usersTable } from "../models/schema.js";
+import {
+  pensTable,
+  penTagsTable,
+  tagsTable,
+  usersTable,
+} from "../models/schema.js";
 import { and, eq, sql, or } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js"
 import { verifySelf } from "../middlewares/verifySelf.js"
 import LRU from 'lru-cache';
+
 const router = Router();
 
 /**
@@ -98,39 +104,15 @@ router.get("/:id", verifySelf, async (req, res) => {
   }
 });
 
-
 /**
  * POST /api/pens
  * 新增一份作品（支援標籤）
  */
 router.post("/", verifyFirebase, async (req, res) => {
-  try{
-  const { userId } = req;  
-  const {
-    user_id,
-    title,
-    description,
-    html_code,
-    css_code,
-    js_code,
-    resources_css,
-    resources_js,
-    view_mode,
-    is_autosave,
-    is_autopreview,
-    is_private = false,
-    is_deleted = false,
-    created_at,
-    updated_at,
-    deleted_at,
-    tags = [],
-  } = req.body;
-
-  // 1. 建立作品
-  const [newPen] = await db
-    .insert(pensTable)
-    .values({
-      user_id: userId,
+  try {
+    const { userId } = req;
+    const {
+      user_id,
       title,
       description,
       html_code,
@@ -141,39 +123,64 @@ router.post("/", verifyFirebase, async (req, res) => {
       view_mode,
       is_autosave,
       is_autopreview,
-      is_private,
+      is_private = false,
+      is_deleted = false,
       created_at,
       updated_at,
-    })
-    .returning();
+      deleted_at,
+      tags = [],
+    } = req.body;
 
-  // 2. 新增標籤（如果有）
-  for (const tagName of tags) {
-    if (!tagName || !tagName.trim()) continue;
-    // 2-1. 確認標籤是否存在，不存在就新增
-    const [tag] = await db
-      .insert(tagsTable)
-      .values({ name: tagName })
-      .onConflictDoNothing()
-      .returning();
-    // 2-2. 找出 tag.id（從剛新增或原有中查）
-    const tagRecord =
-      tag ||
-      (await db
-        .select()
-        .from(tagsTable)
-        .where(eq(tagsTable.name, tagName.trim())))[0];
-    if (!tagRecord) continue;
-    // 2-3. 建立 penTags 關聯
-    await db
-      .insert(penTagsTable)
+    // 1. 建立作品
+    const [newPen] = await db
+      .insert(pensTable)
       .values({
-        pen_id: newPen.id,
-        tag_id: tagRecord.id,
+        user_id: userId,
+        title,
+        description,
+        html_code,
+        css_code,
+        js_code,
+        resources_css,
+        resources_js,
+        view_mode,
+        is_autosave,
+        is_autopreview,
+        is_private,
+        created_at,
+        updated_at,
       })
-      .onConflictDoNothing(); // 避免重複
-  }
-  res.status(201).json({
+      .returning();
+
+    // 2. 新增標籤（如果有）
+    for (const tagName of tags) {
+      if (!tagName || !tagName.trim()) continue;
+      // 2-1. 確認標籤是否存在，不存在就新增
+      const [tag] = await db
+        .insert(tagsTable)
+        .values({ name: tagName })
+        .onConflictDoNothing()
+        .returning();
+      // 2-2. 找出 tag.id（從剛新增或原有中查）
+      const tagRecord =
+        tag ||
+        (
+          await db
+            .select()
+            .from(tagsTable)
+            .where(eq(tagsTable.name, tagName.trim()))
+        )[0];
+      if (!tagRecord) continue;
+      // 2-3. 建立 penTags 關聯
+      await db
+        .insert(penTagsTable)
+        .values({
+          pen_id: newPen.id,
+          tag_id: tagRecord.id,
+        })
+        .onConflictDoNothing(); // 避免重複
+    }
+    res.status(201).json({
       message: "Pen created successfully",
       data: newPen,
     });
@@ -188,91 +195,96 @@ router.post("/", verifyFirebase, async (req, res) => {
  * 編輯作品（不包含標籤）
  */
 router.put("/:id", verifyFirebase, async (req, res) => {
-try {
-  const { userId } = req;
-  const id = parseInt(req.params.id);
-  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
-  if (!work) {
-    return res.status(404).json({ error: "Pen not found" });
-  }
-  if (work.user_id !== userId) {
-    return res.status(403).json({ error: "You do not have permission to update this pen" });
-  }
-  if (work.is_trash) {
-    return res.status(400).json({ error: "Cannot update a pen that is in the trash" });
-  }
-  if (work.is_deleted) {
-    return res.status(404).json({ error: "Pen not found" });
-  }
-  const {
-    title,
-    description,
-    html_code,
-    css_code,
-    js_code,
-    resources_css,
-    resources_js,
-    view_mode,
-    is_autosave,
-    is_autopreview,
-    is_private = false,
-    tags = [],
-  } = req.body;
-  
-  const now = new Date();
-  const [updatedPen] = await db
-  .update(pensTable)
-  .set({ 
-    title,
-    description,
-    html_code,
-    css_code,
-    js_code,
-    resources_css,
-    resources_js,
-    view_mode,
-    is_autosave,
-    is_autopreview,
-    is_private,
-    updated_at: now,
-  })
-  .where(eq(pensTable.id, id))
-  .returning();
+  try {
+    const { userId } = req;
+    const id = parseInt(req.params.id);
+    const work = (
+      await db.select().from(pensTable).where(eq(pensTable.id, id))
+    )[0];
+    if (!work) {
+      return res.status(404).json({ error: "Pen not found" });
+    }
+    if (work.user_id !== userId) {
+      return res
+        .status(403)
+        .json({ error: "You do not have permission to update this pen" });
+    }
+    if (work.is_trash) {
+      return res
+        .status(400)
+        .json({ error: "Cannot update a pen that is in the trash" });
+    }
+    if (work.is_deleted) {
+      return res.status(404).json({ error: "Pen not found" });
+    }
+    const {
+      title,
+      description,
+      html_code,
+      css_code,
+      js_code,
+      resources_css,
+      resources_js,
+      view_mode,
+      is_autosave,
+      is_autopreview,
+      is_private = false,
+      tags = [],
+    } = req.body;
 
-  if (!updatedPen) return res.status(404).json({ error: "Pen not found" });
+    const now = new Date();
+    const [updatedPen] = await db
+      .update(pensTable)
+      .set({
+        title,
+        description,
+        html_code,
+        css_code,
+        js_code,
+        resources_css,
+        resources_js,
+        view_mode,
+        is_autosave,
+        is_autopreview,
+        is_private,
+        updated_at: now,
+      })
+      .where(eq(pensTable.id, id))
+      .returning();
 
-  // 更新 tags
-  // 1. 先刪掉舊的關聯
-  await db.delete(penTagsTable).where(eq(penTagsTable.pen_id, id));
-  
-  // 2. 建立新的關聯
-  for (const tagName of tags) {
-    if (!tagName.trim()) continue; // 避免空字串
-    // 確保 tag 存在（不存在就建立）
-    const [tag] = await db
-    .insert(tagsTable)
-    .values({ name: tagName })
-    .onConflictDoNothing()
-    .returning();
-    
-    const tagRecord =
-      tag ||
-      (await db
-        .select()
-        .from(tagsTable)
-        .where(eq(tagsTable.name, tagName)))[0];
-    if (!tagRecord) continue;
-    
-    // 建立新關聯
-    await db
-    .insert(penTagsTable)
-    .values({
-      pen_id: id,
-      tag_id: tagRecord.id,
-    })
-    .onConflictDoNothing();
-  }
-  res.json({
+    if (!updatedPen) return res.status(404).json({ error: "Pen not found" });
+
+    // 更新 tags
+    // 1. 先刪掉舊的關聯
+    await db.delete(penTagsTable).where(eq(penTagsTable.pen_id, id));
+
+    // 2. 建立新的關聯
+    for (const tagName of tags) {
+      if (!tagName.trim()) continue; // 避免空字串
+      // 確保 tag 存在（不存在就建立）
+      const [tag] = await db
+        .insert(tagsTable)
+        .values({ name: tagName })
+        .onConflictDoNothing()
+        .returning();
+
+      const tagRecord =
+        tag ||
+        (
+          await db.select().from(tagsTable).where(eq(tagsTable.name, tagName))
+        )[0];
+      if (!tagRecord) continue;
+
+      // 建立新關聯
+      await db
+        .insert(penTagsTable)
+        .values({
+          pen_id: id,
+          tag_id: tagRecord.id,
+        })
+        .onConflictDoNothing();
+    }
+    res.json({
       message: "Pen updated successfully",
       data: updatedPen,
     });
@@ -316,22 +328,31 @@ router.put('/:id/view', async (req, res) => {
  * 暫時刪除作品
  */
 router.put("/:id/trash", verifyFirebase, async (req, res) => {
-try {
-  const { userId } = req;
-  const id = parseInt(req.params.id);
-  const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
-  
-  if (!work) return res.status(404).json({ error: "Pen not found" });
-  if (work.user_id !== userId){ 
-    return res.status(403).json({ error: "You do not have permission to move this pen to trash" });
-  }
-  const now = new Date();
-  const [updated] = await db
-    .update(pensTable)
-    .set({ deleted_at: now, is_trash: true })
-    .where(eq(pensTable.id, id))
-    .returning();
-  res.json({ message: "Moved to trash. It will be permanently deleted in 3 days.", data: updated });
+  try {
+    const { userId } = req;
+    const id = parseInt(req.params.id);
+    const work = (
+      await db.select().from(pensTable).where(eq(pensTable.id, id))
+    )[0];
+
+    if (!work) return res.status(404).json({ error: "Pen not found" });
+    if (work.user_id !== userId) {
+      return res
+        .status(403)
+        .json({
+          error: "You do not have permission to move this pen to trash",
+        });
+    }
+    const now = new Date();
+    const [updated] = await db
+      .update(pensTable)
+      .set({ deleted_at: now, is_trash: true })
+      .where(eq(pensTable.id, id))
+      .returning();
+    res.json({
+      message: "Moved to trash. It will be permanently deleted in 3 days.",
+      data: updated,
+    });
   } catch (err) {
     console.error("Error moving pen to trash:", err);
     res.status(500).json({ error: "Failed to move pen to trash" });
@@ -346,11 +367,15 @@ router.put("/:id/restore", verifyFirebase, async (req, res) => {
   try {
     const { userId } = req;
     const id = parseInt(req.params.id);
-    
-    const work = (await db.select().from(pensTable).where(eq(pensTable.id, id)))[0];
+
+    const work = (
+      await db.select().from(pensTable).where(eq(pensTable.id, id))
+    )[0];
     if (!work) return res.status(404).json({ error: "Pen not found" });
-    if (work.user_id !== userId){ 
-      return res.status(403).json({ error: "You do not have permission to restore this pen" });
+    if (work.user_id !== userId) {
+      return res
+        .status(403)
+        .json({ error: "You do not have permission to restore this pen" });
     }
     const [updated] = await db
       .update(pensTable)
@@ -358,7 +383,7 @@ router.put("/:id/restore", verifyFirebase, async (req, res) => {
       .where(eq(pensTable.id, id))
       .returning();
     res.json({ message: "Successfully restored from trash", data: updated });
-    } catch (err) {
+  } catch (err) {
     console.error("Error restoring pen:", err);
     res.status(500).json({ error: "Failed to restore pen" });
   }
@@ -376,10 +401,14 @@ async function deleteOldTrash() {
           isNotNull(pensTable.deleted_at),
           lt(pensTable.deleted_at, threeDaysAgo)
         )
-      )
-    console.log(`Soft-deleted ${result.rowCount ?? result} pens that were trashed more than 3 days ago.`);
+      );
+    console.log(
+      `Soft-deleted ${
+        result.rowCount ?? result
+      } pens that were trashed more than 3 days ago.`
+    );
   } catch (err) {
-    console.error('Failed to delete old trashed pens:', err);
+    console.error("Failed to delete old trashed pens:", err);
   }
 }
 
@@ -399,7 +428,9 @@ router.delete("/:id", verifyFirebase, async (req, res) => {
       .from(pensTable)
       .where(and(eq(pensTable.id, id), eq(pensTable.user_id, userId)));
     if (pen.length === 0) {
-      return res.status(403).json({ error: "You do not have permission to delete this pen" });
+      return res
+        .status(403)
+        .json({ error: "You do not have permission to delete this pen" });
     }
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve pen" });
@@ -409,7 +440,7 @@ router.delete("/:id", verifyFirebase, async (req, res) => {
   try {
     await db
       .update(pensTable)
-      .set({ 
+      .set({
         is_deleted: true,
         deleted_at: new Date(),
       })
