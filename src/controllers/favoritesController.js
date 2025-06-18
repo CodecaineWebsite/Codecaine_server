@@ -73,7 +73,7 @@ export async function getFavoritesByUsername(req, res) {
   const { view = "grid", page: rawPage = "1" } = req.query;
 
   const page = parseInt(rawPage, 10) || 1;
-  const limit = view === "table" ? 10 : 6;
+  const limit = view === "table" ? 15 : 6;
   const offset = (page - 1) * limit;
 
   // 取得 user_id
