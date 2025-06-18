@@ -1,6 +1,7 @@
 import express from "express";
 import { Router } from "express";
 import cors from "cors";
+import geminiRoutes from './src/routes/gemini.js';
 
 import authRouter from "./src/routes/auth.js";
 import usersRouter from "./src/routes/users.js";
@@ -37,6 +38,7 @@ app.use("/api/following", followingRouter);
 app.use("/api/trending", trendingRouter);
 app.use("/api/my", yourWorkRouter);
 app.use("/api/usersCaines", usersCainesRouter);
+app.use('/api/gemini', geminiRoutes);
 
 // 全域錯誤處理
 app.use((err, req, res, next) => {
