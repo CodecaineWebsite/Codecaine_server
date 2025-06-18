@@ -257,7 +257,6 @@ router.put("/:id", verifyFirebase, async (req, res) => {
       is_private = false,
       tags = [],
     } = req.body;
-
     const now = new Date();
     const [updatedPen] = await db
       .update(pensTable)
