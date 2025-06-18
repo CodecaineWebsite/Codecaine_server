@@ -29,6 +29,10 @@ router.get("/", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/pens/trash
+ * 取得使用者的垃圾桶作品
+ */
 router.get("/trash", verifyFirebase, async (req, res) => {
   try {
     const viewerId = req.userId;
@@ -311,7 +315,46 @@ router.put("/:id", verifyFirebase, async (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/pens/:id/privacy
+ * 切換作品的公開／私密狀態
+ */
+router.patch("/:id/privacy", verifyFirebase, async (req, res) => {
+  try {
+    const { userId } = req;
+    const id = parseInt(req.params.id);
+    const { is_private } = req.body;
 
+    if (typeof is_private !== "boolean") {
+      return res.status(400).json({ error: "Missing or invalid 'is_private' field" });
+    }
+
+    const pen = await db
+      .select()
+      .from(pensTable)
+      .where(eq(pensTable.id, id))
+      .limit(1);
+
+    if (pen.length === 0) {
+      return res.status(404).json({ error: "Pen not found" });
+    }
+
+    if (pen[0].user_id !== userId) {
+      return res.status(403).json({ error: "You do not have permission to change this pen" });
+    }
+
+    const [updated] = await db
+      .update(pensTable)
+      .set({ is_private })
+      .where(eq(pensTable.id, id))
+      .returning();
+
+    res.json({ message: "Privacy updated", data: updated });
+  } catch (err) {
+    console.error("Failed to update privacy:", err);
+    res.status(500).json({ error: "Failed to update privacy" });
+  }
+});
 /**
  * PUT /api/pens/:id/view
  * 新增瀏覽數
