@@ -16,7 +16,6 @@ export async function addFavorite(req, res) {
       .values({ user_id, pen_id })
       .onConflictDoNothing()
       .returning();
-
     if (result.length === 0) {
       return res
         .status(200)
@@ -25,7 +24,7 @@ export async function addFavorite(req, res) {
     res.status(201).json({
       success: true,
       message: "Favorited successfully",
-      pen_id: result.pen_id,
+      pen_id: result[0].pen_id,
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to favorite", details: err.message });
@@ -130,4 +129,50 @@ export async function getFavoritesByUsername(req, res) {
     totalPages,
     currentPage: page,
   });
+}
+
+// GET /api/favorites/check/:pen_id
+export async function checkFavorite(req, res) {
+  const user_id = req.userId;
+  const { pen_id } = req.params;
+  if (!pen_id) {
+    return res.status(400).json({ error: "Missing pen_id" });
+  }
+  try {
+    const result = await db
+      .select()
+      .from(favoritesTable)
+      .where(
+        and(
+          eq(favoritesTable.user_id, user_id),
+          eq(favoritesTable.pen_id, pen_id)
+        )
+      )
+      .limit(1);
+    res.json({ liked: result.length > 0 });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Failed to check favorite", details: err.message });
+  }
+}
+
+// GET /api/favorites/count/:pen_id
+export async function countFavorites(req, res) {
+  const { pen_id } = req.params;
+  if (!pen_id) {
+    return res.status(400).json({ error: "Missing pen_id" });
+  }
+  try {
+    const countResult = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(favoritesTable)
+      .where(eq(favoritesTable.pen_id, pen_id));
+    const favoritesCount = Number(countResult[0]?.count) || 0;
+    res.json({ favoritesCount });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Failed to count favorites", details: err.message });
+  }
 }
