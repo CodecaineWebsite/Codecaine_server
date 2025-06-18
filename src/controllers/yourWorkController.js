@@ -6,11 +6,9 @@ import {
   usersTable,
 } from "../models/schema.js";
 import { and, eq, ilike, or, asc, desc, sql } from "drizzle-orm";
+import { selectPensColumns } from "../queries/pensSelect.js";
 
-/**
- *
- *
- */
+
 export async function searchMyWork(req, res) {
   const userId = req.userId; // 由 verifyFirebase middleware 注入
   const {
@@ -31,22 +29,6 @@ export async function searchMyWork(req, res) {
   const page = parseInt(rawPage, 10) || 1;
   const limit = view === "table" ? 10 : 6;
   const offset = (page - 1) * limit;
-
-  const selectPensColumns = {
-    id: pensTable.id,
-    title: pensTable.title,
-    description: pensTable.description,
-    is_private: pensTable.is_private,
-    created_at: pensTable.created_at,
-    updated_at: pensTable.updated_at,
-    favorites_count: pensTable.favorites_count,
-    comments_count: pensTable.comments_count,
-    views_count: pensTable.views_count,
-    username: usersTable.username,
-    user_display_name: usersTable.display_name,
-    profile_image: usersTable.profile_image_url,
-    is_pro: usersTable.is_pro,
-  }; // 要查詢的欄位
 
   // 搜尋條件陣列：初始條件：自己的作品 + 非刪除
   const filters = [
