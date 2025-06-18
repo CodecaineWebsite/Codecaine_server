@@ -146,7 +146,6 @@ export const getFollowings = async (req, res) => {
 
     const followings = await db
       .select({
-        id: usersTable.id,
         username: usersTable.username,
         display_name: usersTable.display_name,
         profile_image: usersTable.profile_image_url || null,
@@ -200,7 +199,6 @@ export const getFollowers = async (req, res) => {
 
     const followers = await db
       .select({
-        id: usersTable.id,
         username: usersTable.username,
         display_name: usersTable.display_name,
         profile_image: usersTable.profile_image_url || null,
