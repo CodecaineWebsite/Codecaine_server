@@ -4,6 +4,8 @@ import {
   addFavorite,
   removeFavorite,
   getFavoritesByUsername,
+  checkFavorite,
+  countFavorites,
 } from "../controllers/favoritesController.js";
 
 const router = Router();
@@ -54,5 +56,29 @@ router.delete("/", verifyFirebase, removeFavorite);
  * GET /api/favorites/lucy123?view=table&page=2
  */
 router.get("/:username", getFavoritesByUsername);
+
+/**
+ * GET /api/favorites/check/:pen_id
+ * 檢查目前登入者是否已收藏某作品
+ *
+ * @param {number} pen_id - 作品 ID
+ * @header Authorization Bearer token (Firebase JWT)
+ *
+ * @response {200} { liked: true/false }
+ * @response {401} 未登入
+ */
+router.get("/check/:pen_id", verifyFirebase, checkFavorite);
+
+/**
+ * GET /api/favorites/count/:pen_id
+ * 查詢某作品被收藏的總數
+ *
+ * @param {number} pen_id - 作品 ID
+ *
+ * @response {200} { favoritesCount: 數字 }
+ * @response {400} 缺少 pen_id
+ * @response {500} 查詢失敗
+ */
+router.get("/count/:pen_id", countFavorites);
 
 export default router;
