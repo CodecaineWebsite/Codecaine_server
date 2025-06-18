@@ -28,7 +28,6 @@ export async function getUserPublicCaines(req, res) {
     const page = Number(req.query.page) || 1;
     const limit = req.query.view === "table" ? 15 : 6;
     const offset = (page - 1) * limit;
-
     const targetUser = await db
       .select()
       .from(usersTable)
