@@ -2,108 +2,84 @@ import express from "express";
 import db from "../config/db.js";
 import { sql, count, like, or, eq, and } from "drizzle-orm";
 import { pensTable, usersTable } from "../models/schema.js";
+import { validatePaginationParams } from "../middlewares/validatePaginationParams.js";
+import { paginateResponse } from "../utils/paginationResponse.js";
+import { buildKeywordConditions } from "../utils/search.js";
+import { publicPensFilters } from "../utils/filters.js";
+import { selectPensColumns } from "../queries/pensSelect.js";
 
 const router = express.Router();
 
 const categoryMap = {
-  pens: pensTable,
+  pens: {
+    table: pensTable,
+    select: selectPensColumns,
+    extraFilters: publicPensFilters(), // 私有／刪除／垃圾桶排除
+    defaultLimit: 6,
+  },
+  // 其他分類擴充
 };
 
 /**
  * /api/search/:category?q=xxx&page=yyy
  */
-router.get("/:category", async (req, res) => {
+router.get("/:category", validatePaginationParams, async (req, res) => {
   const { category } = req.params;
-  const { q = "", page: rawPage = "1" } = req.query;
-  const table = categoryMap[category];
-  const limit = 6;
-  // const keyword = `%${q.toLowerCase()}%`;
+  const { q = ""} = req.query;
+  const { page, limit: userLimit = 6 } = req.pagination;
 
-  if (!table) return res.status(400).json({ error: "無效的分類" });
+  // 1. 驗證分類
+  const meta = categoryMap[category];
+  if (!meta) return res.status(400).json({ error: "Invalid Category" });
 
-  const keywords = q.toLowerCase().trim().split(/\s+/).filter(Boolean); // .filter(Boolean) === .filter((item) => Boolean(item))
+  const limit = meta.defaultLimit ?? userLimit;
+  const table = meta.table;
+  const offset = (page - 1) * limit;
 
-  const keywordConditions = keywords.map((kw) =>
-    or(
-      like(sql`LOWER(${table.title})`, `%${kw}%`),
-      like(sql`LOWER(${table.description})`, `%${kw}%`),
-      like(sql`LOWER(${usersTable.username})`, `%${kw}%`)
-    )
-  );
-
-  const whereClause = and(eq(table.is_private, false), ...keywordConditions);
   try {
-    let total;
-    let totalPages;
-    let page = parseInt(rawPage, 10);
+    // 2. 關鍵字處理
+    const keywords = q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const keywordConditions = buildKeywordConditions(keywords, table);
 
-    try {
-      const [countRow] = await db
-        .select({ count: count() })
-        .from(table)
-        .leftJoin(usersTable, eq(table.user_id, usersTable.id))
-        .where(whereClause);
+    // 3. where 條件
+    const filters = [...meta.extraFilters, ...keywordConditions];
 
-      total = Number(countRow.count);
-      totalPages = Math.ceil(total / limit);
-      if (page > totalPages || page < 0) {
-        page = 1;
-      }
-    } catch (err) {
-      console.error("搜尋總筆數錯誤:", err);
-      return res.status(500).json({ error: "無法取得搜尋筆數" });
-    }
+    const whereClause = and(...filters);
+    // 4. total 筆數
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(table)
+      .leftJoin(usersTable, eq(table.user_id, usersTable.id))
+      .where(whereClause);
 
-    let results = [];
+    // 5. 分頁檢查
+    const totalPages = Math.ceil(total / limit) || 1;
+    const currentPage = page > totalPages ? 1 : page;
+    const trueOffset = (currentPage - 1) * limit;
 
-    const offset = (page - 1) * limit;
-    try {
-      results = await db
-        .select({
-          id: table.id,
-          username: usersTable.username,
-          user_display_name: usersTable.display_name,
-          profile_image: usersTable.profile_image_url,
-          is_pro: usersTable.is_pro,
-          title: table.title,
-          description: table.description,
-          favorites_count: table.favorites_count,
-          comments_count: table.comments_count,
-          views_count: table.views_count,
-          created_at: table.created_at,
-          updated_at: table.updated_at,
-          favorites_count: table.favorites_count,
-          comments_count: table.comments_count,
-          views_count: table.views_count,
-          username: usersTable.username,
-        })
-        .from(table)
-        .leftJoin(usersTable, eq(table.user_id, usersTable.id))
-        .where(whereClause)
-        .orderBy(table.created_at)
-        .limit(limit)
-        .offset(offset);
-    } catch (err) {
-      console.error("搜尋結果查詢錯誤:", err);
-      return res.status(500).json({ error: "無法取得搜尋結果" });
-    }
+    // 6. 查詢結果
+    const results = await db
+      .select(meta.select)
+      .from(table)
+      .leftJoin(usersTable, eq(table.user_id, usersTable.id))
+      .where(whereClause)
+      .orderBy(table.created_at)
+      .limit(limit)
+      .offset(trueOffset);
 
-    res.json({
-      results,
-      total,
-      totalPages,
-      currentPage: page,
-    });
+    // 7. 回傳
+    res.json(
+      paginateResponse({
+        data: results,
+        total,
+        page: currentPage,
+        limit,
+      })
+    );
   } catch (err) {
-    console.error("搜尋錯誤:", err);
-    res.status(500).json({ error: "搜尋失敗" });
+    console.error("Search error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
-  //查總筆數
-  //查總頁數
-  //查當頁資料
-  //回傳當頁資料
 });
 
 export default router;
-
-// TODO: 當 :category 為 categoryMap 之外的值，當成 pens 來處理搜尋
