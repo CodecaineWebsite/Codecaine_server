@@ -8,9 +8,9 @@ import {
   favoritesTable,
 } from "../models/schema.js";
 import { and, eq, sql, desc, or } from "drizzle-orm";
-import { verifyFirebase } from "../middlewares/verifyFirebase.js"
-import { verifySelf } from "../middlewares/verifySelf.js"
-import LRU from 'lru-cache';
+import { verifyFirebase } from "../middlewares/verifyFirebase.js";
+import { verifySelf } from "../middlewares/verifySelf.js";
+import LRU from "lru-cache";
 
 const router = Router();
 
@@ -112,7 +112,6 @@ router.get("/:id", verifySelf, async (req, res) => {
       .where(eq(favoritesTable.pen_id, id))
       .orderBy(desc(favoritesTable.created_at))
       .limit(12);
-
 
     res.json({
       ...pen,
@@ -326,7 +325,9 @@ router.patch("/:id/privacy", verifyFirebase, async (req, res) => {
     const { is_private } = req.body;
 
     if (typeof is_private !== "boolean") {
-      return res.status(400).json({ error: "Missing or invalid 'is_private' field" });
+      return res
+        .status(400)
+        .json({ error: "Missing or invalid 'is_private' field" });
     }
 
     const pen = await db
@@ -340,7 +341,24 @@ router.patch("/:id/privacy", verifyFirebase, async (req, res) => {
     }
 
     if (pen[0].user_id !== userId) {
-      return res.status(403).json({ error: "You do not have permission to change this pen" });
+      return res
+        .status(403)
+        .json({ error: "You do not have permission to change this pen" });
+    }
+
+    //檢查是否為 Pro 會員
+    if (is_private === true) {
+      const user = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .limit(1);
+
+      if (!user.length || !user[0].is_pro) {
+        return res.status(403).json({
+          error: "Only Pro members can make pens private.",
+        });
+      }
     }
 
     const [updated] = await db
@@ -358,28 +376,32 @@ router.patch("/:id/privacy", verifyFirebase, async (req, res) => {
 /**
  * PUT /api/pens/:id/view
  * 新增瀏覽數
-*/
+ */
 const viewCache = new LRU({
   max: 10000,
-  ttl: 1000 * 60 * 5 
+  ttl: 1000 * 60 * 5,
 });
-router.put('/:id/view', async (req, res) => {
-  const penId = parseInt(req.params.id); 
-  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+router.put("/:id/view", async (req, res) => {
+  const penId = parseInt(req.params.id);
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
   const userId = req.user?.id; // 如果你有驗證中介層
   const key = userId ? `${penId}_user_${userId}` : `${penId}_ip_${ip}`;
 
   try {
-  if (!viewCache.has(key)) {
-    await db.update(pensTable)
-      .set({ views_count: sql`${pensTable.views_count} + 1` })
-      .where(eq(pensTable.id, penId));
-    viewCache.set(key, true);
-  }
+    if (!viewCache.has(key)) {
+      await db
+        .update(pensTable)
+        .set({ views_count: sql`${pensTable.views_count} + 1` })
+        .where(eq(pensTable.id, penId));
+      viewCache.set(key, true);
+    }
     res.json({ success: true });
   } catch (err) {
-    console.error('View count update failed:', err);
-    res.status(500).json({ success: false, message: 'Failed to update views count' });
+    console.error("View count update failed:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to update views count" });
   }
 });
 
@@ -397,11 +419,9 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
 
     if (!work) return res.status(404).json({ error: "Pen not found" });
     if (work.user_id !== userId) {
-      return res
-        .status(403)
-        .json({
-          error: "You do not have permission to move this pen to trash",
-        });
+      return res.status(403).json({
+        error: "You do not have permission to move this pen to trash",
+      });
     }
     const now = new Date();
     const [updated] = await db
