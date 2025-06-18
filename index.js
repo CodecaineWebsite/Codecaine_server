@@ -14,6 +14,8 @@ import yourWorkRouter from "./src/routes/yourWork.js";
 import trendingRouter from "./src/routes/trending.js";
 import followingRouter from "./src/routes/following.js";
 import usersCainesRouter from "./src/routes/usersCaines.js";
+import stripeRouter from "./src/routes/bill.js";
+
 const PORT = 3000;
 
 const app = express();
@@ -42,6 +44,7 @@ app.use("/api/following", followingRouter);
 app.use("/api/trending", trendingRouter);
 app.use("/api/my", yourWorkRouter);
 app.use("/api/usersCaines", usersCainesRouter);
+app.use("/api/stripe", stripeRouter);
 
 // 全域錯誤處理
 app.use((err, req, res, next) => {
