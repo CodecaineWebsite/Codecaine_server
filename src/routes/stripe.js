@@ -11,8 +11,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 const router = express.Router();
 
-// 你設定的 webhook secret，從 Stripe 後台取得
-
 router.post("/create-payment-intent", async (req, res, next) => {
   try {
     const { amount, userId } = req.body; // 👈 把 userId 接進來
@@ -33,6 +31,35 @@ router.post("/create-payment-intent", async (req, res, next) => {
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
     next(err);
+  }
+});
+
+const SUBSCRIPTION_PRICE_ID = process.env.SUBSCRIPTION_PRICE_ID; // 替換成你的
+
+router.post("/create-subscription-session", async (req, res) => {
+  const { userId, username } = req.body;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: SUBSCRIPTION_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId, // 可以讓你在 webhook 裡用來識別誰訂閱了
+      },
+      success_url: `http://localhost:5173/${username}/caines/showcase?subscribed=true`,
+      cancel_url: `http://localhost:5173/${username}/caines/showcase?subscribed=false`,
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error("Failed to create subscription session:", error);
+    res.status(500).json({ error: "Failed to create session" });
   }
 });
 
