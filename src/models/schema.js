@@ -131,6 +131,18 @@ const penTagsTable = pgTable(
   })
 );
 
+//訂閱資料表
+const subscriptionsTable = pgTable("subscriptions", {
+  id: text("id").primaryKey(),
+  user_id: varchar("user_id")
+    .references(() => usersTable.id)
+    .notNull(),
+  customer_id: text("customer_id").notNull(),
+  status: text("status").default("active"),
+  subscribed_at: timestamp("subscribed_at", { mode: "date" }).defaultNow(),
+  canceled_at: timestamp("canceled_at", { mode: "date" }),
+});
+
 export {
   usersTable,
   pensTable,
@@ -139,4 +151,5 @@ export {
   followsTable,
   tagsTable,
   penTagsTable,
+  subscriptionsTable,
 };
