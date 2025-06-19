@@ -49,11 +49,17 @@ router.post("/create-subscription-session", async (req, res) => {
           quantity: 1,
         },
       ],
-      metadata: {
-        userId, // 可以讓你在 webhook 裡用來識別誰訂閱了
+      subscription_data: {
+        metadata: {
+          userId: userId,
+        },
       },
-      success_url: `http://localhost:5173/${username}/caines/showcase?subscribed=true`,
-      cancel_url: `http://localhost:5173/${username}/caines/showcase?subscribed=false`,
+      success_url: `http://localhost:5173/${encodeURIComponent(
+        username
+      )}/caines/showcase?subscribed=true`,
+      cancel_url: `http://localhost:5173/${encodeURIComponent(
+        username
+      )}/caines/showcase?subscribed=false`,
     });
 
     res.json({ url: session.url });

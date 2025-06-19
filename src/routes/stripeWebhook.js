@@ -2,7 +2,7 @@ import express from "express";
 import Stripe from "stripe";
 import { eq } from "drizzle-orm";
 import db from "../config/db.js";
-import { usersTable } from "../models/schema.js";
+import { usersTable, subscriptionsTable } from "../models/schema.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -55,7 +55,7 @@ router.post(
 );
 
 router.post(
-  "/",
+  "/sub",
   express.raw({ type: "application/json" }),
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
@@ -77,6 +77,7 @@ router.post(
         const subscription = event.data.object;
         const userId = subscription.metadata?.userId;
         if (userId) {
+          conole.log(subscription);
           // 新增或更新訂閱資料
           await db
             .insert(subscriptionsTable)
@@ -99,7 +100,7 @@ router.post(
           // 同步更新使用者 pro 狀態
           await db
             .update(usersTable)
-            .set({ is_pro: subscription.status === "active" })
+            .set({ is_pro: true })
             .where(eq(usersTable.id, userId));
 
           console.log(
@@ -124,19 +125,7 @@ router.post(
 
           console.log(`User ${userId} subscription canceled`);
         }
-      } else if (event.type === "payment_intent.succeeded") {
-        // 如果你還要保留這段，也可以加進來
-        const paymentIntent = event.data.object;
-        const userId = paymentIntent.metadata?.userId;
-        if (userId) {
-          await db
-            .update(usersTable)
-            .set({ is_pro: true })
-            .where(eq(usersTable.id, userId));
-          console.log(`User ${userId} upgraded to pro!`);
-        }
       }
-
       res.json({ received: true });
     } catch (error) {
       console.error("Error handling webhook event:", error);
