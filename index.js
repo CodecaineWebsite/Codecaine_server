@@ -14,7 +14,8 @@ import yourWorkRouter from "./src/routes/yourWork.js";
 import trendingRouter from "./src/routes/trending.js";
 import followingRouter from "./src/routes/following.js";
 import usersCainesRouter from "./src/routes/usersCaines.js";
-import stripeRouter from "./src/routes/bill.js";
+import stripeRouter from "./src/routes/stripe.js";
+import stripeWebhookRouter from "./src/routes/stripeWebhook.js";
 
 const PORT = 3000;
 
@@ -29,6 +30,12 @@ app.use(
     credentials: true,
   })
 );
+app.use(
+  "/api/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookRouter
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
