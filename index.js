@@ -19,7 +19,11 @@ const PORT = 3000;
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://codecaine.zeabur.app"],
+    origin: [
+      "http://localhost:5173", // 本地開發
+      "http://codecaine-client-staging.zeabur.app", // 遠端 staging 環境 (dev)
+      "https://codecaine-client-staging-prep.zeabur.app", // 遠端 staging 環境 (build/deploy-prep)
+    ],
     credentials: true,
   })
 );
