@@ -40,13 +40,13 @@ const pensTable = pgTable("pens", {
   html_code: text("html_code"),
   css_code: text("css_code"),
   js_code: text("js_code"),
-  htmlPreprocessor: text("htmlPreprocessor"),
-  cssPreprocessor: text("cssPreprocessor"),
-  jsPreprocessor: text("jsPreprocessor"),
+  html_preprocessor: text("html_preprocessor").default("none"),
+  css_preprocessor: text("css_preprocessor").default("none"),
+  js_preprocessor: text("js_preprocessor").default("none"),
   resources_css: text("resources_css")
-  .array()
-  .notNull()
-  .default(sql`'{}'::text[]`),
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   resources_js: text("resources_js")
     .array()
     .notNull()
