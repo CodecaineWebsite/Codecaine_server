@@ -19,7 +19,6 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
-    console.log(`⚠️  Webhook signature verification failed.`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -71,10 +70,6 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
           .update(usersTable)
           .set({ is_pro: subscription.status === "active" })
           .where(eq(usersTable.id, userId));
-
-        console.log(
-          `User ${userId} subscription status: ${subscription.status}`
-        );
       } else {
         console.warn("No userId in subscription metadata");
       }
@@ -92,8 +87,6 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
           .update(usersTable)
           .set({ is_pro: false })
           .where(eq(usersTable.id, userId));
-
-        console.log(`User ${userId} subscription canceled`);
       }
     }
     res.json({ received: true });
