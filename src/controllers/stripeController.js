@@ -137,8 +137,8 @@ export const getSubscriptionStatus = async (req, res) => {
  * 建立 Stripe 訂閱付款 Session
  */
 export const createSubscriptionSession = async (req, res) => {
-  const { userId, username } = req.body;
-
+  const { username } = req.body;
+  const userId = req.userId;
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -174,7 +174,7 @@ export const createSubscriptionSession = async (req, res) => {
  * 取消目前使用者的訂閱
  */
 export const cancelSubscription = async (req, res) => {
-  const { userId } = req.body;
+  const userId = req.userId;
 
   if (!userId) {
     return res.status(400).json({ error: "Missing userId" });

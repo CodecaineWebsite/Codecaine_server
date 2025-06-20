@@ -20,12 +20,16 @@ router.get("/subscription-status", verifyFirebase, getSubscriptionStatus);
  * POST /api/stripe/create-subscription-session
  * 建立 Stripe 訂閱付款 Session
  */
-router.post("/create-subscription-session", createSubscriptionSession);
+router.post(
+  "/create-subscription-session",
+  verifyFirebase,
+  createSubscriptionSession
+);
 
 /**
  * PUT /api/stripe/cancel-subscription
  * 取消目前使用者的訂閱
  */
-router.put("/cancel-subscription", cancelSubscription);
+router.put("/cancel-subscription", verifyFirebase, cancelSubscription);
 
 export default router;
