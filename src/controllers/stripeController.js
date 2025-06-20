@@ -126,9 +126,12 @@ export const getSubscriptionStatus = async (req, res) => {
       status: subscription.status,
       cancel_at_period_end: subscription.cancel_at_period_end,
       cancel_at: subscription.cancel_at,
-      payment_intent_client_secret: subscription.payment_intent_client_secret,
-      current_period_end: subscription.current_period_end,
-      subscribed_at: subscription.subscribed_at,
+      current_period_end: subscription.current_period_end
+        ? new Date(subscription.current_period_end).toISOString().slice(0, 10)
+        : null,
+      subscribed_at: subscription.subscribed_at
+        ? new Date(subscription.subscribed_at).toISOString().slice(0, 10)
+        : null,
     });
   } catch (error) {
     console.error(error);
