@@ -50,6 +50,13 @@
       "when": 1750017863170,
       "tag": "0006_overjoyed_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1750232259538,
+      "tag": "0007_sudden_rocket_racer",
+      "breakpoints": true
     }
   ]
 }
