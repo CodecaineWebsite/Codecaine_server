@@ -148,8 +148,10 @@ const subscriptionsTable = pgTable("subscriptions", {
 // ai chat 資料表
 const openAIChatTable = pgTable("ai_chats", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  title: varchar("title", { length: 100 }).default("untitled"),
+  title: varchar("title", { length: 100 }).default("untitled").notNull(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  status: integer("status").default(1).notNull(),
+  // 1: active, 2: deleted
   user_id: varchar("user_id", { length: 128 })
   .references(() => usersTable.id, { onDelete: 'set null' }),
   pen_id: integer("pen_id")
@@ -167,8 +169,11 @@ const openAIMessageTable = pgTable('ai_messages',
       .references(() => openAIChatTable.id, { onDelete: 'cascade' })
       .notNull(),
     created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    content: text('content').notNull(),
+    content: text('content'),
     role: roleEnum('role').notNull(),
+    status: integer("status").default(1).notNull(),
+    // 1: success, 2: cancel, 3: no response
+    message_index:integer("message_index").notNull(),
   },
   (table) => ({
     chatIdIdx: index('chat_id_idx').on(table.chat_id),
