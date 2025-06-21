@@ -40,7 +40,7 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
             status: subscription.status,
             subscribed_at: new Date(),
             cancel_at_period_end: subscription.cancel_at_period_end,
-            cancel_at: subscription.cancel_at
+            canceled_at: subscription.cancel_at
               ? new Date(subscription.cancel_at * 1000)
               : null,
             current_period_end: subscription.items?.data[0]?.current_period_end
@@ -53,7 +53,7 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
             set: {
               status: subscription.status,
               cancel_at_period_end: subscription.cancel_at_period_end,
-              cancel_at: subscription.cancel_at
+              canceled_at: subscription.cancel_at
                 ? new Date(subscription.cancel_at * 1000)
                 : null,
               current_period_end: subscription.items?.data[0]
@@ -154,12 +154,12 @@ export const createSubscriptionSession = async (req, res) => {
           userId: userId,
         },
       },
-      success_url: `http://localhost:5173/${encodeURIComponent(
-        username
-      )}/caines/showcase?subscribed=true`,
-      cancel_url: `http://localhost:5173/${encodeURIComponent(
-        username
-      )}/caines/showcase?subscribed=false`,
+      success_url: `${
+        process.env.BASE_URL || "http://localhost:5173"
+      }/${encodeURIComponent(username)}/caines/showcase?subscribed=true`,
+      cancel_url: `${
+        process.env.BASE_URL || "http://localhost:5173"
+      }/${encodeURIComponent(username)}/caines/showcase?subscribed=false`,
     });
 
     res.json({ url: session.url });
