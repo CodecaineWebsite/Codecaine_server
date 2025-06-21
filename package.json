@@ -29,11 +29,13 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.0",
     "nodemon": "^3.1.10",
-    "pg": "^8.16.0"
+    "pg": "^8.16.0",
+    "stripe": "^18.2.1"
   },
   "devDependencies": {
     "@types/pg": "^8.15.2",
     "drizzle-kit": "^0.31.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "ngrok": "^5.0.0-beta.2"
   }
 }

@@ -1,6 +1,6 @@
 {
-  "id": "54214a9f-32b1-42d7-8f95-e60ee009a7b9",
-  "prevId": "add5f8d4-2eef-4328-b4f6-d1b4c135d9b6",
+  "id": "28772cf7-0bd7-4341-bc5a-cf1596ec7bb9",
+  "prevId": "f38424a1-7e48-4888-bc11-bb615cb6a6e0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -46,8 +46,12 @@
           "name": "comments_pen_id_pens_id_fk",
           "tableFrom": "comments",
           "tableTo": "pens",
-          "columnsFrom": ["pen_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "pen_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -55,8 +59,12 @@
           "name": "comments_user_id_users_id_fk",
           "tableFrom": "comments",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -97,8 +105,12 @@
           "name": "favorites_user_id_users_id_fk",
           "tableFrom": "favorites",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -106,8 +118,12 @@
           "name": "favorites_pen_id_pens_id_fk",
           "tableFrom": "favorites",
           "tableTo": "pens",
-          "columnsFrom": ["pen_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "pen_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -115,7 +131,10 @@
       "compositePrimaryKeys": {
         "favorites_user_id_pen_id_pk": {
           "name": "favorites_user_id_pen_id_pk",
-          "columns": ["user_id", "pen_id"]
+          "columns": [
+            "user_id",
+            "pen_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -153,8 +172,12 @@
           "name": "follows_follower_id_users_id_fk",
           "tableFrom": "follows",
           "tableTo": "users",
-          "columnsFrom": ["follower_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "follower_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -162,8 +185,12 @@
           "name": "follows_following_id_users_id_fk",
           "tableFrom": "follows",
           "tableTo": "users",
-          "columnsFrom": ["following_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "following_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -171,7 +198,10 @@
       "compositePrimaryKeys": {
         "follows_follower_id_following_id_pk": {
           "name": "follows_follower_id_following_id_pk",
-          "columns": ["follower_id", "following_id"]
+          "columns": [
+            "follower_id",
+            "following_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -202,8 +232,12 @@
           "name": "pen_tags_pen_id_pens_id_fk",
           "tableFrom": "pen_tags",
           "tableTo": "pens",
-          "columnsFrom": ["pen_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "pen_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -211,8 +245,12 @@
           "name": "pen_tags_tag_id_tags_id_fk",
           "tableFrom": "pen_tags",
           "tableTo": "tags",
-          "columnsFrom": ["tag_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -220,7 +258,10 @@
       "compositePrimaryKeys": {
         "pen_tags_pen_id_tag_id_pk": {
           "name": "pen_tags_pen_id_tag_id_pk",
-          "columns": ["pen_id", "tag_id"]
+          "columns": [
+            "pen_id",
+            "tag_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -391,8 +432,12 @@
           "name": "pens_user_id_users_id_fk",
           "tableFrom": "pens",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -434,14 +479,33 @@
         },
         "subscribed_at": {
           "name": "subscribed_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
         },
         "canceled_at": {
           "name": "canceled_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_period_end": {
+          "name": "current_period_end",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "payment_intent_client_secret": {
+          "name": "payment_intent_client_secret",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -451,19 +515,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
-        },
-        "current_period_end": {
-          "name": "current_period_end",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
         }
       },
       "indexes": {},
@@ -472,8 +523,12 @@
           "name": "subscriptions_user_id_users_id_fk",
           "tableFrom": "subscriptions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -508,7 +563,9 @@
         "tags_name_unique": {
           "name": "tags_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["name"]
+          "columns": [
+            "name"
+          ]
         }
       },
       "policies": {},
@@ -621,12 +678,16 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         },
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": ["username"]
+          "columns": [
+            "username"
+          ]
         }
       },
       "policies": {},
