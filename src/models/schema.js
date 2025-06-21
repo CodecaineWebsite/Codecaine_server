@@ -7,6 +7,8 @@ import {
   boolean,
   primaryKey,
   serial,
+  pgEnum,
+  index
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -143,6 +145,36 @@ const subscriptionsTable = pgTable("subscriptions", {
   canceled_at: timestamp("canceled_at", { mode: "date" }),
 });
 
+// ai chat 資料表
+const openAIChatTable = pgTable("ai_chats", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  title: varchar("title", { length: 100 }).default("untitled"),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  user_id: varchar("user_id", { length: 128 })
+  .references(() => usersTable.id, { onDelete: 'set null' }),
+  pen_id: integer("pen_id")
+  .references(() => pensTable.id, { onDelete: 'cascade' })
+    .notNull(),
+});
+
+// ai message 資料表
+export const roleEnum = pgEnum('role', ['user', 'assistant']);
+
+const openAIMessageTable = pgTable('ai_messages',
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    chat_id: integer("chat_id")
+      .references(() => openAIChatTable.id, { onDelete: 'cascade' })
+      .notNull(),
+    created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    content: text('content').notNull(),
+    role: roleEnum('role').notNull(),
+  },
+  (table) => ({
+    chatIdIdx: index('chat_id_idx').on(table.chat_id),
+  })
+);
+
 export {
   usersTable,
   pensTable,
@@ -152,4 +184,6 @@ export {
   tagsTable,
   penTagsTable,
   subscriptionsTable,
+  openAIChatTable,
+  openAIMessageTable,
 };
