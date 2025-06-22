@@ -154,9 +154,6 @@ const openAIChatTable = pgTable("ai_chats", {
   // 1: active, 2: deleted
   user_id: varchar("user_id", { length: 128 })
   .references(() => usersTable.id, { onDelete: 'set null' }),
-  pen_id: integer("pen_id")
-  .references(() => pensTable.id, { onDelete: 'cascade' })
-    .notNull(),
 });
 
 // ai message 資料表
