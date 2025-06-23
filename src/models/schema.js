@@ -149,7 +149,7 @@ const subscriptionsTable = pgTable("subscriptions", {
 const openAIChatTable = pgTable("ai_chats", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   title: varchar("title", { length: 100 }).default("untitled").notNull(),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   status: integer("status").default(1).notNull(),
   // 1: active, 2: deleted
   user_id: varchar("user_id", { length: 128 })
