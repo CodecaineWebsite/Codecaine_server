@@ -92,6 +92,13 @@
       "when": 1750571781495,
       "tag": "0010_last_susan_delgado",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1750697760511,
+      "tag": "0011_secret_dark_beast",
+      "breakpoints": true
     }
   ]
 }
