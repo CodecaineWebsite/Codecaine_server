@@ -37,21 +37,27 @@ export const handleAIReply = async (chatId) => {
     const result = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: truncatedHistory,
-      max_tokens: 300,
+      max_tokens: 200,
       temperature: 0.2,
     });
 
     const reply = result.choices[0].message.content;
 
     // 存 assistant 訊息
-    await db.insert(openAIMessageTable).values({
-      chat_id: chatId,
-      role: "assistant",
-      content: reply,
-      created_at: new Date(),
-      status: 1,
-      message_index: nextIndex,
-    });
+    const insertedAssistant = await db
+      .insert(openAIMessageTable)
+      .values({
+        chat_id: chatId,
+        role: "assistant",
+        content: reply,
+        created_at: new Date(),
+        status: 1,
+        message_index: nextIndex,
+      })
+      .returning();
+
+    return insertedAssistant[0];
+
   } catch (error) {
     console.error("AI 回覆失敗:", error);
   }
