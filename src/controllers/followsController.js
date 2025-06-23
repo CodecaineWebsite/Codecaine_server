@@ -125,7 +125,7 @@ export const getFollowings = async (req, res) => {
   try {
     const { username } = req.params;
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 30;
+    const pageSize = 30;
     const offset = (page - 1) * pageSize;
 
     const user = await db
@@ -161,7 +161,6 @@ export const getFollowings = async (req, res) => {
       total: totalCount,
       totalPages,
       currentPage: page,
-      pageSize,
     });
   } catch (err) {
     console.error(err);
@@ -177,7 +176,7 @@ export const getFollowers = async (req, res) => {
   try {
     const { username } = req.params;
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 30;
+    const pageSize = 30;
     const offset = (page - 1) * pageSize;
 
     const user = await db
@@ -214,7 +213,6 @@ export const getFollowers = async (req, res) => {
       total: totalCount,
       totalPages,
       currentPage: page,
-      pageSize,
     });
   } catch (err) {
     console.error(err);
