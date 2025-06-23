@@ -141,8 +141,16 @@ const subscriptionsTable = pgTable("subscriptions", {
     .notNull(),
   customer_id: text("customer_id").notNull(),
   status: text("status").default("active"),
-  subscribed_at: timestamp("subscribed_at", { mode: "date" }).defaultNow(),
-  canceled_at: timestamp("canceled_at", { mode: "date" }),
+  subscribed_at: timestamp("subscribed_at", {
+    withTimezone: true,
+  }).defaultNow(),
+  canceled_at: timestamp("canceled_at", { withTimezone: true }),
+  current_period_end: timestamp("current_period_end", { withTimezone: true }),
+  updated_at: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  payment_intent_client_secret: text("payment_intent_client_secret"),
+  cancel_at_period_end: boolean("cancel_at_period_end").default(false),
 });
 
 // ai chat 資料表

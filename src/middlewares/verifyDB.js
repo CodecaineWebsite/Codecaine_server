@@ -20,8 +20,9 @@ export async function verifyDB(req, res, next) {
         id: req.userId,
         email: req.user.email,
         username,
-        display_name: req.user.name || null,
-        bio: "", // 預設值
+        profile_image_url : "https://codecaine-client-staging.zeabur.app/default-avatar.png",
+        display_name: req.user.name || username ||null,
+        bio: "",
       });
     }
 
