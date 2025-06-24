@@ -9,7 +9,7 @@ const MAX_HISTORY_LENGTH = 20
 export const handleAIReply = async (chatId) => {
   try {
     if (!chatId || isNaN(Number(chatId))) {
-      console.warn("handleAIReply: 無效的 chatId", chatId);
+      console.warn("Reply: Invalid chat", chatId);
       return;
     }
     const history = await db
@@ -59,6 +59,6 @@ export const handleAIReply = async (chatId) => {
     return insertedAssistant[0];
 
   } catch (error) {
-    console.error("AI 回覆失敗:", error);
+    console.error("AI reply failed:", error);
   }
 };
