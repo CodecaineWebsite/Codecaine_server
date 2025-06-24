@@ -24,8 +24,8 @@ export const getChats = async (req, res) => {
 
     res.status(200).json({ chats });
   } catch (error) {
-    console.error('取得聊天列表失敗:', error);
-    res.status(500).json({ error: '取得聊天列表失敗' });
+    console.error('Failed to fetch chat list:', error);
+    res.status(500).json({ error: 'Failed to fetch chat list' });
   }
 };
 
@@ -35,7 +35,7 @@ export const getMessages = async (req, res) => {
     const userId = req.userId;
 
     if (!chatId || isNaN(chatId)) {
-      return res.status(400).json({ error: "無效的 chatId" });
+      return res.status(400).json({ error: "Invalid chatId" });
     }
 
     // 確認這筆 chat 是這位 user 的
@@ -49,7 +49,7 @@ export const getMessages = async (req, res) => {
       .limit(1);
 
     if (chat.length === 0) {
-      return res.status(404).json({ error: "找不到這筆聊天或沒有權限" });
+      return res.status(404).json({ error: "Chat not found or access denied" });
     }
 
     // 查詢所有訊息
@@ -70,7 +70,7 @@ export const getMessages = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "取得訊息失敗" });
+    res.status(500).json({ error: "Failed to fetch messages" });
   }
 };
 
@@ -85,7 +85,7 @@ export const addNewChat = async (req, res) => {
         user_id: userId,
         title: 'New Chat',
         created_at: now,
-        status: 1, // 表示存在
+        status: 1, // 存在
       })
       .returning({
         id: openAIChatTable.id,
@@ -102,8 +102,8 @@ export const addNewChat = async (req, res) => {
       chat: newChat,
     });
   } catch (error) {
-    console.error('新增聊天失敗:', error);
-    res.status(500).json({ error: '新增聊天失敗' });
+    console.error('Failed to create chat:', error);
+    res.status(500).json({ error: 'Failed to create chat' });
   }
 };
 
@@ -113,13 +113,13 @@ export const addNewMessage = async (req, res) => {
     const { chatId, role, content } = req.body;
 
     if (!chatId || isNaN(Number(chatId))) {
-      return res.status(400).json({ error: "無效的 chatId" });
+      return res.status(400).json({ error: "Invalid chatId" });
     }
     if (role !== "user") {
-      return res.status(400).json({ error: "目前僅支援 user 角色送訊息" });
+      return res.status(400).json({ error: "Only user messages are supported" });
     }
     if (!content || typeof content !== "string" || content.trim() === "") {
-      return res.status(400).json({ error: "訊息內容不可為空" });
+      return res.status(400).json({ error: "Message content cannot be empty" });
     }
 
     // 確認 chat 屬於該 user
@@ -130,7 +130,7 @@ export const addNewMessage = async (req, res) => {
       .limit(1);
 
     if (chat.length === 0) {
-      return res.status(404).json({ error: "找不到該聊天或無權限" });
+      return res.status(404).json({ error: "Chat not found or access denied" });
     }
 
     // 取得該 chat 最新的 message_index，決定下一筆 index
@@ -180,8 +180,8 @@ export const addNewMessage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("新增訊息失敗:", error);
-    res.status(500).json({ error: "新增訊息失敗" });
+    console.error("Failed to add message:", error);
+    res.status(500).json({ error: "Failed to add message" });
   }
 };
 
@@ -191,7 +191,7 @@ export const deleteChat = async (req, res) => {
     const userId = req.userId;
 
     if (!chatId || isNaN(chatId)) {
-      return res.status(400).json({ error: "無效的 chatId" });
+      return res.status(400).json({ error: "Invalid chatId" });
     }
 
     // 確認 chat 是否存在且屬於該 user
@@ -205,7 +205,7 @@ export const deleteChat = async (req, res) => {
       .limit(1);
 
     if (chat.length === 0) {
-      return res.status(404).json({ error: "找不到該聊天或無權限" });
+      return res.status(404).json({ error: "Chat not found or access denied" });
     }
 
     // 可選：刪除所有相關 messages（若 DB 沒設 ON DELETE CASCADE）
@@ -219,11 +219,11 @@ export const deleteChat = async (req, res) => {
       .set({ status: 2 })
       .where(eq(openAIChatTable.id, chatId));
 
-    res.status(200).json({ success: true, message: "聊天已刪除" });
+    res.status(200).json({ success: true, message: "Chat deleted" });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "刪除聊天失敗" });
+    res.status(500).json({ error: "Failed to delete chat" });
   }
 }
 
@@ -234,11 +234,11 @@ export const renameChat = async (req, res) => {
     const { title } = req.body;
 
     if (!chatId || isNaN(chatId)) {
-      return res.status(400).json({ error: "無效的 chatId" });
+      return res.status(400).json({ error: "Invalid chatId" });
     }
 
     if (!title || typeof title !== 'string' || title.trim() === "") {
-      return res.status(400).json({ error: "請提供有效的標題" });
+      return res.status(400).json({ error: "Please provide a valid title" });
     }
 
     // 確認 chat 屬於這位 user
@@ -252,7 +252,7 @@ export const renameChat = async (req, res) => {
       .limit(1);
 
     if (chat.length === 0) {
-      return res.status(404).json({ error: "找不到該聊天或無權限" });
+      return res.status(404).json({ error: "Chat not found or access denied" });
     }
 
     // 更新 title
@@ -261,10 +261,10 @@ export const renameChat = async (req, res) => {
       .set({ title: title.trim() })
       .where(eq(openAIChatTable.id, chatId));
 
-    res.status(200).json({ success: true, message: "標題已更新" });
+    res.status(200).json({ success: true, message: "Chat title updated" });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "修改標題失敗" });
+    res.status(500).json({ error: "Failed to update chat title" });
   }
 }
