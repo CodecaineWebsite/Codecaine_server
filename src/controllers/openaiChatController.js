@@ -172,11 +172,13 @@ export const addNewMessage = async (req, res) => {
         messageIndex: openAIMessageTable.message_index,
       });
 
-    const assistantMessage = await handleAIReply(chatId);
+    const userMessageId = insertedUser[0].id;
+    const assistantMessages = await handleAIReply(chatId, userMessageId);
 
     return res.status(201).json({
-      messages: [insertedUser[0], assistantMessage],
+      messages: [assistantMessages[0], assistantMessages[1]],
     });
+
   } catch (error) {
     console.error("新增訊息失敗:", error);
     res.status(500).json({ error: "新增訊息失敗" });
