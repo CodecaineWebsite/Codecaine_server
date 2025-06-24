@@ -151,6 +151,31 @@ const subscriptionsTable = pgTable("subscriptions", {
   cancel_at_period_end: boolean("cancel_at_period_end").default(false),
 });
 
+const notificationsTable = pgTable("notifications", {
+  id: serial("id").primaryKey(), // 自增 ID
+
+  recipient_id: varchar("recipient_id", { length: 128 })
+    .references(() => usersTable.id)
+    .notNull(), // 通知接收者（被通知者）
+
+  sender_id: varchar("sender_id", { length: 128 })
+    .references(() => usersTable.id)
+    .notNull(), // 發出通知者（追蹤者、留言者、喜歡者）
+
+  type: varchar("type", { length: 20 }).notNull(),
+  // 通知類型： "follow" | "favorite" | "comment"
+
+  pen_id: integer("pen_id").references(() => pensTable.id),
+  // 有關作品時填 (留言或喜歡的作品)
+
+  comment_id: integer("comment_id").references(() => commentsTable.id),
+  // 留言通知專用
+
+  is_read: boolean("is_read").default(false), // 是否已讀
+
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
 export {
   usersTable,
   pensTable,
@@ -160,4 +185,5 @@ export {
   tagsTable,
   penTagsTable,
   subscriptionsTable,
+  notificationsTable,
 };
