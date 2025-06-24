@@ -1,22 +1,11 @@
 import db from "../config/db.js";
 import { pensTable, usersTable } from "../models/schema.js";
 import { eq, sql, and } from "drizzle-orm";
+import { selectPensColumns } from "../queries/pensSelect.js";
+
+const selectCainesColumns = { ...selectPensColumns };
 
 // 查詢作品欄位
-const selectCainesColumns = {
-  id: pensTable.id,
-  title: pensTable.title,
-  description: pensTable.description,
-  is_private: pensTable.is_private,
-  created_at: pensTable.created_at,
-  updated_at: pensTable.updated_at,
-  favorites_count: pensTable.favorites_count,
-  comments_count: pensTable.comments_count,
-  views_count: pensTable.views_count,
-  username: usersTable.username,
-  profile_image: usersTable.profile_image_url,
-  is_pro: usersTable.is_pro,
-};
 
 /**
  * GET /api/usersCaines/:username/public
