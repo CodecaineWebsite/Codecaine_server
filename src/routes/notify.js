@@ -1,4 +1,4 @@
-import e, { Router } from "express";
+import { Router } from "express";
 import { eq, desc } from "drizzle-orm";
 import db from "../config/db.js";
 import {
@@ -6,7 +6,7 @@ import {
   usersTable,
   pensTable,
   commentsTable,
-} from "../models/schema.js"; // 你的通知資料表
+} from "../models/schema.js";
 import { verifyFirebase } from "../middlewares/verifyFirebase.js";
 
 const router = Router();
@@ -23,17 +23,14 @@ router.get("/", verifyFirebase, async (req, res, next) => {
         is_read: notificationsTable.is_read,
         created_at: notificationsTable.created_at,
 
-        // sender 資訊
         sender_id: usersTable.id,
         sender_username: usersTable.username,
         sender_display_name: usersTable.display_name,
         sender_profile_image: usersTable.profile_image_url,
 
-        // pen 資訊（可為 null）
         pen_id: pensTable.id,
         pen_title: pensTable.title,
 
-        // comment 資訊（可為 null）
         comment_id: commentsTable.id,
         comment_content: commentsTable.content,
       })
@@ -47,7 +44,6 @@ router.get("/", verifyFirebase, async (req, res, next) => {
       .where(eq(notificationsTable.recipient_id, userId))
       .orderBy(desc(notificationsTable.created_at));
 
-    // 整理成好用的結構
     const formatted = notifications.map((n) => ({
       type: n.type,
       is_read: n.is_read,

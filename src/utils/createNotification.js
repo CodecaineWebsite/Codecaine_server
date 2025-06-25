@@ -1,6 +1,5 @@
 import db from "../config/db.js";
 import { notificationsTable } from "../models/schema.js"; // 注意副檔名是 .js
-import { eq } from "drizzle-orm";
 
 /**
  * @typedef {'follow' | 'favorite' | 'comment'} NotificationType

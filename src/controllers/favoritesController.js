@@ -34,7 +34,6 @@ export async function addFavorite(req, res) {
 
     const recipientId = pen[0].user_id;
 
-    // 如果作品存在才建立通知
     if (pen.length > 0) {
       await createNotification({
         recipientId,

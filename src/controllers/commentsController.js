@@ -79,7 +79,6 @@ export async function postComment(req, res) {
       .set({ comments_count: sql`${pensTable.comments_count} + 1` })
       .where(eq(pensTable.id, pen_id));
 
-    // 加入通知：通知該作品作者（不通知自己）
     const pen = existing[0];
     if (pen.user_id && pen.user_id !== user_id) {
       await createNotification({
