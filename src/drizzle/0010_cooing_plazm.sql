@@ -1,0 +1,1 @@
+ALTER TABLE "pens" ADD COLUMN "tab_size" integer DEFAULT 2;

@@ -52,6 +52,7 @@ const pensTable = pgTable("pens", {
   comments_count: integer("comments_count").default(0),
   views_count: integer("views_count").default(0),
   view_mode: varchar("view_mode", { length: 32 }).default("center"),
+  tab_size: integer("tab_size").default(2),
   is_autosave: boolean("is_autosave").default(true),
   is_autopreview: boolean("is_autopreview").default(true),
   is_private: boolean("is_private").default(false),
