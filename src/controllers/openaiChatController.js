@@ -34,7 +34,7 @@ export const getMessages = async (req, res) => {
     const chatId = Number(req.params.chatId);
     const userId = req.userId;
 
-    if (!chatId || isNaN(chatId)) {
+    if (!chatId || isNaN(chatId) || chatId < 0) {
       return res.status(400).json({ error: "Invalid chatId" });
     }
 
@@ -112,7 +112,7 @@ export const addNewMessage = async (req, res) => {
     const userId = req.userId;
     const { chatId, role, content } = req.body;
 
-    if (!chatId || isNaN(Number(chatId))) {
+    if (!chatId || isNaN(Number(chatId)) || chatId < 0) {
       return res.status(400).json({ error: "Invalid chatId" });
     }
     if (role !== "user") {
@@ -190,7 +190,7 @@ export const deleteChat = async (req, res) => {
     const chatId = Number(req.params.chatId);
     const userId = req.userId;
 
-    if (!chatId || isNaN(chatId)) {
+    if (!chatId || isNaN(chatId) || chatId < 0) {
       return res.status(400).json({ error: "Invalid chatId" });
     }
 
@@ -233,7 +233,7 @@ export const renameChat = async (req, res) => {
     const userId = req.userId;
     const { title } = req.body;
 
-    if (!chatId || isNaN(chatId)) {
+    if (!chatId || isNaN(chatId) || chatId < 0) {
       return res.status(400).json({ error: "Invalid chatId" });
     }
 
