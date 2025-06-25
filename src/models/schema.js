@@ -217,4 +217,7 @@ export {
   tagsTable,
   penTagsTable,
   subscriptionsTable,
+  openAIChatTable,
+  openAIMessageTable,
+  notificationsTable,
 };
