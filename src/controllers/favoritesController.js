@@ -34,14 +34,13 @@ export async function addFavorite(req, res) {
 
     const recipientId = pen[0].user_id;
 
-    if (pen.length > 0) {
-      await createNotification({
-        recipientId,
-        senderId: user_id,
-        type: "favorite",
-        penId: pen_id,
-      });
-    }
+    await createNotification({
+      recipientId,
+      senderId: user_id,
+      type: "favorite",
+      penId: pen_id,
+    });
+
     res.status(201).json({
       success: true,
       message: "Favorited successfully",
