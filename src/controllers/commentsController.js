@@ -1,6 +1,7 @@
 import db from "../config/db.js";
 import { commentsTable, pensTable, usersTable } from "../models/schema.js";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { createNotification } from "../utils/createNotification.js";
 
 // GET /api/comments?pen_id=xxx
 export async function getComments(req, res) {
@@ -77,6 +78,17 @@ export async function postComment(req, res) {
       .update(pensTable)
       .set({ comments_count: sql`${pensTable.comments_count} + 1` })
       .where(eq(pensTable.id, pen_id));
+
+    const pen = existing[0];
+    if (pen.user_id && pen.user_id !== user_id) {
+      await createNotification({
+        recipientId: pen.user_id,
+        senderId: user_id,
+        type: "comment",
+        penId: pen_id,
+        commentId: newComment.id,
+      });
+    }
 
     const [user] = await db
       .select({

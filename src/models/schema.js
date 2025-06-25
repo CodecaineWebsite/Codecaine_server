@@ -8,7 +8,7 @@ import {
   primaryKey,
   serial,
   pgEnum,
-  index
+  index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -158,33 +158,55 @@ const subscriptionsTable = pgTable("subscriptions", {
 const openAIChatTable = pgTable("ai_chats", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   title: varchar("title", { length: 100 }).default("untitled").notNull(),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   status: integer("status").default(1).notNull(),
   // 1: active, 2: deleted
-  user_id: varchar("user_id", { length: 128 })
-  .references(() => usersTable.id, { onDelete: 'set null' }),
+  user_id: varchar("user_id", { length: 128 }).references(() => usersTable.id, {
+    onDelete: "set null",
+  }),
 });
 
 // ai message 資料表
-export const roleEnum = pgEnum('role', ['user', 'assistant']);
+export const roleEnum = pgEnum("role", ["user", "assistant"]);
 
-const openAIMessageTable = pgTable('ai_messages',
+const openAIMessageTable = pgTable(
+  "ai_messages",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     chat_id: integer("chat_id")
-      .references(() => openAIChatTable.id, { onDelete: 'cascade' })
+      .references(() => openAIChatTable.id, { onDelete: "cascade" })
       .notNull(),
-    created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    content: text('content'),
-    role: roleEnum('role').notNull(),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    content: text("content"),
+    role: roleEnum("role").notNull(),
     status: integer("status").default(1).notNull(),
     // 1: success, 2: cancel, 3: no response
-    message_index:integer("message_index").notNull(),
+    message_index: integer("message_index").notNull(),
   },
   (table) => ({
-    chatIdIdx: index('chat_id_idx').on(table.chat_id),
+    chatIdIdx: index("chat_id_idx").on(table.chat_id),
   })
 );
+
+// 通知資料表
+const notificationsTable = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  recipient_id: varchar("recipient_id", { length: 128 })
+    .references(() => usersTable.id)
+    .notNull(),
+  sender_id: varchar("sender_id", { length: 128 })
+    .references(() => usersTable.id)
+    .notNull(),
+  type: varchar("type", { length: 20 }).notNull(),
+  pen_id: integer("pen_id").references(() => pensTable.id),
+  comment_id: integer("comment_id").references(() => commentsTable.id),
+  is_read: boolean("is_read").default(false),
+  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
 
 export {
   usersTable,
@@ -197,4 +219,5 @@ export {
   subscriptionsTable,
   openAIChatTable,
   openAIMessageTable,
+  notificationsTable,
 };

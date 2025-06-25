@@ -1,6 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import db from "../config/db.js";
 import { followsTable, usersTable } from "../models/schema.js";
+import { createNotification } from "../utils/createNotification.js";
 
 /**
  * 追蹤某使用者
@@ -32,6 +33,24 @@ export const followUser = async (req, res) => {
       .insert(followsTable)
       .values({ follower_id, following_id })
       .onConflictDoNothing();
+
+    const checkFollow = await db
+      .select()
+      .from(followsTable)
+      .where(
+        and(
+          eq(followsTable.follower_id, follower_id),
+          eq(followsTable.following_id, following_id)
+        )
+      );
+
+    if (checkFollow.length === 1) {
+      await createNotification({
+        recipientId: following_id,
+        senderId: follower_id,
+        type: "follow",
+      });
+    }
 
     res.status(201).json({ result: true });
   } catch (err) {

@@ -17,6 +17,7 @@ import usersCainesRouter from "./src/routes/usersCaines.js";
 import openAIRouter from "./src/routes/openai.js"
 import stripeRouter from "./src/routes/stripe.js";
 import stripeWebhookRouter from "./src/routes/stripeWebhook.js";
+import notifyRouter from "./src/routes/notify.js";
 
 const PORT = 3000;
 
@@ -39,7 +40,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
@@ -55,10 +56,11 @@ app.use("/api/my", yourWorkRouter);
 app.use("/api/usersCaines", usersCainesRouter);
 app.use("/api/ai", openAIRouter)
 app.use("/api/stripe", stripeRouter);
+app.use("/api/notify", notifyRouter);
 
 // 部屬debug用
-app.get('/ip', (req, res) => {
-  res.send({ ip: req.ip, forwarded: req.headers['x-forwarded-for'] });
+app.get("/ip", (req, res) => {
+  res.send({ ip: req.ip, forwarded: req.headers["x-forwarded-for"] });
 });
 
 // 全域錯誤處理

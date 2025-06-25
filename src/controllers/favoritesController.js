@@ -1,6 +1,7 @@
 import db from "../config/db.js";
 import { favoritesTable, pensTable, usersTable } from "../models/schema.js";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { createNotification } from "../utils/createNotification.js";
 
 // POST /api/favorites
 export async function addFavorite(req, res) {
@@ -21,6 +22,25 @@ export async function addFavorite(req, res) {
         .status(200)
         .json({ success: false, message: "Already favorited" });
     }
+    const pen = await db
+      .select({ user_id: pensTable.user_id })
+      .from(pensTable)
+      .where(eq(pensTable.id, pen_id))
+      .limit(1);
+
+    if (pen.length === 0) {
+      return res.status(404).json({ error: "Pen not found" });
+    }
+
+    const recipientId = pen[0].user_id;
+
+    await createNotification({
+      recipientId,
+      senderId: user_id,
+      type: "favorite",
+      penId: pen_id,
+    });
+
     res.status(201).json({
       success: true,
       message: "Favorited successfully",
