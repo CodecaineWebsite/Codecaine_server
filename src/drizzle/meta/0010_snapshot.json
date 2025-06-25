@@ -1,5 +1,5 @@
 {
-  "id": "d174b839-b815-4982-8c82-de1f8aa311bf",
+  "id": "fab5dedf-155c-454d-930e-4e21d4136725",
   "prevId": "28772cf7-0bd7-4341-bc5a-cf1596ec7bb9",
   "version": "7",
   "dialect": "postgresql",
@@ -46,12 +46,8 @@
           "name": "comments_pen_id_pens_id_fk",
           "tableFrom": "comments",
           "tableTo": "pens",
-          "columnsFrom": [
-            "pen_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pen_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -59,12 +55,8 @@
           "name": "comments_user_id_users_id_fk",
           "tableFrom": "comments",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -105,12 +97,8 @@
           "name": "favorites_user_id_users_id_fk",
           "tableFrom": "favorites",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -118,12 +106,8 @@
           "name": "favorites_pen_id_pens_id_fk",
           "tableFrom": "favorites",
           "tableTo": "pens",
-          "columnsFrom": [
-            "pen_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pen_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -131,10 +115,7 @@
       "compositePrimaryKeys": {
         "favorites_user_id_pen_id_pk": {
           "name": "favorites_user_id_pen_id_pk",
-          "columns": [
-            "user_id",
-            "pen_id"
-          ]
+          "columns": ["user_id", "pen_id"]
         }
       },
       "uniqueConstraints": {},
@@ -172,12 +153,8 @@
           "name": "follows_follower_id_users_id_fk",
           "tableFrom": "follows",
           "tableTo": "users",
-          "columnsFrom": [
-            "follower_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["follower_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -185,12 +162,8 @@
           "name": "follows_following_id_users_id_fk",
           "tableFrom": "follows",
           "tableTo": "users",
-          "columnsFrom": [
-            "following_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["following_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -198,10 +171,7 @@
       "compositePrimaryKeys": {
         "follows_follower_id_following_id_pk": {
           "name": "follows_follower_id_following_id_pk",
-          "columns": [
-            "follower_id",
-            "following_id"
-          ]
+          "columns": ["follower_id", "following_id"]
         }
       },
       "uniqueConstraints": {},
@@ -270,12 +240,8 @@
           "name": "notifications_recipient_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "recipient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["recipient_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -283,12 +249,8 @@
           "name": "notifications_sender_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "sender_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sender_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -296,12 +258,8 @@
           "name": "notifications_pen_id_pens_id_fk",
           "tableFrom": "notifications",
           "tableTo": "pens",
-          "columnsFrom": [
-            "pen_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pen_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -309,12 +267,8 @@
           "name": "notifications_comment_id_comments_id_fk",
           "tableFrom": "notifications",
           "tableTo": "comments",
-          "columnsFrom": [
-            "comment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["comment_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -348,12 +302,8 @@
           "name": "pen_tags_pen_id_pens_id_fk",
           "tableFrom": "pen_tags",
           "tableTo": "pens",
-          "columnsFrom": [
-            "pen_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pen_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -361,12 +311,8 @@
           "name": "pen_tags_tag_id_tags_id_fk",
           "tableFrom": "pen_tags",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -374,10 +320,7 @@
       "compositePrimaryKeys": {
         "pen_tags_pen_id_tag_id_pk": {
           "name": "pen_tags_pen_id_tag_id_pk",
-          "columns": [
-            "pen_id",
-            "tag_id"
-          ]
+          "columns": ["pen_id", "tag_id"]
         }
       },
       "uniqueConstraints": {},
@@ -485,6 +428,13 @@
           "notNull": false,
           "default": "'center'"
         },
+        "tab_size": {
+          "name": "tab_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 2
+        },
         "is_autosave": {
           "name": "is_autosave",
           "type": "boolean",
@@ -548,12 +498,8 @@
           "name": "pens_user_id_users_id_fk",
           "tableFrom": "pens",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -639,12 +585,8 @@
           "name": "subscriptions_user_id_users_id_fk",
           "tableFrom": "subscriptions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -679,9 +621,7 @@
         "tags_name_unique": {
           "name": "tags_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -794,16 +734,12 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         }
       },
       "policies": {},

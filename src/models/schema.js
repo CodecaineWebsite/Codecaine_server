@@ -7,6 +7,8 @@ import {
   boolean,
   primaryKey,
   serial,
+  pgEnum,
+  index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -52,6 +54,7 @@ const pensTable = pgTable("pens", {
   comments_count: integer("comments_count").default(0),
   views_count: integer("views_count").default(0),
   view_mode: varchar("view_mode", { length: 32 }).default("center"),
+  tab_size: integer("tab_size").default(2),
   is_autosave: boolean("is_autosave").default(true),
   is_autopreview: boolean("is_autopreview").default(true),
   is_private: boolean("is_private").default(false),
@@ -151,6 +154,44 @@ const subscriptionsTable = pgTable("subscriptions", {
   cancel_at_period_end: boolean("cancel_at_period_end").default(false),
 });
 
+// ai chat 資料表
+const openAIChatTable = pgTable("ai_chats", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  title: varchar("title", { length: 100 }).default("untitled").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  status: integer("status").default(1).notNull(),
+  // 1: active, 2: deleted
+  user_id: varchar("user_id", { length: 128 }).references(() => usersTable.id, {
+    onDelete: "set null",
+  }),
+});
+
+// ai message 資料表
+export const roleEnum = pgEnum("role", ["user", "assistant"]);
+
+const openAIMessageTable = pgTable(
+  "ai_messages",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    chat_id: integer("chat_id")
+      .references(() => openAIChatTable.id, { onDelete: "cascade" })
+      .notNull(),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    content: text("content"),
+    role: roleEnum("role").notNull(),
+    status: integer("status").default(1).notNull(),
+    // 1: success, 2: cancel, 3: no response
+    message_index: integer("message_index").notNull(),
+  },
+  (table) => ({
+    chatIdIdx: index("chat_id_idx").on(table.chat_id),
+  })
+);
+
 // 通知資料表
 const notificationsTable = pgTable("notifications", {
   id: serial("id").primaryKey(),
@@ -176,5 +217,4 @@ export {
   tagsTable,
   penTagsTable,
   subscriptionsTable,
-  notificationsTable,
 };
