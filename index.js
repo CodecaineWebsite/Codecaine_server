@@ -14,7 +14,7 @@ import yourWorkRouter from "./src/routes/yourWork.js";
 import trendingRouter from "./src/routes/trending.js";
 import followingRouter from "./src/routes/following.js";
 import usersCainesRouter from "./src/routes/usersCaines.js";
-import openAI from "./src/routes/openai.js"
+import openAIRouter from "./src/routes/openai.js"
 import stripeRouter from "./src/routes/stripe.js";
 import stripeWebhookRouter from "./src/routes/stripeWebhook.js";
 
@@ -53,7 +53,7 @@ app.use("/api/following", followingRouter);
 app.use("/api/trending", trendingRouter);
 app.use("/api/my", yourWorkRouter);
 app.use("/api/usersCaines", usersCainesRouter);
-app.use("/api/ai", openAI)
+app.use("/api/ai", openAIRouter)
 app.use("/api/stripe", stripeRouter);
 
 // 部屬debug用
