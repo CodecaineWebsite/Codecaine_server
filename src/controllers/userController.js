@@ -49,20 +49,6 @@ export const updateUserProfile = async (req, res) => {
   };
 
   try {
-    // 先查詢目前的使用者資料（取得原本的頭像 key）
-    let user;
-    try {
-      const result = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.id, id));
-      user = result[0];
-      if (!user) return res.status(404).json({ error: "找不到使用者" });
-    } catch (err) {
-      console.error("查詢使用者資料失敗：", err);
-      return res.status(500).json({ error: "伺服器錯誤，無法取得使用者資料" });
-    }
-
     // 如果有圖片，則上傳至 S3 並加入 updateData
     let publicUrl, fileKey;
     if (file) {
@@ -95,16 +81,7 @@ export const updateUserProfile = async (req, res) => {
       return res.status(500).json({ error: "伺服器錯誤，無法更新使用者資料" });
     }
 
-    // 成功更新資料庫後，如果使用者原本有頭像，則刪掉舊的 S3 檔案
-    try {
-      if (user.profile_image_key && user.profile_image_key !== fileKey) {
-        await deleteFromS3(user.profile_image_key, BUCKET_NAME);
-      }
-    } catch (err) {
-      console.warn("刪除舊頭像失敗：", err);
-    }
-
-    const { password_hash, ...safeUser } = updatedUser[0];
+    const {...safeUser } = updatedUser[0];
     res.json({ message: "Profile saved.", user: safeUser });
   } catch (err) {
     console.error("更新使用者失敗：", err);
