@@ -96,20 +96,23 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
         const subscription = event.data.object;
         const userId = subscription.metadata?.userId;
 
-        if (userId) {
-          await db
-            .update(subscriptionsTable)
-            .set({
-              status: "canceled",
-              canceled_at: new Date(),
-            })
-            .where(eq(subscriptionsTable.id, subscription.id));
-
-          await db
-            .update(usersTable)
-            .set({ is_pro: false })
-            .where(eq(usersTable.id, userId));
+        if (!userId) {
+          console.warn("No userId in subscription metadata for deleted event");
+          break;
         }
+
+        await db
+          .update(subscriptionsTable)
+          .set({
+            status: "canceled",
+            canceled_at: new Date(),
+          })
+          .where(eq(subscriptionsTable.id, subscription.id));
+
+        await db
+          .update(usersTable)
+          .set({ is_pro: false })
+          .where(eq(usersTable.id, userId));
         break;
       }
 
@@ -219,11 +222,6 @@ export const cancelSubscription = async (req, res) => {
       );
     if (!subscription) {
       return res.status(404).json({ error: "Subscription not found" });
-    }
-    if (subscription.status === "canceled") {
-      return res.status(400).json({
-        error: "Subscription is already canceled",
-      });
     }
     if (subscription.cancel_at_period_end) {
       return res.status(400).json({
