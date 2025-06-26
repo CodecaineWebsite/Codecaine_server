@@ -187,7 +187,7 @@ export const createSubscriptionSession = async (req, res) => {
       },
       success_url: `${
         process.env.BASE_URL || "http://localhost:5173"
-      }/${encodeURIComponent(username)}/caines/showcase?subscribed=true`,
+      }/${encodeURIComponent(username)}/doses/showcase?subscribed=true`,
       cancel_url: `${
         process.env.BASE_URL || "http://localhost:5173"
       }/settings/billing?subscribed=false`,
