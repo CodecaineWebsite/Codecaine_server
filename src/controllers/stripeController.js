@@ -22,73 +22,101 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  try {
-    if (
-      event.type === "customer.subscription.created" ||
-      event.type === "customer.subscription.updated"
-    ) {
-      const subscription = event.data.object;
-      const userId = subscription.metadata?.userId;
-
-      if (userId) {
-        await db
-          .insert(subscriptionsTable)
-          .values({
-            id: subscription.id,
-            user_id: userId,
-            customer_id: subscription.customer,
-            status: subscription.status,
-            subscribed_at: new Date(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
-            canceled_at: subscription.cancel_at
-              ? new Date(subscription.cancel_at * 1000)
-              : null,
-            current_period_end: subscription.items?.data[0]?.current_period_end
-              ? new Date(subscription.items?.data[0]?.current_period_end * 1000)
-              : null,
-            updated_at: new Date(),
-          })
-          .onConflictDoUpdate({
-            target: subscriptionsTable.id,
-            set: {
-              status: subscription.status,
-              cancel_at_period_end: subscription.cancel_at_period_end,
-              canceled_at: subscription.cancel_at
-                ? new Date(subscription.cancel_at * 1000)
-                : null,
-              current_period_end: subscription.items?.data[0]
-                ?.current_period_end
-                ? new Date(
-                    subscription.items?.data[0]?.current_period_end * 1000
-                  )
-                : null,
-              updated_at: new Date(),
-            },
-          });
-
-        await db
-          .update(usersTable)
-          .set({ is_pro: subscription.status === "active" })
-          .where(eq(usersTable.id, userId));
-      } else {
-        console.warn("No userId in subscription metadata");
-      }
-    } else if (event.type === "customer.subscription.deleted") {
-      const subscription = event.data.object;
-      const userId = subscription.metadata?.userId;
-
-      if (userId) {
-        await db
-          .update(subscriptionsTable)
-          .set({ status: "canceled", canceled_at: new Date() })
-          .where(eq(subscriptionsTable.id, subscription.id));
-
-        await db
-          .update(usersTable)
-          .set({ is_pro: false })
-          .where(eq(usersTable.id, userId));
-      }
+  const upsertSubscription = async (subscription) => {
+    const userId = subscription.metadata?.userId;
+    if (!userId) {
+      console.warn("No userId in subscription metadata");
+      return;
     }
+
+    await db
+      .insert(subscriptionsTable)
+      .values({
+        id: subscription.id,
+        user_id: userId,
+        customer_id: subscription.customer,
+        status: subscription.status,
+        subscribed_at: new Date(),
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        canceled_at: subscription.cancel_at
+          ? new Date(subscription.cancel_at * 1000)
+          : null,
+        current_period_end: subscription.items?.data[0]?.current_period_end
+          ? new Date(subscription.items?.data[0]?.current_period_end * 1000)
+          : null,
+        updated_at: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: subscriptionsTable.id,
+        set: {
+          status: subscription.status,
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          canceled_at: subscription.cancel_at
+            ? new Date(subscription.cancel_at * 1000)
+            : null,
+          current_period_end: subscription.current_period_end
+            ? new Date(subscription.current_period_end * 1000)
+            : null,
+          updated_at: new Date(),
+        },
+      });
+
+    await db
+      .update(usersTable)
+      .set({ is_pro: subscription.status === "active" })
+      .where(eq(usersTable.id, userId));
+  };
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object;
+        const userId = session.metadata?.userId;
+        const subscriptionId = session.subscription;
+
+        if (userId && subscriptionId) {
+          const subscription = await stripe.subscriptions.retrieve(
+            subscriptionId
+          );
+          await upsertSubscription(subscription);
+        }
+        break;
+      }
+
+      case "customer.subscription.updated":
+      case "customer.subscription.created": {
+        const subscription = event.data.object;
+        if (subscription.status !== "incomplete") {
+          await upsertSubscription(subscription);
+        }
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object;
+        const userId = subscription.metadata?.userId;
+
+        if (userId) {
+          await db
+            .update(subscriptionsTable)
+            .set({
+              status: "canceled",
+              canceled_at: new Date(),
+            })
+            .where(eq(subscriptionsTable.id, subscription.id));
+
+          await db
+            .update(usersTable)
+            .set({ is_pro: false })
+            .where(eq(usersTable.id, userId));
+        }
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
     res.json({ received: true });
   } catch (error) {
     console.error("Error handling webhook event:", error);
@@ -175,13 +203,12 @@ export const createSubscriptionSession = async (req, res) => {
  */
 export const cancelSubscription = async (req, res) => {
   const userId = req.userId;
-
   if (!userId) {
     return res.status(400).json({ error: "Missing userId" });
   }
 
   try {
-    const subscription = await db
+    const [subscription] = await db
       .select()
       .from(subscriptionsTable)
       .where(
@@ -189,19 +216,29 @@ export const cancelSubscription = async (req, res) => {
           eq(subscriptionsTable.user_id, userId),
           eq(subscriptionsTable.status, "active")
         )
-      )
-      .then((rows) => rows[0]);
+      );
     if (!subscription) {
       return res.status(404).json({ error: "Subscription not found" });
     }
-
+    if (subscription.status === "canceled") {
+      return res.status(400).json({
+        error: "Subscription is already canceled",
+      });
+    }
+    if (subscription.cancel_at_period_end) {
+      return res.status(400).json({
+        error: "Subscription is already scheduled to be canceled",
+      });
+    }
     const canceled = await stripe.subscriptions.update(subscription.id, {
       cancel_at_period_end: true,
     });
-
     await db
       .update(subscriptionsTable)
-      .set({ cancel_at_period_end: true, updated_at: new Date() })
+      .set({
+        cancel_at_period_end: true,
+        updated_at: new Date(),
+      })
       .where(eq(subscriptionsTable.id, subscription.id));
 
     res.json({
