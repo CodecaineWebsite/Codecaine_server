@@ -15,21 +15,6 @@ import LRU from "lru-cache";
 const router = Router();
 
 /**
- * GET /api/pens
- * 取得所有作品
- */
-router.get("/", async (req, res) => {
-  try {
-    const pens = await db.select().from(pensTable);
-    const users = await db.select().from(usersTable);
-    res.json({ pens, users });
-  } catch (err) {
-    console.error("Failed to fetch pens:", err);
-    res.status(500).json({ error: "Failed to fetch pens" });
-  }
-});
-
-/**
  * GET /api/pens/trash
  * 取得使用者的垃圾桶作品
  */
