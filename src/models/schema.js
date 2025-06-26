@@ -42,6 +42,8 @@ const pensTable = pgTable("pens", {
   html_code: text("html_code"),
   css_code: text("css_code"),
   js_code: text("js_code"),
+  html_class: text("html_class"),
+  head_stuff: text("head_stuff"),
   resources_css: text("resources_css")
     .array()
     .notNull()
