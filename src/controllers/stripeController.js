@@ -54,8 +54,8 @@ export const handleStripeWebhook = async (req, res, endpointSecret) => {
           canceled_at: subscription.cancel_at
             ? new Date(subscription.cancel_at * 1000)
             : null,
-          current_period_end: subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000)
+          current_period_end: subscription.items?.data[0]?.current_period_end
+            ? new Date(subscription.items?.data[0]?.current_period_end * 1000)
             : null,
           updated_at: new Date(),
         },
@@ -236,6 +236,7 @@ export const cancelSubscription = async (req, res) => {
       .set({
         cancel_at_period_end: true,
         updated_at: new Date(),
+        current_period_end: new Date(canceled.current_period_end * 1000),
       })
       .where(eq(subscriptionsTable.id, subscription.id));
 
