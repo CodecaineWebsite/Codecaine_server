@@ -26,8 +26,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // 本地開發
+      "https://www.codecaine.xyz", // 網域
       "https://codecaine-client-staging.zeabur.app", // 遠端 staging 環境 (dev)
-      "https://codecaine-client-staging-prep.zeabur.app", // 遠端 staging 環境 (build/deploy-prep)
+      "https://codecaine-client-staging-prep.zeabur.app", // 測試用分支 (build/deploy-prep)
     ],
     credentials: true,
   })
