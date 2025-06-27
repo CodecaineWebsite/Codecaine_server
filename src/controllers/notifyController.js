@@ -55,6 +55,7 @@ export async function getNotifications(req, res, next) {
       },
       pen: n.pen_id
         ? {
+            id: n.pen_id,
             title: n.pen_title,
           }
         : null,
