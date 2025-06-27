@@ -11,7 +11,7 @@ import { selectPensColumns } from "../queries/pensSelect.js";
 const router = express.Router();
 
 const categoryMap = {
-  pens: {
+  doses: {
     table: pensTable,
     select: selectPensColumns,
     extraFilters: publicPensFilters(), // 私有／刪除／垃圾桶排除
