@@ -1,173 +1,147 @@
-# 產業新尖兵 前端工程師養成班 第三組 - Codecaine 線上程式碼編輯分享平台
+<div align="center">
 
-Codecaine 是一個 CodePen-inspired 的線上程式碼編輯與分享平台，提供即時預覽、作品儲存、社群互動等功能，讓使用者可以更輕鬆地創作與展示前端作品。
+![Image](https://github.com/user-attachments/assets/9c45f024-55e3-4f17-b48d-a204fa4d68a8)
 
-##  技術架構
+# Codecaine
 
-- **Frontend:** Vue 3 + TailwindCSS + Pinia + Vue Router + Monaco Editor
-- **Backend:** Node.js + Express + PostgreSQL
-- **Authentication:** Firebase Auth
-- **Storage:** AWS S3（使用者上傳）
+*一站式線上前端程式碼編輯、分享與探索平台*
 
-## 小組成員/開發人員
+[前往網站](https://www.codecaine.xyz/)
 
-- [孫瑋微](https://github.com/ViviSun0725)
+</div>
 
-- [杜澄潔](https://github.com/kaiadu)
+Codecaine 是一個靈感來自 CodePen 的線上前端開發平台，致力於提供開發者即時編輯、預覽、分享作品的空間。我們整合了會員系統、社群互動、金流付費與 AI 程式助理功能，讓每一位開發者都能在這裡打造自己的專屬 Playground。
 
-- [陳俊宏](https://github.com/k890120)
+---
 
-- [林威廷](https://github.com/WeyTing)
+## 🛠 技術架構
 
-- [陳竑齊](https://github.com/lllBarry)
+- **Frontend**：Vue 3 + TailwindCSS + Monaco Editor  
+- **Backend**：Node.js + Express + PostgreSQL  
+- **Authentication**：Firebase Auth  
+- **Storage**：AWS S3  
+- **AI**：OPEN AI  
+- **Deploy**：Zeabur
 
-- [邱郁婷](https://github.com/chinyuting)
+---
 
-- [段振東](https://github.com/duanjendong)
+## ✨ 功能特色
 
-## 下載專案
+- 即時編輯、即時預覽，支援 HTML/CSS/JavaScript 快速切換  
+- 會員系統與個人檔案，支援追蹤、收藏、留言與通知  
+- 支援 Stripe 訂閱制，開通 Pro 權限解鎖更多功能  
+- AI 程式助理，提升開發效率，協助除錯與撰寫程式碼  
+- 全站搜尋與作品推薦演算法，讓好作品被看見  
 
-1. 在自己電腦要存專案的位置 把專案Clone下來
+---
 
-```bash
-git clone https://github.com/ViviSun0725/Codecaine.git
-```
+## 👩‍💻 團隊成員
 
-2. cd 進專案資料夾
+| 成員 | 貢獻內容 |
+|------|----------|
+| [邱郁婷](https://github.com/chinyuting) | 編輯器功能 / 即時預覽 / Console / AI 助理 |
+| [林威廷](https://github.com/WeyTing) | Firebase Auth / Stripe 金流 / 個人檔案 / 通知 |
+| [陳竑齊](https://github.com/lllBarry) | 編輯器使用者設定 / CDN 搜尋 / 會員分級權限 |
+| [孫瑋微](https://github.com/ViviSun0725) | 搜尋 / 收藏 / 推薦演算法 / 留言板 / AWS S3 / 部屬 |
+| [陳俊宏](https://github.com/k890120) | 推播區塊 / 作品卡設計 / 註冊頁 |
+| [杜澄潔](https://github.com/kaiadu) | 作品管理 UI / Logo 設計 |
+| [段振東](https://github.com/duanjendong) | 登入與載入畫面設計 |
 
-```bash
-cd Codecaine
-```
+---
 
+## 📦 安裝與使用方式
 
-### 第一次下載後請安裝 npm 套件
+### 1. 安裝專案依賴
 
 ```bash
 npm install
 ```
 
-### 設定環境變數
+### 2. 設定資料庫與環境變數 `.env`
 
-
-```
+```env
+# 資料庫連線位址
 DATABASE_URL=
+
+# Firebase 連線
 FIREBASE_SERVICE_ACCOUNT=
+
+# AWS 連線
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_REGION=
 S3_BUCKET_NAME=
+
+# Stripe 連線
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+SUBSCRIPTION_PRICE_ID=
+
+# OpenAI
+OPENAI_API_KEY=
+
+# 前端網址網域（可選）
+BASE_URL=
 ```
 
-### 建立資料庫欄位
+### 3. 建立資料庫 schema
 
 ```bash
 npm run generate
 npm run migrate
 ```
 
-### 執行方式
+### 4. 啟動專案
 
-請開啟兩個 Terminal 分別運行 client 與 server
+- **Server**（此 repo）
 
-1. 前端開發
-請安裝 [Codecaine_client](https://github.com/CodecaineWebsite/Codecaine_client) 專案並安裝套件與設定環境變數後，執行：
-
-```bash
-cd client
-npm run dev
-```
-
-2. 後端開發
-請開啟 Codecaine_server 專案：並執行
 ```bash
 npm run dev
 ```
 
-
-## 開分支步驟
-
-
-1. 切到 dev 分支
+- **Client**（請前往 [Codecaine_client](https://github.com/CodecaineWebsite/Codecaine_client)）
 
 ```bash
-git checkout dev      # 切換至 dev 分支
-git pull origin dev   # 抓取遠端 dev 分支進度，確保開分支前 dev 是最新狀態
+npm run dev
 ```
 
-2. 開自己功能分支
+---
+
+## 🧑‍💻 開發者指引
+
+### 分支流程
 
 ```bash
-git checkout -b feature/your-name-task
+# 1. 切換到最新的 dev
+git checkout dev
+git pull origin dev
+
+# 2. 建立功能分支
+git checkout -b feat/your-name-task
+
+# 3. Commit & Push
+git add <file1> <file2> ...
+git commit -m "[feat] 完成登入 API"
+git push origin feat/your-task
 ```
 
-或
+### Commit 與分支命名規則
 
-```bash
-git checkout -b issue/1
-```
+| 類型 | 範例 |
+|------|------|
+| `feat` | 新增功能 |
+| `fix` | 修正錯誤 |
+| `refactor` | 程式碼重構 |
+| `docs` | 撰寫文件 |
+| `style` | 格式調整（無功能變動） |
+| `test` | 測試新增或調整 |
+| `build` | 修改建置系統設定 |
+| `chore` | 其他無分類雜項 |
 
-3. 本地 commit → push 上 github
+命名建議採用 [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) 標準。
 
-```bash
-git add <你要加進這次 commit 的檔案>
+---
 
-git commit -m "commit訊息"
-git push origin feat/your-task  # 將分支上傳至遠端
-```
+## 📄 聲明
 
-4. 到 Github 發 PR
-
-## 開發前例行步驟
-
-1. 每次開始開發前先拉遠端 dev 分支的進度，再開自己的分支：
-
-   ```bash
-   git checkout dev
-   git pull origin dev
-   git checkout -b feat/你的分支
-   ```
-
-2. Merge 回 dev 前記得再拉一次遠端 dev 進度，把衝突解完再發 PR：
-
-   ```bash
-   git pull origin dev
-   git push origin feature/your-name-task
-   # 解完 conflict 再 push，然後開 PR
-   ```
-### 命名規範
-
-
-
-| 類型                    | 規範                             | 範例                                                           |
-| ----------------------- | -------------------------------- | -------------------------------------------------------------- |
-| Vue 元件命名            | PascalCase（每個單字首字母大寫） | `UserProfile.vue`                                              |
-| CSS / Tailwind 類別命名 | kebab-case (烤肉串命名)          | `error-message`                                                |
-| JavaScript 變數與函式   | camelCase  (小駝峰命名)          | `userToken``handleLogin()`                                     |
-| JavaScript 常數         | UPPER_SNAKE_CASE (大寫蛇式命名)  | `PORT`                                                         |
-| Pinia Store 命名        | snake_case (小寫蛇式命名)        | `defineStore('user_store', { ... })`                           |
-| API 路由命名            | 小寫 + 複數名詞                  | `GET /api/users``POST /api/projects``DELETE /api/messages/:id` |
-| Git 分支命名            | 使用結構：`type/feature-name`    | `feat/login-page` `fix/api-timeout` `refactor/editor-toolbar`  `issue/20`  |
-| Commit 訊息命名    |  參考 Conventional Commit 規範，格式：`[type]description`    | `[feat] 新增註冊功能` `[fix] 修正登入 API 回傳錯誤` `[docs] 補上 README 命名規範`    |
-
-
-
-### 分支/commit類型 範例
-
-[Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/)
-
-| 類型       | 說明                                   |
-| ---------- | -------------------------------------- |
-| `feat`     | 新增功能                               |
-| `fix`      | 修復錯誤                               |
-| `refactor` | 重構、優化程式碼，不是新功能或修復錯誤 |
-| `pref`     | 改善效能                               |
-| `docs`     | 修改文件                               |
-| `test`     | 測試新增/修改                          |
-| `style`    | 程式碼格式調整（如空白、縮排）         |
-| `revert`   | 還原某次 commit                        |
-| `build`    | 修改建置工具、外部依賴設定             |
-| `chore`    | 其他雜項變動（不影響程式執行）         |
-
-## 聲明
-
-此專案僅作個人／團隊學習用途，致敬 CodePen，不作為商業用途。
+本專案僅作為學習用途使用。致敬 CodePen 原始概念，無任何商業用途。如有侵權請聯繫我們進行處理。
