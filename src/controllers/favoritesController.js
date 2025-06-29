@@ -2,6 +2,7 @@ import db from "../config/db.js";
 import { favoritesTable, pensTable, usersTable } from "../models/schema.js";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { createNotification } from "../utils/createNotification.js";
+import { selectPensColumns } from "../queries/pensSelect.js"
 
 // POST /api/favorites
 export async function addFavorite(req, res) {
@@ -120,21 +121,7 @@ export async function getFavoritesByUsername(req, res) {
 
   // 查當頁收藏作品 + 作者資訊
   const pens = await db
-    .select({
-      id: pensTable.id,
-      title: pensTable.title,
-      description: pensTable.description,
-      is_private: pensTable.is_private,
-      created_at: pensTable.created_at,
-      updated_at: pensTable.updated_at,
-      favorites_count: pensTable.favorites_count,
-      comments_count: pensTable.comments_count,
-      views_count: pensTable.views_count,
-      username: usersTable.username,
-      user_display_name: usersTable.display_name,
-      profile_image: usersTable.profile_image_url,
-      is_pro: usersTable.is_pro,
-    })
+    .select(selectPensColumns)
     .from(favoritesTable)
     .innerJoin(pensTable, eq(favoritesTable.pen_id, pensTable.id))
     .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
