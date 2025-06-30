@@ -2,9 +2,9 @@ import db from "../config/db.js";
 import { pensTable, usersTable } from "../models/schema.js";
 import { eq, sql, and } from "drizzle-orm";
 import { selectPensColumns } from "../queries/pensSelect.js";
-
+import { publicPensFilters } from "../utils/filters.js";
+const filters = publicPensFilters();
 const selectCainesColumns = { ...selectPensColumns };
-
 // 查詢作品欄位
 
 /**
@@ -32,18 +32,14 @@ export async function getUserPublicCaines(req, res) {
       .select(selectCainesColumns)
       .from(pensTable)
       .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-      .where(
-        and(eq(pensTable.user_id, userId), eq(pensTable.is_private, false))
-      )
+      .where(and(eq(pensTable.user_id, userId), ...filters))
       .limit(limit)
       .offset(offset);
 
     const countResult = await db
       .select({ count: sql`COUNT(*)` })
       .from(pensTable)
-      .where(
-        and(eq(pensTable.user_id, userId), eq(pensTable.is_private, false))
-      );
+      .where(and(eq(pensTable.user_id, userId), ...filters));
     const count = Number(countResult[0]?.count ?? 0);
 
     res.json({
@@ -88,7 +84,14 @@ export async function getUserPrivateCaines(req, res) {
       .select(selectCainesColumns)
       .from(pensTable)
       .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-      .where(and(eq(pensTable.user_id, userId), eq(pensTable.is_private, true)))
+      .where(
+        and(
+          eq(pensTable.user_id, userId),
+          eq(pensTable.is_private, true),
+          eq(pensTable.is_deleted, false),
+          eq(pensTable.is_trash, false)
+        )
+      )
       .limit(limit)
       .offset(offset);
 
@@ -96,7 +99,12 @@ export async function getUserPrivateCaines(req, res) {
       .select({ count: sql`COUNT(*)` })
       .from(pensTable)
       .where(
-        and(eq(pensTable.user_id, userId), eq(pensTable.is_private, true))
+        and(
+          eq(pensTable.user_id, userId),
+          eq(pensTable.is_private, true),
+          eq(pensTable.is_deleted, false),
+          eq(pensTable.is_trash, false)
+        )
       );
     const count = Number(countResult[0]?.count ?? 0);
 

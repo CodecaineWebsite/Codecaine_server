@@ -2,7 +2,9 @@ import db from "../config/db.js";
 import { favoritesTable, pensTable, usersTable } from "../models/schema.js";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { createNotification } from "../utils/createNotification.js";
-import { selectPensColumns } from "../queries/pensSelect.js"
+import { selectPensColumns } from "../queries/pensSelect.js";
+import { publicPensFilters } from "../utils/filters.js";
+const filters = publicPensFilters();
 
 // POST /api/favorites
 export async function addFavorite(req, res) {
@@ -125,7 +127,7 @@ export async function getFavoritesByUsername(req, res) {
     .from(favoritesTable)
     .innerJoin(pensTable, eq(favoritesTable.pen_id, pensTable.id))
     .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-    .where(eq(favoritesTable.user_id, user_id))
+    .where(and(eq(favoritesTable.user_id, user_id), ...filters))
     .orderBy(desc(favoritesTable.created_at))
     .limit(limit)
     .offset(offset);
