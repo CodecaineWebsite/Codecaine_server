@@ -33,7 +33,12 @@ export async function getUserPublicCaines(req, res) {
       .from(pensTable)
       .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
       .where(
-        and(eq(pensTable.user_id, userId), eq(pensTable.is_private, false))
+        and(
+          eq(pensTable.user_id, userId),
+          eq(pensTable.is_private, false),
+          eq(pensTable.is_deleted, false),
+          eq(pensTable.is_trash, false)
+        )
       )
       .limit(limit)
       .offset(offset);
@@ -42,7 +47,12 @@ export async function getUserPublicCaines(req, res) {
       .select({ count: sql`COUNT(*)` })
       .from(pensTable)
       .where(
-        and(eq(pensTable.user_id, userId), eq(pensTable.is_private, false))
+        and(
+          eq(pensTable.user_id, userId),
+          eq(pensTable.is_private, false),
+          eq(pensTable.is_deleted, false),
+          eq(pensTable.is_trash, false)
+        )
       );
     const count = Number(countResult[0]?.count ?? 0);
 
@@ -88,7 +98,14 @@ export async function getUserPrivateCaines(req, res) {
       .select(selectCainesColumns)
       .from(pensTable)
       .innerJoin(usersTable, eq(pensTable.user_id, usersTable.id))
-      .where(and(eq(pensTable.user_id, userId), eq(pensTable.is_private, true)))
+      .where(
+        and(
+          eq(pensTable.user_id, userId),
+          eq(pensTable.is_private, true),
+          eq(pensTable.is_deleted, false),
+          eq(pensTable.is_trash, false)
+        )
+      )
       .limit(limit)
       .offset(offset);
 
@@ -96,7 +113,12 @@ export async function getUserPrivateCaines(req, res) {
       .select({ count: sql`COUNT(*)` })
       .from(pensTable)
       .where(
-        and(eq(pensTable.user_id, userId), eq(pensTable.is_private, true))
+        and(
+          eq(pensTable.user_id, userId),
+          eq(pensTable.is_private, true),
+          eq(pensTable.is_deleted, false),
+          eq(pensTable.is_trash, false)
+        )
       );
     const count = Number(countResult[0]?.count ?? 0);
 
