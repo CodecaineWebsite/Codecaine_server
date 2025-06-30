@@ -40,8 +40,8 @@ router.get("/trash", verifyFirebase, async (req, res) => {
       );
     res.json(results);
   } catch (err) {
-    console.error("Failed to fetch trashed pens:", err);
-    res.status(500).json({ error: "Failed to fetch trashed pens" });
+    console.error("Failed to fetch trashed doses:", err);
+    res.status(500).json({ error: "Failed to fetch trashed doses" });
   }
 });
 /**
@@ -52,7 +52,7 @@ router.get("/trash", verifyFirebase, async (req, res) => {
 router.get("/:id", verifySelf, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid pen ID" });
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid dose ID" });
     const viewerId = req.userId || null;
     const result = await db
       .select({
@@ -75,7 +75,7 @@ router.get("/:id", verifySelf, async (req, res) => {
         )
       );
     if (result.length === 0) {
-      return res.status(404).json({ error: "Pen not found" });
+      return res.status(404).json({ error: "Dose not found" });
     }
     const pen = result[0];
 
@@ -104,8 +104,8 @@ router.get("/:id", verifySelf, async (req, res) => {
       favorites: favoriteUsers,
     });
   } catch (err) {
-    console.error("Failed to fetch pen:", err);
-    res.status(500).json({ error: "Failed to fetch pen" });
+    console.error("Failed to fetch dose:", err);
+    res.status(500).json({ error: "Failed to fetch dose" });
   }
 });
 
@@ -192,12 +192,12 @@ router.post("/", verifyFirebase, async (req, res) => {
         .onConflictDoNothing(); // 避免重複
     }
     res.status(201).json({
-      message: "Pen created successfully",
+      message: "Dose created successfully",
       data: newPen,
     });
   } catch (err) {
-    console.error("Failed to create pen:", err);
-    res.status(500).json({ error: "Failed to create pen" });
+    console.error("Failed to create dose:", err);
+    res.status(500).json({ error: "Failed to create dose" });
   }
 });
 
@@ -213,20 +213,20 @@ router.put("/:id", verifyFirebase, async (req, res) => {
       await db.select().from(pensTable).where(eq(pensTable.id, id))
     )[0];
     if (!work) {
-      return res.status(404).json({ error: "Pen not found" });
+      return res.status(404).json({ error: "Dose not found" });
     }
     if (work.user_id !== userId) {
       return res
         .status(403)
-        .json({ error: "You do not have permission to update this pen" });
+        .json({ error: "You do not have permission to update this dose" });
     }
     if (work.is_trash) {
       return res
         .status(400)
-        .json({ error: "Cannot update a pen that is in the trash" });
+        .json({ error: "Cannot update a dose that is in the trash" });
     }
     if (work.is_deleted) {
-      return res.status(404).json({ error: "Pen not found" });
+      return res.status(404).json({ error: "Dose not found" });
     }
     const {
       title,
@@ -269,7 +269,7 @@ router.put("/:id", verifyFirebase, async (req, res) => {
       .where(eq(pensTable.id, id))
       .returning();
 
-    if (!updatedPen) return res.status(404).json({ error: "Pen not found" });
+    if (!updatedPen) return res.status(404).json({ error: "Dose not found" });
 
     // 更新 tags
     // 1. 先刪掉舊的關聯
@@ -302,12 +302,12 @@ router.put("/:id", verifyFirebase, async (req, res) => {
         .onConflictDoNothing();
     }
     res.json({
-      message: "Pen updated successfully",
+      message: "Dose updated successfully",
       data: updatedPen,
     });
   } catch (err) {
-    console.error("Error updating pen:", err);
-    res.status(500).json({ error: "Failed to update pen" });
+    console.error("Error updating dose:", err);
+    res.status(500).json({ error: "Failed to update dose" });
   }
 });
 
@@ -334,13 +334,13 @@ router.patch("/:id/privacy", verifyFirebase, async (req, res) => {
       .limit(1);
 
     if (pen.length === 0) {
-      return res.status(404).json({ error: "Pen not found" });
+      return res.status(404).json({ error: "Dose not found" });
     }
 
     if (pen[0].user_id !== userId) {
       return res
         .status(403)
-        .json({ error: "You do not have permission to change this pen" });
+        .json({ error: "You do not have permission to change this dose" });
     }
 
     //檢查是否為 Pro 會員
@@ -353,7 +353,7 @@ router.patch("/:id/privacy", verifyFirebase, async (req, res) => {
 
       if (!user.length || !user[0].is_pro) {
         return res.status(403).json({
-          error: "Only Pro members can make pens private.",
+          error: "Only Pro members can make doses private.",
         });
       }
     }
@@ -414,10 +414,10 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
       await db.select().from(pensTable).where(eq(pensTable.id, id))
     )[0];
 
-    if (!work) return res.status(404).json({ error: "Pen not found" });
+    if (!work) return res.status(404).json({ error: "Dose not found" });
     if (work.user_id !== userId) {
       return res.status(403).json({
-        error: "You do not have permission to move this pen to trash",
+        error: "You do not have permission to move this dose to trash",
       });
     }
     const now = new Date();
@@ -431,8 +431,8 @@ router.put("/:id/trash", verifyFirebase, async (req, res) => {
       data: updated,
     });
   } catch (err) {
-    console.error("Error moving pen to trash:", err);
-    res.status(500).json({ error: "Failed to move pen to trash" });
+    console.error("Error moving dose to trash:", err);
+    res.status(500).json({ error: "Failed to move dose to trash" });
   }
 });
 
@@ -448,11 +448,11 @@ router.put("/:id/restore", verifyFirebase, async (req, res) => {
     const work = (
       await db.select().from(pensTable).where(eq(pensTable.id, id))
     )[0];
-    if (!work) return res.status(404).json({ error: "Pen not found" });
+    if (!work) return res.status(404).json({ error: "Dose not found" });
     if (work.user_id !== userId) {
       return res
         .status(403)
-        .json({ error: "You do not have permission to restore this pen" });
+        .json({ error: "You do not have permission to restore this dose" });
     }
     const [updated] = await db
       .update(pensTable)
@@ -461,8 +461,8 @@ router.put("/:id/restore", verifyFirebase, async (req, res) => {
       .returning();
     res.json({ message: "Successfully restored from trash", data: updated });
   } catch (err) {
-    console.error("Error restoring pen:", err);
-    res.status(500).json({ error: "Failed to restore pen" });
+    console.error("Error restoring dose:", err);
+    res.status(500).json({ error: "Failed to restore dose" });
   }
 });
 
@@ -482,10 +482,10 @@ async function deleteOldTrash() {
     console.log(
       `Soft-deleted ${
         result.rowCount ?? result
-      } pens that were trashed more than 3 days ago.`
+      } doses that were trashed more than 3 days ago.`
     );
   } catch (err) {
-    console.error("Failed to delete old trashed pens:", err);
+    console.error("Failed to delete old trashed doses:", err);
   }
 }
 
@@ -507,10 +507,10 @@ router.delete("/:id", verifyFirebase, async (req, res) => {
     if (pen.length === 0) {
       return res
         .status(403)
-        .json({ error: "You do not have permission to delete this pen" });
+        .json({ error: "You do not have permission to delete this dose" });
     }
   } catch (err) {
-    res.status(500).json({ error: "Failed to retrieve pen" });
+    res.status(500).json({ error: "Failed to retrieve dose" });
     return;
   }
 
@@ -524,8 +524,8 @@ router.delete("/:id", verifyFirebase, async (req, res) => {
       .where(eq(pensTable.id, id));
     return res.status(204).end();
   } catch (err) {
-    console.error("Failed to delete pen:", err);
-    return res.status(500).json({ error: "Failed to delete pen" });
+    console.error("Failed to delete dose:", err);
+    return res.status(500).json({ error: "Failed to delete dose" });
   }
 });
 
