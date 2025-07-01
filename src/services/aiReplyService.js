@@ -54,9 +54,9 @@ export const handleAIReply = async (chatId, userMessageId) => {
 
     // 呼叫 OpenAI
     const result = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o",
       messages: [SYSTEM_PROMPT, ...truncatedHistory],
-      max_tokens: 200,
+      max_tokens: 4000,
       temperature: 0.2,
     });
 
@@ -84,7 +84,7 @@ export const handleAIReply = async (chatId, userMessageId) => {
     return [updatedUserMsg[0], insertedAssistant[0]];
 
   } catch (error) {
-    console.error("AI reply failed:", error);
+    console.error("AI reply failed:", error?.response?.data || error.message || error);
 
     // 取得最新 user 訊息
     const lastUserMsg = await db
