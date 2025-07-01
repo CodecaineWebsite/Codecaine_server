@@ -20,8 +20,8 @@ export async function verifyDB(req, res, next) {
         id: req.userId,
         email: req.user.email,
         username,
-        profile_image_url : "https://codecaine-client-staging.zeabur.app/default-avatar.png",
-        display_name: req.user.name || username ||null,
+        profile_image_url : "https://image-uploader-codecaine.s3.ap-southeast-2.amazonaws.com/default-avatar.png",
+        display_name: req.user.name || username || "user",
         bio: "",
       });
     }
