@@ -1,0 +1,1 @@
+ALTER TABLE "subscriptions" ADD COLUMN "payment_intent_client_secret" text;

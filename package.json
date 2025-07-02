@@ -1,20 +1,42 @@
 {
-  "name": "group-3-project-codepain",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"npm run dev --prefix client\" \"nodemon server/index.js\""
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "seed": "node src/scripts/seed.js",
+    "seed:clean": "node src/scripts/seed.js --cleanup"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
-  "devDependencies": {
-    "concurrently": "^9.1.2"
-  },
   "dependencies": {
-    "nodemon": "^3.1.10"
+    "@aws-sdk/client-s3": "^3.820.0",
+    "@aws-sdk/s3-request-presigner": "^3.820.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.43.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "firebase-admin": "^13.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.0",
+    "nodemon": "^3.1.10",
+    "openai": "^5.5.1",
+    "pg": "^8.16.0",
+    "stripe": "^18.2.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.2",
+    "drizzle-kit": "^0.31.1",
+    "nodemon": "^3.1.10",
+    "ngrok": "^5.0.0-beta.2"
   }
 }
