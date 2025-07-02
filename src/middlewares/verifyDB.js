@@ -38,9 +38,10 @@ export async function verifyDB(req, res, next) {
 function sanitizeUsername(nameOrEmail) {
   // 從名稱或 email 前段取值，移除特殊符號與空白
   return nameOrEmail
+    .trim()
     .toLowerCase()
-    .replace(/\s+/g, "") // 移除空格
-    .replace(/[^\u4e00-\u9fa5_a-z0-9]/gi, ""); // 保留中文、英數、_
+    .replace(/\s+/g, '_')           // 移除空格 用_取代
+    .replace(/[^\p{L}\p{N}_]/gu, '');   // 移除特殊字元
 }
 
 async function generateUniqueUsername(base) {
