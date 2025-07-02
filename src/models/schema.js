@@ -40,7 +40,7 @@ const pensTable = pgTable("pens", {
     onDelete: "cascade",
   }),
   title: varchar("title", { length: 100 }).default("untitled"),
-  description: varchar("description", { length: 500 }),
+  description: varchar("description"),
   html_code: text("html_code"),
   css_code: text("css_code"),
   js_code: text("js_code"),
