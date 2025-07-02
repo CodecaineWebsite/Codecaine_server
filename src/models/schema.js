@@ -36,7 +36,9 @@ const usersTable = pgTable("users", {
 // 作品資料表 (我們需要為pens取個新名字, 像是 compounds 或 doses 之類的(????))
 const pensTable = pgTable("pens", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  user_id: varchar("user_id", { length: 128 }).references(() => usersTable.id),
+  user_id: varchar("user_id", { length: 128 }).references(() => usersTable.id, {
+    onDelete: "cascade",
+  }),
   title: varchar("title", { length: 100 }).default("untitled"),
   description: varchar("description", { length: 500 }),
   html_code: text("html_code"),
@@ -71,11 +73,11 @@ const pensTable = pgTable("pens", {
 const favoritesTable = pgTable(
   "favorites",
   {
-    user_id: varchar("user_id", { length: 128 })
-      .references(() => usersTable.id)
+    user_id: varchar("user_id", { length: 128 }, { onDelete: "cascade" })
+      .references(() => usersTable.id, { onDelete: "cascade" })
       .notNull(),
     pen_id: integer("pen_id")
-      .references(() => pensTable.id)
+      .references(() => pensTable.id, { onDelete: "cascade" })
       .notNull(),
     created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
@@ -88,10 +90,10 @@ const favoritesTable = pgTable(
 const commentsTable = pgTable("comments", {
   id: serial("id").primaryKey(),
   pen_id: integer("pen_id")
-    .references(() => pensTable.id)
+    .references(() => pensTable.id, { onDelete: "cascade" })
     .notNull(),
   user_id: varchar("user_id", { length: 128 })
-    .references(() => usersTable.id)
+    .references(() => usersTable.id, { onDelete: "cascade" })
     .notNull(),
   content: text("content").notNull(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -101,10 +103,18 @@ const commentsTable = pgTable("comments", {
 const followsTable = pgTable(
   "follows",
   {
-    follower_id: varchar("follower_id", { length: 128 })
+    follower_id: varchar(
+      "follower_id",
+      { length: 128 },
+      { onDelete: "cascade" }
+    )
       .references(() => usersTable.id)
       .notNull(), // 誰在追蹤
-    following_id: varchar("following_id", { length: 128 })
+    following_id: varchar(
+      "following_id",
+      { length: 128 },
+      { onDelete: "cascade" }
+    )
       .references(() => usersTable.id)
       .notNull(), // 被追蹤的人
     created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -128,7 +138,7 @@ const penTagsTable = pgTable(
       .references(() => pensTable.id, { onDelete: "cascade" })
       .notNull(),
     tag_id: integer("tag_id")
-      .references(() => tagsTable.id)
+      .references(() => tagsTable.id, { onDelete: "cascade" })
       .notNull(),
   },
   (table) => ({
@@ -140,7 +150,7 @@ const penTagsTable = pgTable(
 const subscriptionsTable = pgTable("subscriptions", {
   id: text("id").primaryKey(),
   user_id: varchar("user_id")
-    .references(() => usersTable.id)
+    .references(() => usersTable.id, { onDelete: "cascade" })
     .notNull(),
   customer_id: text("customer_id").notNull(),
   status: text("status").default("active"),
@@ -166,7 +176,7 @@ const openAIChatTable = pgTable("ai_chats", {
   status: integer("status").default(1).notNull(),
   // 1: active, 2: deleted
   user_id: varchar("user_id", { length: 128 }).references(() => usersTable.id, {
-    onDelete: "set null",
+    onDelete: "cascade",
   }),
 });
 
@@ -198,14 +208,18 @@ const openAIMessageTable = pgTable(
 const notificationsTable = pgTable("notifications", {
   id: serial("id").primaryKey(),
   recipient_id: varchar("recipient_id", { length: 128 })
-    .references(() => usersTable.id)
+    .references(() => usersTable.id, { onDelete: "cascade" })
     .notNull(),
   sender_id: varchar("sender_id", { length: 128 })
-    .references(() => usersTable.id)
+    .references(() => usersTable.id, { onDelete: "cascade" })
     .notNull(),
   type: varchar("type", { length: 20 }).notNull(),
-  pen_id: integer("pen_id").references(() => pensTable.id),
-  comment_id: integer("comment_id").references(() => commentsTable.id),
+  pen_id: integer("pen_id").references(() => pensTable.id, {
+    onDelete: "cascade",
+  }),
+  comment_id: integer("comment_id").references(() => commentsTable.id, {
+    onDelete: "cascade",
+  }),
   is_read: boolean("is_read").default(false),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
