@@ -13,14 +13,16 @@ export async function verifyDB(req, res, next) {
 
     // 如果沒有，就創建一筆（首次登入）
     if (!user) {
-      const baseUsername = sanitizeUsername(req.user.name || req.user.email?.split("@")[0] || "user");
+      const baseUsername = sanitizeUsername(
+        req.user.name || req.user.email?.split("@")[0] || "user"
+      );
       const username = await generateUniqueUsername(baseUsername);
-
       await db.insert(usersTable).values({
         id: req.userId,
         email: req.user.email,
         username,
-        profile_image_url : "https://image-uploader-codecaine.s3.ap-southeast-2.amazonaws.com/default-avatar.png",
+        profile_image_url:
+          "https://image-uploader-codecaine.s3.ap-southeast-2.amazonaws.com/default-avatar.png",
         display_name: req.user.name || username || "user",
         bio: "",
       });
@@ -47,15 +49,17 @@ async function generateUniqueUsername(base) {
   let count = 0;
   const MAX_ATTEMPTS = 100;
   while (count < MAX_ATTEMPTS) {
-    const exists = await db.select().from(usersTable).where(eq(usersTable.username, username));
+    const exists = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.username, username));
     if (exists.length === 0) break;
     count++;
     username = `${base}${count}`;
   }
 
   if (count === MAX_ATTEMPTS) {
-  throw new Error("Username generation failed. Try again.");
-}
+    throw new Error("Username generation failed. Try again.");
+  }
   return username;
-
 }
