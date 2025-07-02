@@ -38,8 +38,8 @@ function sanitizeUsername(nameOrEmail) {
   return nameOrEmail
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, '_')           // 移除空格
-    .replace(/[^\p{L}\p{N}_]/gu, '');   // 移除非 a-z、0-9、_
+    .replace(/\s+/g, '_')           // 移除空格 用_取代
+    .replace(/[^\p{L}\p{N}_]/gu, '');   // 移除特殊字元
 }
 
 async function generateUniqueUsername(base) {
