@@ -1,0 +1,1 @@
+ALTER TABLE "pens" ALTER COLUMN "description" SET DATA TYPE varchar;
